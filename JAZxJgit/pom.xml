@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>jazxjgit</groupId>
+  <artifactId>JAZxJgit</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>tryout</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>test</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+   <dependencies>
+	<!-- fuer das Logging von jgit -->
+	<dependency>
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-slf4j-impl</artifactId>
+	    <version>2.1</version>
+	    <scope>compile</scope>
+	</dependency>    
+   
+    <!-- fuer das Logging von jgit: Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+	<dependency>
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-core</artifactId>
+	    <version>2.1</version>
+	    <scope>compile</scope>
+	</dependency>
+	
+	<!-- fuer SSH - Authentifizierung. Wichtig für "git push" -->
+	<!-- JGit Apache SSHD Based SSH Support -->
+	<!-- Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache -->
+<!-- 	<dependency> -->
+<!-- 	    <groupId>org.eclipse.jgit</groupId> -->
+<!-- 	    <artifactId>org.eclipse.jgit.ssh.apache</artifactId> -->
+<!-- 	    <version>7.5.0.202512021534-r</version> -->
+<!-- 	    <scope>compile</scope> -->
+<!-- 	</dependency> -->
+	
+	<!-- Auf der Suche nach 1.7 Version.-->
+	<!-- Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.java7 -->
+<!-- 	<dependency> -->
+<!-- 	    <groupId>org.eclipse.jgit</groupId> -->
+<!-- 	    <artifactId>org.eclipse.jgit.java7</artifactId> -->
+<!-- 	    <version>3.7.1.201504261725-r</version> -->
+<!-- 	    <scope>compile</scope> -->
+<!-- 	</dependency> -->
+	
+	<!-- Workspace ist Java 1.8. - dann klappt es wohl nur damit -->
+	<dependency>
+	    <groupId>org.eclipse.jgit</groupId>
+	    <artifactId>org.eclipse.jgit</artifactId>	    
+<!-- 	   	<version>4.6.0.201612231935-r</version>Exception in thread "main" java.lang.UnsupportedClassVersionError: org/eclipse/jgit/api/errors/GitAPIException : Unsupported major.minor version 52.0 -->
+	   	<version>4.5.7.201904151645-r</version>
+	</dependency>
+	
+
+  </dependencies>
+</project>
