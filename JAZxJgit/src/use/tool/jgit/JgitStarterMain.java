@@ -111,7 +111,21 @@ public class JgitStarterMain implements IConstantZZZ{
 	
 	 */
 	
+	/*
+	Kommandozeilenparamater fuer den Einsatz:
+	a) PUSH
+	-push -https -pat <PAT> 
+	-rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git 
+	-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy
 
+
+	-push -https -pat <PAT> 
+	-rr https://github.com/firak01/HIS_QISSERVER_FGL.git
+	-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL
+	
+	b) PULL
+	
+	 */
 	 
 	 
 	 /*
