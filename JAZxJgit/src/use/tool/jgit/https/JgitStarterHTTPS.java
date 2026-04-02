@@ -304,7 +304,10 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
         
 		//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
 		this.addFileTrackedChanged(git);
-								
+		
+		//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+        this.addFileUntracked(git);
+		
         //Mache einen commit (mit aktuellem Datum/Uhrzeit)
 		long lTimestamp = DateTimeZZZ.computeTimestamp();
 		SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
@@ -319,8 +322,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
         System.out.println("STATUS AFTER COMMIT");
         this.printStatus(git);
 		
-        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-        //TODOGOON20260313
+        
         
         //Mache den push		
         String sPAT = this.getPersonalAccessToken();
@@ -389,18 +391,30 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 	}
 	
 	public void addFileUntracked(Git git) throws NoWorkTreeException, GitAPIException {
-		Status status = git.status().call();
-
-		Set<String> setUntracked = status.getUntracked();
+		StatusCommand gitCommandStatus = git.status();
+		Status status = gitCommandStatus.call();
+		
+		Set<String> uncommittedChanges = status.getUncommittedChanges();
+		Set<String> untracked          	  = status.getUntracked();
 		ArrayList<String> listasUntracked = new ArrayList<String>();
-        for (String  sUntracked : setUntracked ) {
-        	listasUntracked.add(sUntracked);
+		
+		AddCommand gitCommandAdd = git.add();		
+        for (String untrackedTemp : untracked) {
+        	if(!uncommittedChanges.contains(untrackedTemp)) {
+        		listasUntracked.add(untrackedTemp);
+        	}
         }
         
-        for(String sUntracked : listasUntracked) {
-        	git.add().addFilepattern(sUntracked).call();
+        // run the add-call 
+        for(String untrackedTemp : listasUntracked) {
+        	System.out.println("untracked to add: '" + untrackedTemp + "'");
+        	try {
+        		gitCommandAdd.addFilepattern(untrackedTemp);
+        		gitCommandAdd.call();
+        	}catch(java.lang.IllegalStateException isex) {
+        		System.out.println(isex.getMessage());
+        	}
         }
-	
 	}
 	
 	public CredentialsProvider createCredentialsProviderByToken(Git git) {
