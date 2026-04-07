@@ -56,7 +56,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
+				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseSSH();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -71,8 +71,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				
 				
 				//+++++++++++++++++++++++
-				this.setRepositoryLocal(sRepositoryLocalIn);
-				this.setRepositoryRemote(sRepositoryRemoteIn);
+				this.setRepositoryBaseLocal(sRepositoryLocalIn);
+				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				//#####################################################################
 				
@@ -82,7 +82,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				JGitSshConfigZZZ.configure();
 				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 					
-				String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -254,7 +254,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
+				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseSSH();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -269,8 +269,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				
 				
 				//+++++++++++++++++++++++
-				this.setRepositoryLocal(sRepositoryLocalIn);
-				this.setRepositoryRemote(sRepositoryRemoteIn);
+				this.setRepositoryBaseLocal(sRepositoryLocalIn);
+				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				//#####################################################################
 				
@@ -280,7 +280,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				JGitSshConfigZZZ.configure();
 				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 					
-				String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -301,7 +301,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				
 				//+++ Hole die URL vom Remote Repository
 				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-				String sRepositoryRemote = this.getRepositoryRemote();
+				String sRepositoryRemote = this.getRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryRemote)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
@@ -315,7 +315,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				this.setRepositoryRemote(sRepositoryRemote);
+				this.setRepositoryBaseRemote(sRepositoryRemote);
 				
 				//+++ SSL Zugriff sicherstellen
 				//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt

@@ -21,9 +21,12 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.IConstantZZZ;
+import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
-public class JgitUtilHTTPS {
+public class JgitUtilHTTPS implements IConstantZZZ{
 
 	/** Für den HTTPS Weg:
 	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
@@ -387,6 +390,28 @@ public class JgitUtilHTTPS {
 			}
 		}//end main:
 		return bReturn;
+	}
+	
+	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	public static String computeRepositoryUrlHTTPS(String sUrlBaseHTTPSin, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlBaseHTTPSin)){
+				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projekname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sUrlBaseHTTPS = sUrlBaseHTTPSin;
+			String sRepositoryProject = sRepositoryProjectIn;
+			
+			sReturn = sUrlBaseHTTPS + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
+		}//end main:
+		return sReturn;
 	}
 
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git

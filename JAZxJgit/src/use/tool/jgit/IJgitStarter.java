@@ -7,14 +7,17 @@ import use.tool.jgit.IConfigJGIT;
 
 public interface IJgitStarter {
 
-	public String getRepositoryLocal() throws ExceptionZZZ;
-	public void setRepositoryLocal(String sRepositoryLocal) throws ExceptionZZZ;
+	public String getRepositoryProject() throws ExceptionZZZ;
+	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
 	
-	public String getRepositoryRemote() throws ExceptionZZZ;
-	public void setRepositoryRemote(String sRepositoryRemote) throws ExceptionZZZ;
+	public String getRepositoryBaseLocal() throws ExceptionZZZ;
+	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ;
+	
+	public String getRepositoryBaseRemote() throws ExceptionZZZ;
+	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ;
 	
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
-	public void setRepositoryRemoteAlias(String sRepositoryRemote) throws ExceptionZZZ;
+	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
 	
 	public boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;
 	public boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ;

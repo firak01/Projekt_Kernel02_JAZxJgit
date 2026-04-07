@@ -19,8 +19,9 @@ import use.tool.jgit.IConfigJGIT;
 public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ implements IJgitStarter{
 	protected volatile Git gitObject = null;
 	
-	protected volatile String sRepositoryLocal=null;
-	protected volatile String sRepositoryRemote=null;
+	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
+	protected volatile String sRepositoryBaseRemote=null; //Basis URL
+	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
 	protected volatile String sRepositoryRemoteAlias=null;
 	
 
@@ -36,13 +37,23 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	}
 	
 	@Override
-	public String getRepositoryLocal() throws ExceptionZZZ {
-		return this.sRepositoryLocal;
+	public String getRepositoryProject() throws ExceptionZZZ {
+		return this.sRepositoryProject;
+	}
+	
+	@Override 
+	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ {
+		this.sRepositoryProject = sRepositoryProject;
 	}
 	
 	@Override
-	public void setRepositoryLocal(String sRepositoryLocal) throws ExceptionZZZ {
-		this.sRepositoryLocal = sRepositoryLocal;
+	public String getRepositoryBaseLocal() throws ExceptionZZZ {
+		return this.sRepositoryBaseLocal;
+	}
+	
+	@Override
+	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ {
+		this.sRepositoryBaseLocal = sRepositoryBaseLocal;
 	}
 
 	//++++++++++++++++++++++++++++
@@ -57,17 +68,17 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	}
 	
 	@Override
-	public String getRepositoryRemote() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sRepositoryRemote)) {
+	public String getRepositoryBaseRemote() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
 			String sRepositoryRemoteBySearch = this.searchRepositoryRemote();
-			this.setRepositoryRemote(sRepositoryRemoteBySearch);
+			this.setRepositoryBaseRemote(sRepositoryRemoteBySearch);
 		}
-		return this.sRepositoryRemote;
+		return this.sRepositoryBaseRemote;
 	}
 
 	@Override
-	public void setRepositoryRemote(String sRepositoryRemote) throws ExceptionZZZ {
-		this.sRepositoryRemote = sRepositoryRemote;
+	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ {
+		this.sRepositoryBaseRemote = sRepositoryBaseRemote;
 	}
 	
 	@Override

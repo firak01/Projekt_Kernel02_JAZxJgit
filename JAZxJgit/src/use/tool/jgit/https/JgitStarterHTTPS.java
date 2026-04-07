@@ -32,6 +32,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.JgitStarterMain;
@@ -77,7 +78,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteHTTPS();
+				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseHTTPS();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote HTTPS Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -91,6 +92,13 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 					throw ez;
 				}
 				
+				String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
+				if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
 				String sPatIn = objConfig.readPersonalAccessToken();
 				if(StringZZZ.isEmpty(sPatIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository, Personal Access Token (PAT)", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -100,48 +108,68 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				
 				
 				//+++++++++++++++++++++++
-				this.setRepositoryLocal(sRepositoryLocalIn);
-				this.setRepositoryRemote(sRepositoryRemoteIn);
+				this.setRepositoryBaseLocal(sRepositoryLocalIn);
+				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				this.setRepositoryProject(sRepositoryProjectIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				this.setPersonalAccessToken(sPatIn);
 			
 			
 				//Konfiguriere JGit für HTTPS
 				//+++ Zugriff sicherstellen
-				String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+				//a) Lokales Basis Verzeichnis
+				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				File objFileDir = new File(sDirectoryRepositoryLocal);
 				if(!objFileDir.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
 				}
 				
+				//b) Lokales Repository-Verzeichnis des Projekts
+				String sRepositoryProject = this.getRepositoryProject();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories, Angabe fehlt: '" + sRepositoryProject + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProject);
+				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
+				if(!objFileDirTotal.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				
 				InitCommand gitCommandInit = Git.init();
-				gitCommandInit.setDirectory(objFileDir);
+				gitCommandInit.setDirectory(objFileDirTotal);
 				
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);
-				System.out.println("Local Git-Repository init done: " + objFileDir.getAbsolutePath());
+				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
 				
 				//+++ Hole die URL vom Remote Repository
 				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-				String sRepositoryRemote = this.getRepositoryRemote();
-				if(StringZZZ.isEmpty(sRepositoryRemote)) {
+				String sRepositoryBaseRemote = this.getRepositoryBaseRemote();
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
 						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}
 				}
-				if(StringZZZ.isEmpty(sRepositoryRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Weder Basis Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				this.setRepositoryRemote(sRepositoryRemote);
+				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
+				
+				String sRepositoryRemoteTotal = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProject);
+				
 				
 				//+++ HTTPS Zugriff sicherstellen
 				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
@@ -154,9 +182,9 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 					//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 					
 					String sBranch = "master";
-					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemote, sBranch);					
+					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);					
 				}else {
-					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
+					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
 				}
 		        git.close();
 		    //###############################################################	  
@@ -227,7 +255,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 //				throw ez;
 //			}
 			
-			String sRepositoryRemoteIn = objConfig.readRepositoryRemoteHTTPS();
+			String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseHTTPS();
 			if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
 				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote HTTPS Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -250,15 +278,15 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 			
 			
 			//+++++++++++++++++++++++
-			this.setRepositoryLocal(sRepositoryLocalIn);
-			this.setRepositoryRemote(sRepositoryRemoteIn);
+			this.setRepositoryBaseLocal(sRepositoryLocalIn);
+			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 			this.setPersonalAccessToken(sPatIn);
 			
 			
 		//Konfiguriere JGit für HTTPS
 		//+++ Zugriff sicherstellen
-		String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+		String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
 		if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 			ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 			throw ez;
@@ -279,7 +307,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 		
 		//+++ Hole die URL vom Remote Repository
 		//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-		String sRepositoryRemote = this.getRepositoryRemote();
+		String sRepositoryRemote = this.getRepositoryBaseRemote();
 		if(StringZZZ.isEmpty(sRepositoryRemote)) {
 			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
@@ -291,7 +319,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 			ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 			throw ez;
 		}
-		this.setRepositoryRemote(sRepositoryRemote);
+		this.setRepositoryBaseRemote(sRepositoryRemote);
 		
 		//+++ HTTPS Zugriff sicherstellen
 		CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);

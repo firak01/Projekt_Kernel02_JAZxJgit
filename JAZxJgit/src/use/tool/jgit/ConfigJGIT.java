@@ -209,32 +209,48 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 		return "orign";
 	}
 	
+	//++++++++++++++++++++++++++++++++++++++++++++
 	@Override
-	public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ {		
+	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
+		return null;
+	}
+		
+	@Override
+	public String getRepositoryRemoteBaseDefaultSSH() throws ExceptionZZZ {		
 		return null;
 	}
 	@Override
-	public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ {
+	public String getRepositoryRemoteBaseDefaultHTTPS() throws ExceptionZZZ {
 		return null;
 	}
 	
+	
+	//++++++++++++++++++++++++++++++++++++++
 	@Override
-	public String readRepositoryRemote() throws ExceptionZZZ {
+	public String readRepositoryProjectName() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("rr");
-			if(!StringZZZ.isEmpty(sReturn)) break main;
-								
+			String sProject = objOpt.readValue("project");
+			if(StringZZZ.isEmpty(sProject)) {
+				sProject = this.getRepositoryProjectNameDefault();				
+			}
+			
+			sReturn = sProject;
 		}//end main:		
 		return sReturn;
 	}
 	
 	@Override
-	public String readRepositoryRemoteSSH() throws ExceptionZZZ {
+	public String readRepositoryRemoteBase() throws ExceptionZZZ {
+		return this.readRepositoryRemoteBaseHTTPS();
+	}
+	
+	@Override
+	public String readRepositoryRemoteBaseSSH() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
@@ -246,14 +262,14 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 			
 			sReturn = objOpt.readValue("rr");
 			if(StringZZZ.isEmpty(sReturn)) {
-				sReturn = this.getRepositoryRemoteDefaultSSH();
+				sReturn = this.getRepositoryRemoteBaseDefaultSSH();
 			}
 		}//end main:		
 		return sReturn;
 	}
 	
 	@Override
-	public String readRepositoryRemoteHTTPS() throws ExceptionZZZ {
+	public String readRepositoryRemoteBaseHTTPS() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
@@ -265,13 +281,11 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 			
 			sReturn = objOpt.readValue("rr");
 			if(StringZZZ.isEmpty(sReturn)) {
-				sReturn = this.getRepositoryRemoteDefaultHTTPS();
+				sReturn = this.getRepositoryRemoteBaseDefaultHTTPS();
 			}
 		}//end main:		
 		return sReturn;
 	}
-	
-	
 	
 	//++++++++++++++++++++++++++++++++++++++++++++++
 	@Override
@@ -296,7 +310,7 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 	
 	//++++++++++++++++++++++++++++++++++++++++++
 	@Override
-	public String getRepositoryLocalDefault() throws ExceptionZZZ {
+	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
 		return ConfigJGIT.sPROJECT_PATH; //Also das eigene Verzeichnis als Default
 	}
 	@Override
@@ -309,10 +323,9 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 			
 			sReturn = objOpt.readValue("rl");
 			if(sReturn==null){
-				sReturn = this.getRepositoryLocalDefault();
+				sReturn = this.getRepositoryLocalBaseDefault();
 			}
 		}//end main:		
 		return sReturn;
 	}
-	
 }
