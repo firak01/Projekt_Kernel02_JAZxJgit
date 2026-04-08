@@ -5,24 +5,33 @@ import java.io.IOException;
 
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import use.tool.jgit.IConfigJGIT;
 
 public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ implements IJgitStarter{
 	protected volatile Git gitObject = null;
+	protected volatile CredentialsProvider credentialsProviderObject = null;
 	
-	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
-	protected volatile String sRepositoryBaseRemote=null; //Basis URL
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
+	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
+	protected volatile String sRepositoryTotalLocal=null;  //Geamt Verzeichnis
+	
+	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
+	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
+		
 	protected volatile String sRepositoryRemoteAlias=null;
+	
 	
 
 	//aus IJgitStarter
@@ -32,8 +41,18 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	}
 	
 	@Override
-	public void setGitObject(Git git) throws ExceptionZZZ{
-		this.gitObject = git;
+	public void setGitObject(Git objGit) throws ExceptionZZZ{
+		this.gitObject = objGit;
+	}
+	
+	@Override 
+	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ{
+		return this.credentialsProviderObject;
+	}
+	
+	@Override
+	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ{
+		this.credentialsProviderObject = objCredentialsProvider;
 	}
 	
 	@Override
@@ -54,6 +73,16 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	@Override
 	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ {
 		this.sRepositoryBaseLocal = sRepositoryBaseLocal;
+	}
+	
+	@Override
+	public String getRepositoryTotalLocal() throws ExceptionZZZ {
+		return this.sRepositoryTotalLocal;
+	}
+	
+	@Override
+	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ {
+		this.sRepositoryTotalLocal = sRepositoryTotalLocal;
 	}
 
 	//++++++++++++++++++++++++++++
@@ -116,9 +145,65 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 		return sReturn;
 	}
 
+	@Override
+	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
+		return this.sRepositoryTotalRemote;
+	}
+
+	@Override
+	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
+		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
+	}
 	
-	
-	
+	@Override
+	public boolean configureGit() throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			try {
+				//a) Lokales Basis Verzeichnis
+				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				File objFileDir = new File(sDirectoryRepositoryLocal);
+				if(!objFileDir.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				//b) Lokales Repository-Verzeichnis des Projekts
+				String sRepositoryProject = this.getRepositoryProject();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories, Angabe fehlt: '" + sRepositoryProject + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProject);
+				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
+				if(!objFileDirTotal.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
+				
+				InitCommand gitCommandInit = Git.init();
+				gitCommandInit.setDirectory(objFileDirTotal);
+				
+				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+				this.setGitObject(git);
+				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
+
+				bReturn = true;
+				//######################################
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
 	
 	@Override
 	public abstract boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;

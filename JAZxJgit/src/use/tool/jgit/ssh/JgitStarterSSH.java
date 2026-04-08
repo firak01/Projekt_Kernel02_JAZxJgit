@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
 
@@ -26,6 +27,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.JgitStarterMain;
@@ -35,6 +37,26 @@ import use.tool.jgit.https.JgitStarterHTTPS;
 
 
 public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterSSH{
+	
+	//### aus IJgitStarter
+	@Override
+	public boolean configureGit() throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+		
+			//Konfiguriere JGit für SSH
+			
+			//+++ Zugriff sicherstellen
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
+			JGitSshConfigZZZ.configure();
+			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+				
+			//a) + b)
+			bReturn = super.configureGit();
+
+		}//end main:
+		return bReturn;
+	}
 	
 	@Override 
 	public boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ {
@@ -69,53 +91,39 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					throw ez;
 				}
 				
-				
+				String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
+				if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+								
 				//+++++++++++++++++++++++
 				this.setRepositoryBaseLocal(sRepositoryLocalIn);
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				this.setRepositoryProject(sRepositoryProjectIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				//#####################################################################
 				
 				//+++++++++++++++++++++++++++++++++++++++++++++++++
-				//Konfiguriere JGit für SSH
-				//+++ Zugriff sicherstellen
-				JGitSshConfigZZZ.configure();
-				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
-					
-				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
+				//Konfiguriere JGit für SSH				
+				boolean bSuccess = this.configureGit();
+				if(bSuccess) {
+					System.out.println("Git erfolgrech konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
 				}
-				
-				File objFileDir = new File(sDirectoryRepositoryLocal);
-				if(!objFileDir.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;				
-				}
-						
-				InitCommand gitCommandInit = Git.init();
-				gitCommandInit.setDirectory(objFileDir);
-				
-				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-				this.setGitObject(git);
-				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
-				
 				
 				//Mache den pull	
+				Git git = this.getGitObject();
 		        this.pullit(git);
 		        git.close();
 		        bReturn = true;
 	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
 		}//end main:
 		return bReturn;
@@ -267,37 +275,50 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					throw ez;
 				}
 				
+				String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
+				if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 				//+++++++++++++++++++++++
 				this.setRepositoryBaseLocal(sRepositoryLocalIn);
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				this.setRepositoryProject(sRepositoryProjectIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				//#####################################################################
 				
 				//+++++++++++++++++++++++++++++++++++++++++++++++++
 				//Konfiguriere JGit für SSH
-				//+++ Zugriff sicherstellen
-				JGitSshConfigZZZ.configure();
-				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
-					
-				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
+				boolean bSuccess = this.configureGit();
+				if(bSuccess) {
+					System.out.println("Git erfolgrech konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
 				}
 				
-				File objFileDir = new File(sDirectoryRepositoryLocal);
-				if(!objFileDir.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;				
-				}
-						
-				InitCommand gitCommandInit = Git.init();
-				gitCommandInit.setDirectory(objFileDir);
-				
-				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-				this.setGitObject(git);
-				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
+//				JGitSshConfigZZZ.configure();
+//				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+//					
+//				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
+//				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;
+//				}
+//				
+//				File objFileDir = new File(sDirectoryRepositoryLocal);
+//				if(!objFileDir.exists()) {
+//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;				
+//				}
+//						
+//				InitCommand gitCommandInit = Git.init();
+//				gitCommandInit.setDirectory(objFileDir);
+//				
+//				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+//				this.setGitObject(git);
+//				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
 				
 				//+++ Hole die URL vom Remote Repository
 				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
@@ -321,6 +342,10 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt
 				//
 				//+++++++++++++++++++++++++++++++++		
+				//Finde geaenderte und neue Dateien fuer den Push
+				Git git = this.getGitObject();
+				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
 				
 				System.out.println("STATUS BEFORE COMMIT");		
 				this.printStatus(git);
@@ -328,7 +353,10 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		        
 				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
 				this.addFileTrackedChanged(git);
-										
+				
+				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+		        this.addFileUntracked(git);
+				
 		        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
 				long lTimestamp = DateTimeZZZ.computeTimestamp();
 				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
@@ -342,15 +370,16 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		        
 		        System.out.println("STATUS AFTER COMMIT");
 		        this.printStatus(git);
-				
-		        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-		        //TODOGOON20260313
-		        
+				 
 		        //Mache den push	
-		        this.pushit(git);
-		       
-		        System.out.println("STATUS AFTER PUSH");
-		        this.printStatus(git);
+		        bReturn = this.pushit(git);
+		        if(bReturn) {
+		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
+		        	this.printStatus(git);
+		        }else {
+		        	System.out.println("STATUS AFTER PUSH: FAILED");
+		        	this.printStatus(git);
+		        }
 		       
 		        
 		        //s. ChatGPT vom 20260313
@@ -359,7 +388,9 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        	        
-		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     	        
+		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
 			    System.out.println(("FETCH DONE"));
 			  	

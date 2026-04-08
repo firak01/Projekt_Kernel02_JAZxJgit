@@ -57,7 +57,55 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 		return this.sPAT;
 	}
 	
-	//### aus IGitStarter
+	//### aus IJgitStarter
+	@Override
+	public boolean configureGit() throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			try {
+				//Konfiguriere JGit für HTTPS
+				
+				//+++ Zugriff sicherstellen
+				//a) + b)
+				bReturn = super.configureGit();
+
+				//+++ Hole die URL vom Remote Repository
+				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
+				String sRepositoryBaseRemote = this.getRepositoryBaseRemote();
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
+					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+				}
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Weder Basis Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
+				
+				String sRepositoryRemoteTotal = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProject);
+				this.setRepositoryTotalRemote(sRepositoryRemoteTotal);
+				
+				//+++ HTTPS Zugriff sicherstellen
+				Git git = this.getGitObject();
+				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
+				System.out.println("Git Credentials Provider created done.");
+				this.setCredentialsProviderObject(credentialsProvider);
+				//+++++++++++++++++++++++++++++++
+				
+				bReturn = true;
+			//###############################################################	  	
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;
+			}
+			
+		}//end main:
+		return bReturn;
+	}
+	
 	@Override 
 	public boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -114,69 +162,20 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				this.setPersonalAccessToken(sPatIn);
 			
-			
 				//Konfiguriere JGit für HTTPS
-				//+++ Zugriff sicherstellen
-				//a) Lokales Basis Verzeichnis
-				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
+				boolean bSuccess = this.configureGit();
+				if(bSuccess) {
+					System.out.println("Git erfolgrech konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
 				}
-				
-				File objFileDir = new File(sDirectoryRepositoryLocal);
-				if(!objFileDir.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;				
-				}
-				
-				//b) Lokales Repository-Verzeichnis des Projekts
-				String sRepositoryProject = this.getRepositoryProject();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories, Angabe fehlt: '" + sRepositoryProject + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProject);
-				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
-				if(!objFileDirTotal.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;				
-				}
-				
-				
-				InitCommand gitCommandInit = Git.init();
-				gitCommandInit.setDirectory(objFileDirTotal);
-				
-				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-				this.setGitObject(git);
-				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
-				
-				//+++ Hole die URL vom Remote Repository
-				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-				String sRepositoryBaseRemote = this.getRepositoryBaseRemote();
-				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
-					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-				}
-				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Weder Basis Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
-				
-				String sRepositoryRemoteTotal = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProject);
-				
-				
-				//+++ HTTPS Zugriff sicherstellen
-				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
-				System.out.println("Git Credentials Provider created done.");
-				//+++++++++++++++++++++++++++++++
-				        
+								        
 				//Mache den pull	
+				Git git = this.getGitObject();
+				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+				String sPAT = this.getPersonalAccessToken();
+				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
 				boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
 				if(bIgnoreConflicts) {
 					//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
@@ -188,14 +187,9 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				}
 		        git.close();
 		    //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}
 		}//end main:
@@ -269,6 +263,12 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				throw ez;
 			}
 			
+			String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
 			String sPatIn = objConfig.readPersonalAccessToken();
 			if(StringZZZ.isEmpty(sPatIn)){
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository, Personal Access Token (PAT)", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -280,98 +280,75 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 			//+++++++++++++++++++++++
 			this.setRepositoryBaseLocal(sRepositoryLocalIn);
 			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+			this.setRepositoryProject(sRepositoryProjectIn);
 			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 			this.setPersonalAccessToken(sPatIn);
 			
-			
-		//Konfiguriere JGit für HTTPS
-		//+++ Zugriff sicherstellen
-		String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
-		if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-			ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-			throw ez;
-		}
-		
-		File objFileDir = new File(sDirectoryRepositoryLocal);
-		if(!objFileDir.exists()) {
-			ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-			throw ez;				
-		}
-		
-		InitCommand gitCommandInit = Git.init();
-		gitCommandInit.setDirectory(objFileDir);
-		
-		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-		this.setGitObject(git);
-		System.out.println("Local Git-Repository init done: " + objFileDir.getAbsolutePath());
-		
-		//+++ Hole die URL vom Remote Repository
-		//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-		String sRepositoryRemote = this.getRepositoryBaseRemote();
-		if(StringZZZ.isEmpty(sRepositoryRemote)) {
-			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit();
+			if(bSuccess) {
+				System.out.println("Git erfolgrech konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
 			}
-		}
-		if(StringZZZ.isEmpty(sRepositoryRemote)) {
-			ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-			throw ez;
-		}
-		this.setRepositoryBaseRemote(sRepositoryRemote);
+			
 		
-		//+++ HTTPS Zugriff sicherstellen
-		CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
-		System.out.println("Git Credentials Provider created done.");
-		//+++++++++++++++++++++++++++++++
-		
-		System.out.println("STATUS BEFORE COMMIT");		
-		this.printStatus(git);
-        //##################################################################
-        
-		//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-		this.addFileTrackedChanged(git);
-		
-		//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-        this.addFileUntracked(git);
-		
-        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-		long lTimestamp = DateTimeZZZ.computeTimestamp();
-		SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-		String sDateFormated = dateFormater.format(lTimestamp);
-
-		
-		CommitCommand gitCommandCommit = git.commit();
-		gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
-		gitCommandCommit.call();
-        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
-        
-        System.out.println("STATUS AFTER COMMIT");
-        this.printStatus(git);
-		
-        
-        
-        //Mache den push		
-        String sPAT = this.getPersonalAccessToken();
-        this.pushit(git, credentialsProvider, sPAT, sRepositoryRemote);
-       
-        System.out.println("STATUS AFTER PUSH");
-        this.printStatus(git);
-       
-        
-        //s. ChatGPT vom 20260313
-        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-        
-        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen 
-        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
-	    System.out.println(("FETCH DONE"));
-	  
-	    git.close();
-        bReturn = true;
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den Push
+			Git git = this.getGitObject();
+			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+			String sPAT = this.getPersonalAccessToken();
+			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+					
+			System.out.println("STATUS BEFORE COMMIT");		
+			this.printStatus(git);
+	        //##################################################################
+	        
+			//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
+			this.addFileTrackedChanged(git);
+			
+			//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+	        this.addFileUntracked(git);
+			
+	        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
+			long lTimestamp = DateTimeZZZ.computeTimestamp();
+			SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+			String sDateFormated = dateFormater.format(lTimestamp);
+	
+			
+			CommitCommand gitCommandCommit = git.commit();
+			gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
+			gitCommandCommit.call();
+	        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
+	        
+	        System.out.println("STATUS AFTER COMMIT");
+	        this.printStatus(git);
+			
+	        //Mache den push		
+	        bReturn = this.pushit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
+	        if(bReturn) {
+	        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
+	        	this.printStatus(git);
+	        }else {
+	        	System.out.println("STATUS AFTER PUSH: FAILED");
+	        	this.printStatus(git);
+	        }
+	        
+	        //s. ChatGPT vom 20260313
+	        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+	        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+	        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+	        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+	        
+	        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
+	        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+	        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
+	        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
+		    System.out.println(("FETCH DONE"));
+		  
+		    git.close();
+        //bReturn = true;
         //###############################################################
 		}catch(TransportException tex) {
 			ExceptionZZZ ez = new ExceptionZZZ(tex);
@@ -492,60 +469,61 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-		try {		
-		// aber mal explizit als pushCommand
-		PushCommand pushCommand = git.push();
+			try {		
+				// aber mal explizit als pushCommand
+				PushCommand pushCommand = git.push();
+						
+				//An einigen Stellen wird die Syntax der URL mit Username:Token genannt.
+				//git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
+				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
 				
-		//An einigen Stellen wird die Syntax der URL mit Username:Token genannt.
-		//git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+				//anderes Verzeichnis:
+				//lokal:
+				//remote: 
+				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+				
+				//SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+				//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+				
+				
+				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
+				//Darum versuchen dies ohne sPAT in URL zu realisieren
+				//                  //Variante A) mit sPAT in URL
+				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+				//
+				//                  //Variante B) ohne sPAT in URL
+				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 		
-		//anderes Verzeichnis:
-		//lokal:
-		//remote: 
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
-		
-		//SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-		
-		
-		//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
-		//Darum versuchen dies ohne sPAT in URL zu realisieren
-		//                  //Variante A) mit sPAT in URL
-		//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
-		//
-		//                  //Variante B) ohne sPAT in URL
-		//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-
-		String sUrlPartFromRepo = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-		pushCommand.setRemote("https://firak01:" + sPAT + "@" + sUrlPartFromRepo);
-		
-		
-		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
-		
-		
-		//aber, wenn Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-		//Loesungsansatz:    keytool ist wohl ein Program unter dem Java JDK
-		//                   keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
-		//Damit erstellt man einen zusaetzlichen Eintrag im Certifier-Store, der Datei cacerts ( z.B. hier: C:\java\jdk1.8.0\jre\lib\security\cacerts )
-  
-		//push to remote:
-		pushCommand.setCredentialsProvider(credentialsProvider);
-		pushCommand.call();
-		
-		//###############################################################		
-		}catch(InvalidRemoteException ire) {
-			ExceptionZZZ ez = new ExceptionZZZ(ire);
-			throw ez;
-		}catch(TransportException te) {
-			ExceptionZZZ ez = new ExceptionZZZ(te);
-			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
-		}
+				String sUrlPartFromRepo = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
+				pushCommand.setRemote("https://firak01:" + sPAT + "@" + sUrlPartFromRepo);
+				
+				
+				//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+				//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
+				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+				
+				
+				//aber, wenn Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+				//Loesungsansatz:    keytool ist wohl ein Program unter dem Java JDK
+				//                   keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
+				//Damit erstellt man einen zusaetzlichen Eintrag im Certifier-Store, der Datei cacerts ( z.B. hier: C:\java\jdk1.8.0\jre\lib\security\cacerts )
+		  
+				//push to remote:
+				pushCommand.setCredentialsProvider(credentialsProvider);
+				pushCommand.call();
+				
+				bReturn = true;
+			//###############################################################		
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
 		}//end main:
 		return bReturn;
 	}
