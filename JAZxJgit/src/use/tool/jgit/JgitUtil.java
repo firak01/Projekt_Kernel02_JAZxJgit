@@ -1,9 +1,18 @@
 package use.tool.jgit;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtil implements IConstantZZZ {
@@ -27,6 +36,133 @@ public class JgitUtil implements IConstantZZZ {
 			
 		}//end main:
 		return sReturn;
+	}
+	
+	public static String computeRepositoryUrl(String sUrlBaseIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlBaseIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projekname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sUrlBase = sUrlBaseIn;
+			String sRepositoryProject = sRepositoryProjectIn;
+			
+			if(JgitUtil.isUrlHTTPS(sUrlBase)) {
+				sReturn = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBase, sRepositoryProject);
+			}else if(JgitUtil.isUrlSSH(sUrlBase)) {
+				sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBase, sRepositoryProject);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlBase + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
+	
+	/** Ueberpruefe, ob unter dem Alias des remote Repositories auch eine URL gefunden wird.
+	 *  Falls, nein, setzte es ggfs. bei bOverwrite = true;
+	 * 
+	 * @param repo
+	 * @param sRepositoryRemoteAlias
+	 * @param sRepositoryRemoteUrl
+	 * @param bOverwrite
+	 * @throws IOException
+	 */
+	public static void ensureRemoteExists(Repository repo, String sRepositoryRemoteAlias, String sRepositoryRemoteUrl, boolean bOverwrite) throws ExceptionZZZ {
+		try {
+			StoredConfig config = repo.getConfig();
+	
+		    String existingUrl = config.getString("remote", sRepositoryRemoteAlias, "url");
+	
+		    if (existingUrl == null || existingUrl.trim().isEmpty() || bOverwrite) {
+	
+		        if (bOverwrite && existingUrl != null && !existingUrl.equals(sRepositoryRemoteUrl)) {
+		            System.out.println("Remote '" + sRepositoryRemoteAlias + "' wird überschrieben:");
+		            System.out.println("  alt: " + existingUrl);
+		            System.out.println("  neu: " + sRepositoryRemoteUrl);
+		        }
+	
+		        config.setString("remote", sRepositoryRemoteAlias, "url", sRepositoryRemoteUrl);
+	
+		        config.setStringList(
+		            "remote",
+		            sRepositoryRemoteAlias,
+		            "fetch",
+		            Collections.singletonList("+refs/heads/*:refs/remotes/" + sRepositoryRemoteAlias + "/*")
+		        );
+	
+		        config.save();
+		    }	  
+		} catch(IOException ioe) {
+			ExceptionZZZ ez = new ExceptionZZZ("IOException: " +ioe.getMessage(), iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;
+		}
+	}
+	
+	/* https://git-scm.com/book/de/v2/Anhang-B:-Git-in-deine-Anwendungen-einbetten-JGit
+	// Create a new repository
+Repository newlyCreatedRepo = FileRepositoryBuilder.create(
+new File("/tmp/new_repo/.git"));
+newlyCreatedRepo.create();
+
+//Open an existing repository
+Repository existingRepo = new FileRepositoryBuilder()
+.setGitDir(new File("my_repo/.git"))
+.build();
+	 */
+	public static Repository getRepositoryObject(String sRepositoryDirectoryTotal, boolean bCreateMissing) throws ExceptionZZZ{
+		Repository objReturn = null;
+		main:{
+			try {
+				if(StringZZZ.isEmpty(sRepositoryDirectoryTotal)){
+					ExceptionZZZ ez = new ExceptionZZZ("Projekname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				File objDirectoryRepo = new File(sRepositoryDirectoryTotal);
+				if(!FileEasyZZZ.exists(objDirectoryRepo)) {
+					if(!bCreateMissing) {
+						ExceptionZZZ ez = new ExceptionZZZ("Projektverzeichnis des Remote Repository existiert nicht.", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}else {
+						System.out.println("Erstelle fehlendes Repository Verzeichnis: '" + sRepositoryDirectoryTotal + "'");
+						FileEasyZZZ.createDirectory(objDirectoryRepo);
+					}
+				}
+				
+				//s. https://git-scm.com/book/de/v2/Anhang-B:-Git-in-deine-Anwendungen-einbetten-JGit
+				String sRepositoryFileTotal = FileEasyZZZ.joinFilePathName(objDirectoryRepo, ".git");
+				File objFileRepo = new File(sRepositoryFileTotal);
+				if(!FileEasyZZZ.exists(objFileRepo)) {
+					if(!bCreateMissing) {
+						ExceptionZZZ ez = new ExceptionZZZ("Projektverzeichnis '" + sRepositoryDirectoryTotal + "' ist kein Git Repository. Es fehlt Datei .git", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}else {
+						// Create a new repository
+						objReturn = FileRepositoryBuilder.create(objFileRepo);					
+						objReturn.create();											
+					}				
+				}else {
+					//Open an existing repository
+					FileRepositoryBuilder objRepoBuilder = new FileRepositoryBuilder();
+					objRepoBuilder.setGitDir(objFileRepo);
+					objReturn = objRepoBuilder.build();
+				}		
+			} catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			}
+		}//end main:
+		return objReturn;
 	}
 	
 	public static boolean isUrlSSH(String sUrlRepo) throws ExceptionZZZ {

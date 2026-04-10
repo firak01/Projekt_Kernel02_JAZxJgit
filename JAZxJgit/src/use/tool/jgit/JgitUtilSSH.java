@@ -10,10 +10,66 @@ import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
+import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilSSH implements IConstantZZZ{
 
+	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+	public static String computeRepositoryUrlBaseSSH(String sHostIn, String sAccountIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sHostIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Hostname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sAccountIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Account für das Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sHost = sHostIn;
+			String sAccount = sAccountIn;
+			
+			sReturn = "git@" + sHost + ":" + sAccount + ".git";
+		}//end main:
+		return sReturn;
+	}
+	
+	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	public static String computeRepositoryUrlSSH(String sUrlBaseSSHin, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlBaseSSHin)){
+				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projekname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sUrlBaseSSH = sUrlBaseSSHin;
+			String sRepositoryProject = sRepositoryProjectIn;
+			
+			sReturn = sUrlBaseSSH + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
+		}//end main:
+		return sReturn;
+	}
+	
+	public static String computeRepositoryUrlSSH(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sUrlBaseSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHostIn, sAccountIn);
+		
+			sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBaseSSH, sRepositoryProjectIn);
+		}//end main:
+		return sReturn;
+	}
+	
 	/** Für den SSH Weg:
 	 * 
 	 *  Eine robuste Utility-Methode, die:

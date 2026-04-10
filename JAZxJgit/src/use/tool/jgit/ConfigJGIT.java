@@ -21,11 +21,11 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
 	
 	Beispiele für Kommandozeilenstrings:
-	aa) -pull -https -pat -rra orign -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	aa) -pull -https -pat -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	Problem mit dem Doppelpunkt in https: und im Dateipfad C: 
 	ab) -pull -https -pat -rr "https://github.com/firak01/Projekt_Kernel02_JAZDummy.git" -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
-	ba) -pull -ssl -rra orign -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	ba) -pull -ssl -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	bb) -pull -ssl -rr git@github.com:firak01/Projekt_Kernel02_JAZDummy.git -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
  * @author lindhauer
@@ -206,7 +206,7 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 	}
 	@Override
 	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
-		return "orign";
+		return "origin";
 	}
 	
 	//++++++++++++++++++++++++++++++++++++++++++++

@@ -29,6 +29,7 @@ public interface IJgitStarter {
 	public String getRepositoryTotalLocal() throws ExceptionZZZ;
 	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
 	
+	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
 	
 	public boolean configureGit() throws ExceptionZZZ;	
 	public boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;

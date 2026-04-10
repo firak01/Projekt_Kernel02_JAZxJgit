@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -31,6 +32,8 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.JgitStarterMain;
+import use.tool.jgit.JgitUtil;
+import use.tool.jgit.JgitUtilHTTPS;
 import use.tool.jgit.JgitUtilSSH;
 import use.tool.jgit.https.JgitStarterHTTPS;
 
@@ -51,8 +54,57 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 			JGitSshConfigZZZ.configure();
 			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
+			
+			//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
+			//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
+			//a) Remote Basis Url
+			String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
+			if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository Basis URL, Angabe fehlt: '" + sDirectoryRepositoryRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			//b) Remote Repository-Verzeichnis des Projekts
+			String sRepositoryProjectRemote = this.getRepositoryProject(); //momentan identisch mit lokal)
+			if(StringZZZ.isEmpty(sRepositoryProjectRemote)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Projektname der remote Repositories, Angabe fehlt: '" + sRepositoryProjectRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+		
+			//TODOGOON20260410;
+			//!!! ggfs. wurde aber eine https - Url uebergeben (z.B. per Umgebungsvariable beim Eclipse Start)
+			//    Dann diese URL in das git-Protokoll umwandeln
+			//    https://github.com/firak01   --> git@github.com:firak01
+			//1. getAccount  ....JgitUtilHTTPS.getAccountFromUrl(s)
+			//2. getHost     ....JgitUtilHTTPS.getHostFromUrl(s)
+			//3. 
+
+			//Das ist umso wichtiger, weil mit HTTPS Url wird ein Credentials Provider erwartet.
+			//Den gibt es für SSH aber nicht... 
+			//Darum muss die URL stimmen.
+			if(JgitUtil.isUrlHTTPS(sDirectoryRepositoryRemote)) {
+				String sAccount = JgitUtilHTTPS.getAccountFromUrl(sDirectoryRepositoryRemote);
+				
+				String sHost = JgitUtilHTTPS.getHostFromUrl(sDirectoryRepositoryRemote);
+	
+				String sRepositoryBaseRemoteSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);
+				this.setRepositoryBaseRemote(sRepositoryBaseRemoteSSH);
+			}else {
+				this.setRepositoryBaseRemote(sDirectoryRepositoryRemote);
+			}
+			
+			String sRepositoryTotalRemoteSSH = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemoteSSH, sRepositoryProjectRemote);
+			this.setRepositoryTotalRemote(sRepositoryTotalRemoteSSH);
+				
+			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
 			//a) + b)
 			bReturn = super.configureGit();
+
+			//+++ SSH Zugriff sicherstellen
+			//Merke: Es gibt keinen Credentials Provider für SSH.
+			//Bei SSH muss man sich auf die korrekte ssh URL verlassen
+			//Übergibt man eine HTTPS URL kommt die Fehlermeldung:
+			//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.TransportException: https://github.com/firak01/Projekt_Kernel02_JAZDummy.git: Authentication is required but no CredentialsProvider has been registered
 
 		}//end main:
 		return bReturn;
@@ -198,8 +250,10 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				PullCommand pullCommand = git.pull();
 				
 				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
+				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
 				pullCommand.setRemote(sRemoteRepositoryAlias);
-		
+
+				
 				
 				// pull from remote, hier mit Auswertung des Ergebnisses	
 				PullResult pullResult = pullCommand.call();
@@ -297,29 +351,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
 				}
-				
-//				JGitSshConfigZZZ.configure();
-//				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
-//					
-//				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
-//				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//				
-//				File objFileDir = new File(sDirectoryRepositoryLocal);
-//				if(!objFileDir.exists()) {
-//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;				
-//				}
-//						
-//				InitCommand gitCommandInit = Git.init();
-//				gitCommandInit.setDirectory(objFileDir);
-//				
-//				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-//				this.setGitObject(git);
-//				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
-				
+								
 				//+++ Hole die URL vom Remote Repository
 				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
 				String sRepositoryRemote = this.getRepositoryBaseRemote();

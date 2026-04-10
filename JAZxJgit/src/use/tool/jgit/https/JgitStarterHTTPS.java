@@ -65,12 +65,18 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 			try {
 				//Konfiguriere JGit für HTTPS
 				
+				
+				
 				//+++ Zugriff sicherstellen
-				//a) + b)
-				bReturn = super.configureGit();
-
-				//+++ Hole die URL vom Remote Repository
-				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
+				//wie? sPAT holen, ist das vorhanden?
+				//Credentials Provider wird erst nach dem Git-Objekt zur Vefügung stehen, s. unten.
+				
+				
+				
+				
+				//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
+				//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
+				//a) Remote Basis Url
 				String sRepositoryBaseRemote = this.getRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
@@ -88,12 +94,27 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				String sRepositoryRemoteTotal = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProject);
 				this.setRepositoryTotalRemote(sRepositoryRemoteTotal);
 				
+				//+++++++++++++++++++++++++++++++
+				
+				
+				//!!! ggfs. wurde aber eine ssh - Url uebergeben (z.B. per Umgebungsvariable beim Eclipse Start)
+				//    Dann diese URL in das https-Protokoll umwandeln
+				//    git@github.com:firak01 --> https://github.com/firak01  
+				//1. getAccount  ....JgitUtilSSH.getAccountFromUrl(s)
+				//2. getHost     ....JgitUtilSSH.getHostFromUrl(s)
+				//3. 
+				
+				
+				//+++ Zugriff sicherstellen
+				//a) + b)
+				bReturn = super.configureGit();
+
 				//+++ HTTPS Zugriff sicherstellen
 				Git git = this.getGitObject();
 				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
 				System.out.println("Git Credentials Provider created done.");
 				this.setCredentialsProviderObject(credentialsProvider);
-				//+++++++++++++++++++++++++++++++
+			
 				
 				bReturn = true;
 			//###############################################################	  	

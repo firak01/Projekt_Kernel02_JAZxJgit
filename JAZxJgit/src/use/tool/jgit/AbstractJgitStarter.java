@@ -9,6 +9,8 @@ import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
@@ -111,6 +113,51 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	}
 	
 	@Override
+	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
+		return this.sRepositoryTotalRemote;
+	}
+
+	@Override
+	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
+		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
+	}
+	
+	@Override
+	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemoteIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sRepositoryBaseRemote=null; String sRepositoryProject=null;
+			if(StringZZZ.isEmpty(sRepositoryBaseRemoteIn)) {
+				sRepositoryBaseRemote = this.getRepositoryBaseRemote();
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryBaseRemote", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sRepositoryBaseRemote = sRepositoryBaseRemoteIn;
+			}
+			
+			
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
+				sRepositoryProject = this.getRepositoryProject();
+				if(StringZZZ.isEmpty(sRepositoryProject)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sRepositoryProject = sRepositoryProjectIn;				
+			}
+			
+			
+			sReturn = JgitUtil.computeRepositoryUrl(sRepositoryBaseRemote, sRepositoryProject);			
+			
+		}//end main:
+		return sReturn;
+	}
+	
+	
+	@Override
 	public String searchRepositoryRemote() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
@@ -144,22 +191,15 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 		}//end main:
 		return sReturn;
 	}
-
-	@Override
-	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
-		return this.sRepositoryTotalRemote;
-	}
-
-	@Override
-	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
-		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
-	}
 	
+	
+	//##############################################################################
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			try {
+				//A) Lokal
 				//a) Lokales Basis Verzeichnis
 				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
@@ -174,20 +214,34 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 				}
 				
 				//b) Lokales Repository-Verzeichnis des Projekts
-				String sRepositoryProject = this.getRepositoryProject();
+				String sRepositoryProjectLocal = this.getRepositoryProject();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories, Angabe fehlt: '" + sRepositoryProject + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Projektname des lokalen Repositories, Angabe fehlt: '" + sRepositoryProjectLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
-				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProject);
+				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProjectLocal);
 				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
 				if(!objFileDirTotal.exists()) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
 				}
 				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
+					
+				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
+				//
+				//       !!! UND DAS SOLLTE VORHER PASSIEREN
+				String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
+				String sRepositoryProjectRemote = this.getRepositoryProject();
+				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl(sDirectoryRepositoryRemote, sRepositoryProjectRemote);
 				
+				
+				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+	
+			
+				//##############################################
 				InitCommand gitCommandInit = Git.init();
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
