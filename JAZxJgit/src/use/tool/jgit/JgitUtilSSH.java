@@ -33,7 +33,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 			String sHost = sHostIn;
 			String sAccount = sAccountIn;
 			
-			sReturn = "git@" + sHost + ":" + sAccount + ".git";
+			sReturn = "git@" + sHost + ":" + sAccount;
 		}//end main:
 		return sReturn;
 	}

@@ -227,17 +227,16 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 					throw ez;				
 				}
 				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
-					
+				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
 				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
 				//
 				//       !!! UND DAS SOLLTE VORHER PASSIEREN
-				String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
-				String sRepositoryProjectRemote = this.getRepositoryProject();
-				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl(sDirectoryRepositoryRemote, sRepositoryProjectRemote);
-				
-				
-				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				//String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
+				//String sRepositoryProjectRemote = this.getRepositoryProject();
+				//String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl(sDirectoryRepositoryRemote, sRepositoryProjectRemote);
+				String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();								
 				JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
 	
 			

@@ -71,6 +71,12 @@ public class JgitUtil implements IConstantZZZ {
 	/** Ueberpruefe, ob unter dem Alias des remote Repositories auch eine URL gefunden wird.
 	 *  Falls, nein, setzte es ggfs. bei bOverwrite = true;
 	 * 
+	 * z.B.:
+	 * 
+	 * [remote "origin"]
+			url = https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+			fetch = +refs/heads/*:refs/remotes/origin/*
+	 * 
 	 * @param repo
 	 * @param sRepositoryRemoteAlias
 	 * @param sRepositoryRemoteUrl
@@ -165,6 +171,36 @@ Repository existingRepo = new FileRepositoryBuilder()
 		return objReturn;
 	}
 	
+	/** z.B.: https://github.com/firak01   oder  git@github.com:firak01
+	 * 
+	 * @param sUrlRepo
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProtocol(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) break main;
+			
+			String sProtocol = StringZZZ.left(sUrlRepo + "@", "@"); 
+			if(sProtocol!=null) {
+				if(sProtocol.equalsIgnoreCase("git")) {
+					sReturn = sProtocol;
+					break main;
+				}
+			}
+			
+			sProtocol = UrlLogicZZZ.getProtocol(sUrlRepo);
+			if(sProtocol!=null) {
+				sReturn = sProtocol;
+				break main;
+			}
+									
+		}//end main:
+		return sReturn;
+	}
+	
+		
 	public static boolean isUrlSSH(String sUrlRepo) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
@@ -173,12 +209,17 @@ Repository existingRepo = new FileRepositoryBuilder()
 				throw ez;				
 			}
 			
-			String sProtocol = UrlLogicZZZ.getProtocol(sUrlRepo);
-			if(sProtocol==null) break main;
-			
-			if(sProtocol.equals("git")) bReturn = true;
+			String sProtocol = JgitUtil.getProtocol(sUrlRepo);
+			if(sProtocol.equals("git")) {
+				bReturn = true;
+				break main;
+			}
 		}//end main:
 		return bReturn;
+	}
+	
+	public static boolean isUrlGit(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtil.isUrlSSH(sUrlRepo);
 	}
 	
 	public static boolean isUrlHTTPS(String sUrlRepo) throws ExceptionZZZ {

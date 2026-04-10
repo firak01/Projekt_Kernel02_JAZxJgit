@@ -28,6 +28,36 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 
+	/** Z.B.  von https://github.com/firak01
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getAccountFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
+			
+			sReturn = StringZZZ.right(UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryRemoteUrlHTTPS, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+		}//end main:
+		return sReturn;
+	}
+	
+	/** Z.B.  von https://github.com/firak01
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getHostFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
+			
+			sReturn = UrlLogicZZZ.getHost(sRepositoryRemoteUrlHTTPS);
+		}//end main:
+		return sReturn;
+	}
+	
 	/** Für den HTTPS Weg:
 	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
 	 * 

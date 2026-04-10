@@ -60,9 +60,23 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 			//a) Remote Basis Url
 			String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
 			if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository Basis URL, Angabe fehlt: '" + sDirectoryRepositoryRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+				//ExceptionZZZ ez = new ExceptionZZZ("Remote Repository Basis URL, Angabe fehlt: '" + sDirectoryRepositoryRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+				//throw ez;
+				
+				//Versuch dies über den Alias zu ermitteln
+				String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+				if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+					ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				String sUrlSSHorHTTPS = this.searchRepositoryRemote(sRepositoryRemoteAlias);
+				sDirectoryRepositoryRemote = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSHorHTTPS);
+			}
+			if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			this.setRepositoryBaseRemote(sDirectoryRepositoryRemote);	
 			
 			//b) Remote Repository-Verzeichnis des Projekts
 			String sRepositoryProjectRemote = this.getRepositoryProject(); //momentan identisch mit lokal)
@@ -71,29 +85,20 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				throw ez;
 			}
 		
-			//TODOGOON20260410;
-			//!!! ggfs. wurde aber eine https - Url uebergeben (z.B. per Umgebungsvariable beim Eclipse Start)
-			//    Dann diese URL in das git-Protokoll umwandeln
-			//    https://github.com/firak01   --> git@github.com:firak01
-			//1. getAccount  ....JgitUtilHTTPS.getAccountFromUrl(s)
-			//2. getHost     ....JgitUtilHTTPS.getHostFromUrl(s)
-			//3. 
-
 			//Das ist umso wichtiger, weil mit HTTPS Url wird ein Credentials Provider erwartet.
 			//Den gibt es für SSH aber nicht... 
-			//Darum muss die URL stimmen.
+			//Darum muss die URL zum verwendeten Protokol stimmen.
+			String sRepositoryBaseRemote = null;
 			if(JgitUtil.isUrlHTTPS(sDirectoryRepositoryRemote)) {
 				String sAccount = JgitUtilHTTPS.getAccountFromUrl(sDirectoryRepositoryRemote);
-				
-				String sHost = JgitUtilHTTPS.getHostFromUrl(sDirectoryRepositoryRemote);
-	
-				String sRepositoryBaseRemoteSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);
-				this.setRepositoryBaseRemote(sRepositoryBaseRemoteSSH);
+				String sHost = JgitUtilHTTPS.getHostFromUrl(sDirectoryRepositoryRemote);	
+				sRepositoryBaseRemote = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);				
 			}else {
-				this.setRepositoryBaseRemote(sDirectoryRepositoryRemote);
+				sRepositoryBaseRemote = sDirectoryRepositoryRemote;
 			}
+			this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 			
-			String sRepositoryTotalRemoteSSH = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemoteSSH, sRepositoryProjectRemote);
+			String sRepositoryTotalRemoteSSH = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
 			this.setRepositoryTotalRemote(sRepositoryTotalRemoteSSH);
 				
 			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
@@ -352,33 +357,12 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					break main;
 				}
 								
-				//+++ Hole die URL vom Remote Repository
-				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-				String sRepositoryRemote = this.getRepositoryBaseRemote();
-				if(StringZZZ.isEmpty(sRepositoryRemote)) {
-					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					String sUrlSSH = this.searchRepositoryRemote(sRepositoryRemoteAlias);
-					sRepositoryRemote = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSH);
-				}
-				if(StringZZZ.isEmpty(sRepositoryRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				this.setRepositoryBaseRemote(sRepositoryRemote);
-				
 				//+++ SSL Zugriff sicherstellen
 				//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt
 				//
 				//+++++++++++++++++++++++++++++++++		
 				//Finde geaenderte und neue Dateien fuer den Push
-				Git git = this.getGitObject();
-				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-				
+				Git git = this.getGitObject();				
 				System.out.println("STATUS BEFORE COMMIT");		
 				this.printStatus(git);
 		        //##################################################################
@@ -394,11 +378,10 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
 				String sDateFormated = dateFormater.format(lTimestamp);
 		
-				
+				TODOGOON20260410;//Hier den Namen des Rechners einfügen
 				CommitCommand gitCommandCommit = git.commit();
 				gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
 				gitCommandCommit.call();
-		        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
 		        
 		        System.out.println("STATUS AFTER COMMIT");
 		        this.printStatus(git);
@@ -423,6 +406,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
 		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
+		        
+		        String sRepositoryRemote = this.getRepositoryTotalRemote();
 		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
 			    System.out.println(("FETCH DONE"));
 			  	
