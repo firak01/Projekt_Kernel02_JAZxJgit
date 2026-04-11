@@ -29,6 +29,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.JgitStarterMain;
@@ -39,8 +40,9 @@ import use.tool.jgit.https.JgitStarterHTTPS;
 
 
 
-public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterSSH{
-	
+public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitStarterSSH{
+	private static final long serialVersionUID = 521157607363069534L;
+
 	//### aus IJgitStarter
 	@Override
 	public boolean configureGit() throws ExceptionZZZ {
@@ -135,12 +137,23 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseSSH();
-				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+								
+				String sConnectionTypeIn = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionTypeIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
+				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
+				if(sConnectionType.equalsIgnoreCase("https") & StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 				String sRepositoryLocalIn = objConfig.readRepositoryLocal();
 				if(StringZZZ.isEmpty(sRepositoryLocalIn)){
@@ -156,7 +169,11 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 								
 				//+++++++++++++++++++++++
 				this.setRepositoryBaseLocal(sRepositoryLocalIn);
-				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
+				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
+				this.setConnectionType(sConnectionTypeIn);
+				
+				//this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				this.setRepositoryProject(sRepositoryProjectIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
 				//#####################################################################
@@ -321,7 +338,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseSSH();
+				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -356,37 +373,24 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
 				}
-								
-				//+++ SSL Zugriff sicherstellen
-				//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt
-				//
-				//+++++++++++++++++++++++++++++++++		
-				//Finde geaenderte und neue Dateien fuer den Push
-				Git git = this.getGitObject();				
-				System.out.println("STATUS BEFORE COMMIT");		
-				this.printStatus(git);
-		        //##################################################################
+							
+				//+++++++++++++++++++++++++++++++
+				//Finde geaenderte und neue Dateien fuer den commit
+				boolean bSuccessCommit = this.commitit();
+				if(bSuccessCommit) {
+					System.out.println("commit erfolgreich");
+				}else {
+					System.out.println("commit NICHT erfolgreich");
+					break main;
+				}
+ 
+		        //Führe den Push durch
+		        Git git = this.getGitObject();
 		        
-				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-				this.addFileTrackedChanged(git);
-				
-				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-		        this.addFileUntracked(git);
-				
-		        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-				long lTimestamp = DateTimeZZZ.computeTimestamp();
-				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-				String sDateFormated = dateFormater.format(lTimestamp);
-		
-				TODOGOON20260410;//Hier den Namen des Rechners einfügen
-				CommitCommand gitCommandCommit = git.commit();
-				gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
-				gitCommandCommit.call();
+		        //a) Zugriff sicherstellen
+		        //   Das passiert duch die lokalen ssh-id Dateien
 		        
-		        System.out.println("STATUS AFTER COMMIT");
-		        this.printStatus(git);
-				 
-		        //Mache den push	
+		        //b) Mache den push	
 		        bReturn = this.pushit(git);
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
@@ -430,50 +434,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	
 	
 	
-	public void addFileTrackedChanged(Git git) throws NoWorkTreeException, GitAPIException {
 		
-		StatusCommand gitCommandStatus = git.status();
-		Status status = gitCommandStatus.call();
-
-		Set<String> uncommittedChanges = status.getUncommittedChanges();
-		Set<String> untracked          = status.getUntracked();
-		ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
-		
-		AddCommand gitCommandAdd = git.add();		
-        for (String uncommitted : uncommittedChanges) {
-        	if(!untracked.contains(uncommitted)) {
-        		listasUncommitedChanges.add(uncommitted);
-        	}
-        }
-        
-        // run the add-call 
-        for(String uncommitted : listasUncommitedChanges) {
-        	System.out.println("uncommitted to add: '" + uncommitted + "'");
-        	try {
-        		gitCommandAdd.addFilepattern(uncommitted);
-        		gitCommandAdd.call();
-        	}catch(java.lang.IllegalStateException isex) {
-        		System.out.println(isex.getMessage());
-        	}
-        }
-       
-	}
-	
-	public void addFileUntracked(Git git) throws NoWorkTreeException, GitAPIException {
-		Status status = git.status().call();
-
-		Set<String> setUntracked = status.getUntracked();
-		ArrayList<String> listasUntracked = new ArrayList<String>();
-        for (String  sUntracked : setUntracked ) {
-        	listasUntracked.add(sUntracked);
-        }
-        
-        for(String sUntracked : listasUntracked) {
-        	git.add().addFilepattern(sUntracked).call();
-        }
-	
-	}
-	
 	
 	@Override
 	public boolean pushit(Git git) throws ExceptionZZZ {
@@ -508,23 +469,15 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		return bReturn;
 	}
 	
-	//##################################################
-	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
-		
-		Status status = git.status().call();
-
-        Set<String> added = status.getAdded();
-        for (String add : added) {
-            System.out.println("Added: " + add);
-        }
-        Set<String> uncommittedChanges = status.getUncommittedChanges();
-        for (String uncommitted : uncommittedChanges) {
-            System.out.println("Uncommitted: " + uncommitted);
-        }
-
-        Set<String> untracked = status.getUntracked();
-        for (String untrack : untracked) {
-            System.out.println("Untracked: " + untrack);
-        }
+	@Override
+	public String computeRepositoryBaseRemote() throws ExceptionZZZ{
+		String sHost = this.getRepositoryRemoteHost();
+		String sAccount = this.getRepositoryRemoteAccount();
+		return this.computeRepositoryBaseRemote(sHost, sAccount);
+	}
+	
+	@Override
+	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
+		return JgitUtilSSH.computeRepositoryUrlSSH(sHost, sAccount);
 	}
 }

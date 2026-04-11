@@ -28,6 +28,30 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 
+	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
+	public static String computeRepositoryUrlBaseHTTPS(String sHostIn, String sAccountIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sHostIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Hostname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sAccountIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Account für das Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sHost = sHostIn;
+			String sAccount = sAccountIn;
+			
+			
+			sReturn = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL  + sHost + ":" + sAccount;
+		}//end main:
+		return sReturn;
+	}
+		
+		
 	/** Z.B.  von https://github.com/firak01
 	 * @param sRepositoryRemoteUrlHTTPS
 	 * @return
@@ -38,7 +62,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
 			
-			sReturn = StringZZZ.right(UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryRemoteUrlHTTPS, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = StringZZZ.right(UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryRemoteUrlHTTPS, UrlLogicZZZ.sURL_SEPARATOR_PATH);	
 		}//end main:
 		return sReturn;
 	}

@@ -18,15 +18,15 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 	Verwende eine eigene Klasse, die KernelConfigZZZ erweitert, um für eine Spezielles Projekt andere Werte zu verwenden.
 	
 	Siehe IConfigDEV:
-	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
+	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rrh:rra:rrac:z:"; //ConnectionType: HTTPS oder SSH
 	
 	Beispiele für Kommandozeilenstrings:
 	aa) -pull -https -pat -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	Problem mit dem Doppelpunkt in https: und im Dateipfad C: 
-	ab) -pull -https -pat -rr "https://github.com/firak01/Projekt_Kernel02_JAZDummy.git" -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	ab) -pull -https -pat -rrh "github.com" -rrac=firak01 -project="Projekt_Kernel02_JAZDummy" -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
 	ba) -pull -ssl -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
-	bb) -pull -ssl -rr git@github.com:firak01/Projekt_Kernel02_JAZDummy.git -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	bb) -pull -ssl -rrh "github.com" -racc=firak01 -project=Projekt_Kernel02_JAZDummy -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
  * @author lindhauer
  *
@@ -215,16 +215,6 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 		return null;
 	}
 		
-	@Override
-	public String getRepositoryRemoteBaseDefaultSSH() throws ExceptionZZZ {		
-		return null;
-	}
-	@Override
-	public String getRepositoryRemoteBaseDefaultHTTPS() throws ExceptionZZZ {
-		return null;
-	}
-	
-	
 	//++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readRepositoryProjectName() throws ExceptionZZZ {
@@ -245,47 +235,52 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 	}
 	
 	@Override
-	public String readRepositoryRemoteBase() throws ExceptionZZZ {
-		return this.readRepositoryRemoteBaseHTTPS();
-	}
-	
-	@Override
-	public String readRepositoryRemoteBaseSSH() throws ExceptionZZZ {
+	public String readRepositoryRemoteHost() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			String sSsh = objOpt.readValue("ssh");
-			if(StringZZZ.isEmpty(sSsh)) break main;
-			
-			sReturn = objOpt.readValue("rr");
-			if(StringZZZ.isEmpty(sReturn)) {
-				sReturn = this.getRepositoryRemoteBaseDefaultSSH();
+			String sHost = objOpt.readValue("rrh");
+			if(StringZZZ.isEmpty(sHost)) {
+				sHost = this.getRepositoryRemoteHostDefault();				
 			}
+			
+			sReturn = sHost;
 		}//end main:		
 		return sReturn;
 	}
 	
 	@Override
-	public String readRepositoryRemoteBaseHTTPS() throws ExceptionZZZ {
+	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ{
+		return "github.com";
+	}
+	
+	@Override
+	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			String sHttps = objOpt.readValue("https");
-			if(StringZZZ.isEmpty(sHttps)) break main;
-			
-			sReturn = objOpt.readValue("rr");
-			if(StringZZZ.isEmpty(sReturn)) {
-				sReturn = this.getRepositoryRemoteBaseDefaultHTTPS();
+			String sHost = objOpt.readValue("rrac");
+			if(StringZZZ.isEmpty(sHost)) {
+				sHost = this.getRepositoryRemoteAccountDefault();				
 			}
+			
+			sReturn = sHost;
 		}//end main:		
 		return sReturn;
 	}
+	
+	@Override
+	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ{
+		return "firak01";
+	}
+	
+	
 	
 	//++++++++++++++++++++++++++++++++++++++++++++++
 	@Override

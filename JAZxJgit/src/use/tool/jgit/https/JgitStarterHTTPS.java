@@ -1,40 +1,25 @@
 package use.tool.jgit.https;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Set;
 
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.InitCommand;
-import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
-import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.FetchResult;
-import org.eclipse.jgit.transport.OperationResult;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
-import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
-import basic.zBasic.util.file.FileEasyZZZ;
-import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.AbstractJgitStarter;
+import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.JgitStarterMain;
 import use.tool.jgit.JgitUtil;
 import use.tool.jgit.JgitUtilHTTPS;
@@ -42,9 +27,9 @@ import use.tool.jgit.JgitUtilSSH;
 
 
 
-public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarterHTTPS{
+public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgitStarterHTTPS{
+	private static final long serialVersionUID = -3594348507412511385L;
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
-	//String sPAT = "nicht hier, schau woanders nach";
 	public String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PAT-Werts durch sein Regelwerk, hier kann also keine statische Variable final definiert sein!!!
 	
 	//### aus IJgitStarterHTTPS
@@ -334,37 +319,25 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 			
 		
 			//+++++++++++++++++++++++++++++++
-			//Finde geaenderte und neue Dateien fuer den Push
+			//Finde geaenderte und neue Dateien fuer den commit
+			boolean bSuccessCommit = this.commitit();
+			if(bSuccessCommit) {
+				System.out.println("commit erfolgreich");
+			}else {
+				System.out.println("commit NICHT erfolgreich");
+				break main;
+			}
+			
+			//++++++++++++++++++++++++++++++++
+			//Führe den Push durch
 			Git git = this.getGitObject();
+			
+			//a) Zugriff sicherstellen			
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 			String sPAT = this.getPersonalAccessToken();
 			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
 					
-			System.out.println("STATUS BEFORE COMMIT");		
-			this.printStatus(git);
-	        //##################################################################
-	        
-			//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-			this.addFileTrackedChanged(git);
-			
-			//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-	        this.addFileUntracked(git);
-			
-	        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-			long lTimestamp = DateTimeZZZ.computeTimestamp();
-			SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-			String sDateFormated = dateFormater.format(lTimestamp);
-	
-			TODOGOON20260410;//hier den Namen des Rechnershinzufügen
-			CommitCommand gitCommandCommit = git.commit();
-			gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
-			gitCommandCommit.call();
-	        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
-	        
-	        System.out.println("STATUS AFTER COMMIT");
-	        this.printStatus(git);
-			
-	        //Mache den push		
+	        //b) Mache den push		
 	        bReturn = this.pushit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
 	        if(bReturn) {
 	        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
@@ -402,65 +375,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 		}//end main:
 		return bReturn;
 	}
-	
-	
-	//#################################
-	public void addFileTrackedChanged(Git git) throws NoWorkTreeException, GitAPIException {
-		
-		StatusCommand gitCommandStatus = git.status();
-		Status status = gitCommandStatus.call();
 
-		Set<String> uncommittedChanges = status.getUncommittedChanges();
-		Set<String> untracked          = status.getUntracked();
-		ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
-		
-		AddCommand gitCommandAdd = git.add();		
-        for (String uncommitted : uncommittedChanges) {
-        	if(!untracked.contains(uncommitted)) {
-        		listasUncommitedChanges.add(uncommitted);
-        	}
-        }
-        
-        // run the add-call 
-        for(String uncommitted : listasUncommitedChanges) {
-        	System.out.println("uncommitted to add: '" + uncommitted + "'");
-        	try {
-        		gitCommandAdd.addFilepattern(uncommitted);
-        		gitCommandAdd.call();
-        	}catch(java.lang.IllegalStateException isex) {
-        		System.out.println(isex.getMessage());
-        	}
-        }
-       
-	}
-	
-	public void addFileUntracked(Git git) throws NoWorkTreeException, GitAPIException {
-		StatusCommand gitCommandStatus = git.status();
-		Status status = gitCommandStatus.call();
-		
-		Set<String> uncommittedChanges = status.getUncommittedChanges();
-		Set<String> untracked          	  = status.getUntracked();
-		ArrayList<String> listasUntracked = new ArrayList<String>();
-		
-		AddCommand gitCommandAdd = git.add();		
-        for (String untrackedTemp : untracked) {
-        	if(!uncommittedChanges.contains(untrackedTemp)) {
-        		listasUntracked.add(untrackedTemp);
-        	}
-        }
-        
-        // run the add-call 
-        for(String untrackedTemp : listasUntracked) {
-        	System.out.println("untracked to add: '" + untrackedTemp + "'");
-        	try {
-        		gitCommandAdd.addFilepattern(untrackedTemp);
-        		gitCommandAdd.call();
-        	}catch(java.lang.IllegalStateException isex) {
-        		System.out.println(isex.getMessage());
-        	}
-        }
-	}
-	
 	public CredentialsProvider createCredentialsProviderByToken(Git git) {
 		//aus Eclipse-Push Konfiguration:
 				//entspricht dem Github - Projekt - SSH

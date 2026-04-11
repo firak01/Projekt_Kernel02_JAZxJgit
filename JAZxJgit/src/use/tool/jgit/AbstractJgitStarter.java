@@ -2,41 +2,144 @@ package use.tool.jgit;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Set;
 
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import use.tool.jgit.IConfigJGIT;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 
-public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ implements IJgitStarter{
+public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarter{
+	private static final long serialVersionUID = -1998325674945232389L;
+	
 	protected volatile Git gitObject = null;
 	protected volatile CredentialsProvider credentialsProviderObject = null;
 	
+	protected volatile String sConnectionType=null;
+	
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
+	
 	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
 	protected volatile String sRepositoryTotalLocal=null;  //Geamt Verzeichnis
+
+	protected volatile String sRepositoryRemoteAlias=null;
 	
+	protected volatile String sRepositoryRemoteHost=null;
+	protected volatile String sRepositoryRemoteAccount=null;
 	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
 	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
 		
-	protected volatile String sRepositoryRemoteAlias=null;
+
 	
 	
 
-	//aus IJgitStarter
+	//### aus IJgitStarter
+	@Override
+	public void addFileTrackedChanged() throws ExceptionZZZ {		
+		Git git = this.getGitObject();
+		this.addFileTrackedChanged(git);       
+	}
+	
+	@Override
+	public void addFileTrackedChanged(Git git) throws ExceptionZZZ {		
+		try {
+			StatusCommand gitCommandStatus = git.status();
+			Status status = gitCommandStatus.call();
+	
+			Set<String> uncommittedChanges = status.getUncommittedChanges();
+			Set<String> untracked          = status.getUntracked();
+			ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
+			
+			AddCommand gitCommandAdd = git.add();		
+	        for (String uncommitted : uncommittedChanges) {
+	        	if(!untracked.contains(uncommitted)) {
+	        		listasUncommitedChanges.add(uncommitted);
+	        	}
+	        }
+	        
+	        // run the add-call 
+	        for(String uncommitted : listasUncommitedChanges) {
+	        	System.out.println("uncommitted to add: '" + uncommitted + "'");
+	        	try {
+	        		gitCommandAdd.addFilepattern(uncommitted);
+	        		gitCommandAdd.call();
+	        	}catch(java.lang.IllegalStateException isex) {
+	        		System.out.println(isex.getMessage());
+	        		
+	        		ExceptionZZZ ez = new ExceptionZZZ(isex);
+	        		throw ez;
+	        	}
+	        }
+		}catch (NoWorkTreeException nwte) {
+			System.out.println(nwte.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
+    		throw ez;
+		}catch( GitAPIException gae) {
+			System.out.println(gae.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(gae);
+    		throw ez;
+		}
+       
+	}
+	
+	@Override
+	public void addFileUntracked() throws ExceptionZZZ {	
+		Git git = this.getGitObject();
+		this.addFileUntracked(git);
+	}
+	
+	@Override
+	public void addFileUntracked(Git git) throws ExceptionZZZ {
+	
+		try {
+			Status status = git.status().call();
+	
+			Set<String> setUntracked = status.getUntracked();
+			ArrayList<String> listasUntracked = new ArrayList<String>();
+	        for (String  sUntracked : setUntracked ) {
+	        	listasUntracked.add(sUntracked);
+	        }
+	        
+	        for(String sUntracked : listasUntracked) {
+	        	git.add().addFilepattern(sUntracked).call();
+	        }
+		}catch (NoWorkTreeException nwte) {
+			System.out.println(nwte.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
+    		throw ez;
+		}catch( GitAPIException gae) {
+			System.out.println(gae.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(gae);
+    		throw ez;
+		}
+	
+	}
+
+	
+	
 	@Override 
 	public Git getGitObject() throws ExceptionZZZ{
 		return this.gitObject;
@@ -99,6 +202,44 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	}
 	
 	@Override
+	public String getRepositoryRemoteAccount() throws ExceptionZZZ {
+		return this.sRepositoryRemoteAccount;
+	}
+
+	@Override
+	public void setRepositoryRemoteAccount(String sRepositoryRemoteAccount) throws ExceptionZZZ {
+		this.sRepositoryRemoteAccount = sRepositoryRemoteAccount;
+	}
+
+	@Override
+	public String getConnectionType() throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setConnectionType(String sConnectionType) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public String getRepositoryRemoteHost() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sRepositoryRemoteHost)) {
+			String sUrlRepo = this.searchRepositoryRemote();
+			
+			String sRepositoryRemoteHost = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sUrlRepo);
+			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
+		}
+		return this.sRepositoryRemoteHost;
+	}
+
+	@Override
+	public void setRepositoryRemoteHost(String sRepositoryRemoteHost) throws ExceptionZZZ {
+		this.sRepositoryRemoteHost = sRepositoryRemoteHost;
+	}
+	
+	@Override
 	public String getRepositoryBaseRemote() throws ExceptionZZZ {
 		if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
 			String sRepositoryRemoteBySearch = this.searchRepositoryRemote();
@@ -120,6 +261,16 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	@Override
 	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
 		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
+	}
+	
+	@Override
+	public abstract String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ;
+	
+	@Override
+	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
+		String sRepositoryBaseRemoteIn = this.getRepositoryBaseRemote();
+		String sRepositoryProjectIn = this.getRepositoryProject();
+		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
 	}
 	
 	@Override
@@ -155,7 +306,6 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 		}//end main:
 		return sReturn;
 	}
-	
 	
 	@Override
 	public String searchRepositoryRemote() throws ExceptionZZZ {
@@ -194,6 +344,52 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	
 	
 	//##############################################################################
+	@Override
+	public boolean commitit() throws ExceptionZZZ {
+			Git git = this.getGitObject();				
+			return this.commitit(git);
+	}
+	
+	@Override
+	public boolean commitit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//Finde geaenderte und neue Dateien fuer den Commit			
+				System.out.println("STATUS BEFORE COMMIT");		
+				this.printStatus(git);
+		        //##################################################################
+		        
+				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
+				this.addFileTrackedChanged(git);
+				
+				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+		        this.addFileUntracked(git);
+				
+		        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
+				long lTimestamp = DateTimeZZZ.computeTimestamp();
+				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+				String sDateFormated = dateFormater.format(lTimestamp);
+		
+				//Hier den Namen des Rechners einfügen
+				String sHostname = EnvironmentZZZ.getHostName();
+				
+				CommitCommand gitCommandCommit = git.commit();
+				gitCommandCommit.setMessage(sDateFormated + " (Host: '" + sHostname + "') by Java-Class from a module of Projekt_Tool_DevEditor");
+				gitCommandCommit.call();
+		        
+		        System.out.println("STATUS AFTER COMMIT");
+		        this.printStatus(git);
+		        
+		        bReturn = true;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
+	
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
@@ -264,6 +460,26 @@ public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ impl
 	@Override
 	public abstract boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ;
 
+	//##################################################
+	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
+		
+		Status status = git.status().call();
+
+        Set<String> added = status.getAdded();
+        for (String add : added) {
+            System.out.println("Added: " + add);
+        }
+        Set<String> uncommittedChanges = status.getUncommittedChanges();
+        for (String uncommitted : uncommittedChanges) {
+            System.out.println("Uncommitted: " + uncommitted);
+        }
+
+        Set<String> untracked = status.getUntracked();
+        for (String untrack : untracked) {
+            System.out.println("Untracked: " + untrack);
+        }
+	}
+	
 	
 	//############# STATIC METHODEN
 	//Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
