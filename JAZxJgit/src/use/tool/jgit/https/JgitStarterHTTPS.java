@@ -45,6 +45,24 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 	//### aus IJgitStarter
 	@Override
+	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ {
+		return JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);
+	}
+	
+	@Override
+	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
+		if( this.sRepositoryTotalRemote==null) {
+			String sHost = this.getRepositoryRemoteHost();
+			String sAccount = this.getRepositoryRemoteAccount();
+			String sRepositoryProjectRemote = this.getRepositoryProject();
+			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
+			this.sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sHost, sAccount, sRepositoryProjectRemote);			
+		}
+		return this.sRepositoryTotalRemote;
+	}
+		
+	
+	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
@@ -58,7 +76,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				//Credentials Provider wird erst nach dem Git-Objekt zur Vefügung stehen, s. unten.
 				
 				
-				
+				//B) Konfiguriere das lokale Repository und init Git-Object (vor dem Remote Repository, damit fehlende Daten ggfs. aus dem lokalen Repository gelesen werden können)
+				//a) + b)
+				bReturn = super.configureGit();
+
 				
 				//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
 				//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
@@ -103,15 +124,12 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				}
 				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 				
-				String sRepositoryTotalRemoteSSH = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProjectRemote);
-				this.setRepositoryTotalRemote(sRepositoryTotalRemoteSSH);
-					
-				//+++++++++++++++++++++++++++++++
 				
-				//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
-				//a) + b)
-				bReturn = super.configureGit();
-
+				String sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProjectRemote);
+				this.setRepositoryTotalRemote(sRepositoryTotalRemote);
+				
+				//+++++++++++++++++++++++++++++++
+			
 				//+++ HTTPS Zugriff sicherstellen
 				Git git = this.getGitObject();
 				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
@@ -150,13 +168,23 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//				throw ez;
 	//			}
 				
-				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseHTTPS();
-				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote HTTPS Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
+				String sConnectionTypeIn = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionTypeIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
+				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
+				if(sConnectionTypeIn.equalsIgnoreCase("SSH") & StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 				String sRepositoryLocalIn = objConfig.readRepositoryLocal();
 				if(StringZZZ.isEmpty(sRepositoryLocalIn)){
@@ -181,9 +209,12 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				
 				//+++++++++++++++++++++++
 				this.setRepositoryBaseLocal(sRepositoryLocalIn);
-				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
+				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
+				this.setConnectionType(sConnectionTypeIn);
 				this.setRepositoryProject(sRepositoryProjectIn);
 				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
+								
 				this.setPersonalAccessToken(sPatIn);
 			
 				//Konfiguriere JGit für HTTPS
@@ -197,19 +228,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 								        
 				//Mache den pull	
 				Git git = this.getGitObject();
-				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-				String sPAT = this.getPersonalAccessToken();
-				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-				boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
-				if(bIgnoreConflicts) {
-					//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
-					
-					String sBranch = "master";
-					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);					
-				}else {
-					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
-				}
-		        git.close();
+				this.pullit(git);
+				git.close();
+				bReturn = true;
+			
 		    //###############################################################	  
 
 			}catch(IllegalStateException ie) {
@@ -273,9 +295,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 //				throw ez;
 //			}
 			
-			String sRepositoryRemoteIn = objConfig.readRepositoryRemoteBaseHTTPS();
+			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 			if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote HTTPS Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -331,46 +353,20 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			//++++++++++++++++++++++++++++++++
 			//Führe den Push durch
 			Git git = this.getGitObject();
+			this.pushit(git);
+			git.close();
+			bReturn = true;
+		
 			
-			//a) Zugriff sicherstellen			
-			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-			String sPAT = this.getPersonalAccessToken();
-			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-					
-	        //b) Mache den push		
-	        bReturn = this.pushit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
-	        if(bReturn) {
-	        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
-	        	this.printStatus(git);
-	        }else {
-	        	System.out.println("STATUS AFTER PUSH: FAILED");
-	        	this.printStatus(git);
-	        }
-	        
-	        //s. ChatGPT vom 20260313
-	        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-	        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-	        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-	        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-	        
-	        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
-	        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
-	        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-	        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
-		    System.out.println(("FETCH DONE"));
-		  
+			
+			
 		    git.close();
         //bReturn = true;
         //###############################################################
-		}catch(TransportException tex) {
-			ExceptionZZZ ez = new ExceptionZZZ(tex);
-			throw ez;
+		
 		}catch(IllegalStateException ie) {
 			ExceptionZZZ ez = new ExceptionZZZ(ie);
 			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;	
 		}
 		}//end main:
 		return bReturn;
@@ -501,6 +497,71 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
             System.out.println("Untracked: " + untrack);
         }
 	}
+
+	
+	@Override
+	public boolean pushit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//a) Zugriff sicherstellen			
+				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+				String sPAT = this.getPersonalAccessToken();
+				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+						
+		        //b) Mache den push		
+		        bReturn = this.pushit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
+		        if(bReturn) {
+		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
+		        	this.printStatus(git);
+		        }else {
+		        	System.out.println("STATUS AFTER PUSH: FAILED");
+		        	this.printStatus(git);
+		        }
+		        
+		        //s. ChatGPT vom 20260313
+		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+		        
+		        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
+		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
+			    System.out.println(("FETCH DONE"));
+			}catch(TransportException tex) {
+				ExceptionZZZ ez = new ExceptionZZZ(tex);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;	
+			}
+		}//end main:
+		return bReturn;
+	}
+
+	@Override
+	public boolean pullit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+			String sPAT = this.getPersonalAccessToken();
+			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+			boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
+			if(bIgnoreConflicts) {
+				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
+				
+				String sBranch = "master";
+				bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);					
+			}else {
+				bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
+			}
+		}//end main:
+		return bReturn;
+	}
+
+	
 
 
 

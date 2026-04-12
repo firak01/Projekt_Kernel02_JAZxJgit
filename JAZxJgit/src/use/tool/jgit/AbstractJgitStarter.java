@@ -193,6 +193,9 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	//++++++++++++++++++++++++++++
 	@Override
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
+		if(this.sRepositoryRemoteAlias==null) {
+			this.sRepositoryRemoteAlias = IJgitStarter.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
+		}
 		return this.sRepositoryRemoteAlias;
 	}
 
@@ -242,8 +245,16 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	@Override
 	public String getRepositoryBaseRemote() throws ExceptionZZZ {
 		if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-			String sRepositoryRemoteBySearch = this.searchRepositoryRemote();
-			this.setRepositoryBaseRemote(sRepositoryRemoteBySearch);
+			String sHost=this.getRepositoryRemoteHost();
+			String sAccount=this.getRepositoryRemoteAccount();
+			if(!(StringZZZ.isEmpty(sHost) | StringZZZ.isEmpty(sAccount))){
+				this.sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sHost, sAccount);
+			}
+			
+			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
+			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
+				this.sRepositoryBaseRemote = this.searchRepositoryRemote();
+			}
 		}
 		return this.sRepositoryBaseRemote;
 	}
@@ -254,9 +265,8 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 	
 	@Override
-	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
-		return this.sRepositoryTotalRemote;
-	}
+	abstract public String getRepositoryTotalRemote() throws ExceptionZZZ;		
+		
 
 	@Override
 	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
@@ -264,7 +274,11 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 	
 	@Override
-	public abstract String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ;
+	public String computeRepositoryBaseRemote() throws ExceptionZZZ{
+		String sHost = this.getRepositoryRemoteHost();
+		String sAccount = this.getRepositoryRemoteAccount();
+		return this.computeRepositoryBaseRemote(sHost, sAccount);
+	}
 	
 	@Override
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
@@ -425,25 +439,23 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
 				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
 				
-				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
-				//
-				//       !!! UND DAS SOLLTE VORHER PASSIEREN
-				//String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
-				//String sRepositoryProjectRemote = this.getRepositoryProject();
-				//String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl(sDirectoryRepositoryRemote, sRepositoryProjectRemote);
-				String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();								
-				JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-	
-			
-				//##############################################
+				//++++++++++ Erst das lokale Git-Repository initialisieren
+				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
 				InitCommand gitCommandInit = Git.init();
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);
 				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
-
+				//##############################################
+												
+				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
+				String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
+				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
+					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+					JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+				}
 				bReturn = true;
 				//######################################
 			}catch(GitAPIException gae) {

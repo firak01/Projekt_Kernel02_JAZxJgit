@@ -45,6 +45,23 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 
 	//### aus IJgitStarter
 	@Override
+	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
+		return JgitUtilSSH.computeRepositoryUrlSSH(sHost, sAccount);
+	}
+	
+	@Override
+	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
+		if( this.sRepositoryTotalRemote==null) {
+			String sHost = this.getRepositoryRemoteHost();
+			String sAccount = this.getRepositoryRemoteAccount();						
+			String sRepositoryProjectRemote = this.getRepositoryProject();	
+			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
+			this.sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlSSH(sHost, sAccount, sRepositoryProjectRemote);			
+		}
+		return this.sRepositoryTotalRemote;
+	}
+	
+	@Override
 	public boolean configureGit() throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
@@ -56,6 +73,11 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			JGitSshConfigZZZ.configure();
 			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
+			
+			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
+			//a) + b)
+			bReturn = super.configureGit();
+
 			
 			//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
 			//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
@@ -100,13 +122,10 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			}
 			this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 			
-			String sRepositoryTotalRemoteSSH = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
-			this.setRepositoryTotalRemote(sRepositoryTotalRemoteSSH);
+			String sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
+			this.setRepositoryTotalRemote(sRepositoryTotalRemote);
 				
-			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
-			//a) + b)
-			bReturn = super.configureGit();
-
+			
 			//+++ SSH Zugriff sicherstellen
 			//Merke: Es gibt keinen Credentials Provider für SSH.
 			//Bei SSH muss man sich auf die korrekte ssh URL verlassen
@@ -150,7 +169,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				
 				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
-				if(sConnectionType.equalsIgnoreCase("https") & StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
+				if(sConnectionTypeIn.equalsIgnoreCase("https") & StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
@@ -467,17 +486,5 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			}
 		}//end main:
 		return bReturn;
-	}
-	
-	@Override
-	public String computeRepositoryBaseRemote() throws ExceptionZZZ{
-		String sHost = this.getRepositoryRemoteHost();
-		String sAccount = this.getRepositoryRemoteAccount();
-		return this.computeRepositoryBaseRemote(sHost, sAccount);
-	}
-	
-	@Override
-	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
-		return JgitUtilSSH.computeRepositoryUrlSSH(sHost, sAccount);
 	}
 }

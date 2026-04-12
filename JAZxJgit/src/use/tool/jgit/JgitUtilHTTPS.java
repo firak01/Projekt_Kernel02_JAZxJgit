@@ -46,7 +46,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			String sAccount = sAccountIn;
 			
 			
-			sReturn = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL  + sHost + ":" + sAccount;
+			sReturn = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL  + sHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccount;
 		}//end main:
 		return sReturn;
 	}
@@ -464,6 +464,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			String sRepositoryProject = sRepositoryProjectIn;
 			
 			sReturn = sUrlBaseHTTPS + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
+		}//end main:
+		return sReturn;
+	}
+	
+	
+	public static String computeRepositoryUrlHTTPS(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sUrlBaseHTTPS = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHostIn, sAccountIn);		
+			sReturn = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseHTTPS, sRepositoryProjectIn);
 		}//end main:
 		return sReturn;
 	}

@@ -21,6 +21,8 @@ public interface IConfigJGIT {
 	                                              //z = Flags, die dann JSON aehnlich uebergeben werden
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
+	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = "origin";
+	
 	public String readActionPull() throws ExceptionZZZ;
 	public String readActionPush() throws ExceptionZZZ;
 	

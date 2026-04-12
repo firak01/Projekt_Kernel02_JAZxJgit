@@ -206,7 +206,7 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 	}
 	@Override
 	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
-		return "origin";
+		return IConfigJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	}
 	
 	//++++++++++++++++++++++++++++++++++++++++++++

@@ -7,7 +7,8 @@ import basic.zBasic.ExceptionZZZ;
 import use.tool.jgit.IConfigJGIT;
 
 public interface IJgitStarter {
-
+	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
+	
 	//+++ Per Argument übergebene Werte
 	public String getRepositoryProject() throws ExceptionZZZ;
 	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
