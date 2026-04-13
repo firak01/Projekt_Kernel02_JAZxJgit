@@ -48,6 +48,10 @@ public interface IJgitStarter {
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ;
 	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
 	
+	//+++ Arbeiten mit dem Repository-Object, etc.
+	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ;
+	
+	
 	//+++ Arbeit mit dem GitObject, etc.
 	public Git getGitObject() throws ExceptionZZZ;
 	public void setGitObject(Git git) throws ExceptionZZZ;

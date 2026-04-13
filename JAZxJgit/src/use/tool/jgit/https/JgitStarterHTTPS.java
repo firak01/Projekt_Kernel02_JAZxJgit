@@ -162,29 +162,6 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 							
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
-	//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-	//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-	//				throw ez;
-	//			}
-				
-				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
-				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				String sConnectionTypeIn = objConfig.readConnectionType();
-				if(StringZZZ.isEmpty(sConnectionTypeIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
-				if(sConnectionTypeIn.equalsIgnoreCase("SSH") & StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
 				
 				String sRepositoryLocalIn = objConfig.readRepositoryLocal();
 				if(StringZZZ.isEmpty(sRepositoryLocalIn)){
@@ -192,15 +169,42 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					throw ez;
 				}
 				
+				String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
+				boolean bRemoteAliasAvailable = StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
+	//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+	//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+	//				throw ez;
+	//			}
+				
+				String sConnectionTypeIn = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionTypeIn) & !bRemoteAliasAvailable) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)  & !bRemoteAliasAvailable){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+											
+				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
+				if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)  & !bRemoteAliasAvailable) {
+					ExceptionZZZ ez = new ExceptionZZZ("Account", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+			
+				
 				String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
-				if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				if(StringZZZ.isEmpty(sRepositoryProjectIn)  & !bRemoteAliasAvailable){
 					ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				
 				String sPatIn = objConfig.readPersonalAccessToken();
-				if(StringZZZ.isEmpty(sPatIn)){
+				if(StringZZZ.isEmpty(sPatIn) & StringZZZ.equalsIgnoreCase(sConnectionType, "HTTPS")){
 					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository, Personal Access Token (PAT)", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
@@ -209,14 +213,24 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				
 				//+++++++++++++++++++++++
 				this.setRepositoryBaseLocal(sRepositoryLocalIn);
+				
+				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);
+				
+				this.setConnectionType(sConnectionTypeIn);
 				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
 				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
-				this.setConnectionType(sConnectionTypeIn);
+				
 				this.setRepositoryProject(sRepositoryProjectIn);
-				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
-								
+													
 				this.setPersonalAccessToken(sPatIn);
 			
+				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
+				if(StringZZZ.isEmpty(sRepositoryRemoteIn) & !bRemoteAliasAvailable){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+				
 				//Konfiguriere JGit für HTTPS
 				boolean bSuccess = this.configureGit();
 				if(bSuccess) {
@@ -228,7 +242,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 								        
 				//Mache den pull	
 				Git git = this.getGitObject();
-				this.pullit(git);
+				boolean bSuccessPull = this.pullit(git);
+		        if(bSuccessPull) {
+					System.out.println("pull erfolgreich");
+				}else {
+					System.out.println("pull NICHT erfolgreich");
+					break main;
+				}
 				git.close();
 				bReturn = true;
 			
@@ -288,7 +308,14 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			}
 						
 			//################################################
-			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen			
+			
+			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
+			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
 			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
 //			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
 //				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -296,12 +323,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 //			}
 			
 			
-			
-			
-			
-			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
-			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
-				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			String sConnectionTypeIn = objConfig.readConnectionType();
+			if(StringZZZ.isEmpty(sConnectionTypeIn)) {
+				ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -330,11 +354,15 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			}
 						
 			//+++++++++++++++++++++++
-			this.setRepositoryBaseLocal(sRepositoryLocalIn);			
-			this.setRepositoryProject(sRepositoryProjectIn);
-			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);	
+			this.setRepositoryBaseLocal(sRepositoryLocalIn);
+			
+			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);
+			
+			this.setConnectionType(sConnectionTypeIn);
 			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
 			this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
+			this.setRepositoryProject(sRepositoryProjectIn);
+			
 			this.setPersonalAccessToken(sPatIn);
 			
 			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();

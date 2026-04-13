@@ -27,6 +27,7 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
+import use.tool.jgit.ssh.JgitStarterSSH;
 
 public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarter{
 	private static final long serialVersionUID = -1998325674945232389L;
@@ -473,6 +474,64 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		}//end main:
 		return bReturn;
 	}
+	
+	@Override
+	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
+			boolean bRemoteAliasAvailable = StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
+//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);
+			
+			
+			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
+			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryBaseLocal(sRepositoryLocalIn);
+			
+			
+			String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
+			if(StringZZZ.isEmpty(sRepositoryProjectIn) & !bRemoteAliasAvailable){
+				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryProject(sRepositoryProjectIn);
+			
+			
+			String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sRepositoryLocalIn, sRepositoryProjectIn);
+			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryLocalTotal);
+			if(!objDirectoryRepositoryLocalTotal.exists()){
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
+			
+			String sRepositoryRemoteByAliasIn = null;
+			if(bRemoteAliasAvailable) {
+				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
+				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				sRepositoryRemoteByAliasIn = repo.getConfig()
+						       .getString("remote",sRepositoryRemoteAlias,"url");
+				System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAliasIn +"'");																
+			}
+			this.setRepositoryTotalRemote(sRepositoryRemoteByAliasIn);
+			
+			
+		}//end main:
+		return bReturn;
+	}
+	
 	
 	@Override
 	public abstract boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;
