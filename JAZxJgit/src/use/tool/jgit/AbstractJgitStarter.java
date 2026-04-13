@@ -231,7 +231,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		if(StringZZZ.isEmpty(this.sRepositoryRemoteHost)) {
 			String sUrlRepo = this.searchRepositoryRemote();
 			
-			String sRepositoryRemoteHost = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sUrlRepo);
+			String sRepositoryRemoteHost = JgitUtil.computeRepositoryHostFromUrlRepo(sUrlRepo);
 			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
 		}
 		return this.sRepositoryRemoteHost;
@@ -253,7 +253,9 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			
 			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
 			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-				this.sRepositoryBaseRemote = this.searchRepositoryRemote();
+				String sRepositoryTotalRemote = this.searchRepositoryRemote();
+				
+				JgitUtilSSH.computeRepositoryUrlBaseFromRepositoryUrlSSH(sRepositoryTotalRemote);
 			}
 		}
 		return this.sRepositoryBaseRemote;

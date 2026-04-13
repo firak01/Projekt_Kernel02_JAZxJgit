@@ -28,6 +28,26 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 
+	public static String computeRepositoryHostFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilHTTPS.getHostFromUrl(sUrlRepo);
+	}
+	
+	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
+	public static String computeRepositoryUrlBaseFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)){
+				ExceptionZZZ ez = new ExceptionZZZ("Url des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+								
+			String sHost = JgitUtilHTTPS.computeRepositoryHostFromUrlHTTPS(sUrlRepo);			
+			String sAccount = JgitUtilHTTPS.computeRepositoryAccountFromUrlHTTPS(sUrlRepo);
+			sReturn = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);			
+		}//end main:
+		return sReturn;
+	}
+	
 	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
 	public static String computeRepositoryUrlBaseHTTPS(String sHostIn, String sAccountIn) throws ExceptionZZZ{
 		String sReturn = null;
@@ -50,6 +70,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		}//end main:
 		return sReturn;
 	}
+	
+	
 		
 		
 	/** Z.B.  von https://github.com/firak01

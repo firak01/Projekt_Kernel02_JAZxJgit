@@ -16,6 +16,26 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilSSH implements IConstantZZZ{
 	
+	public static String computeRepositoryHostFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilSSH.getHostFromUrl(sUrlRepo);
+	}
+	
+	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+		public static String computeRepositoryUrlBaseFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
+			String sReturn = null;
+			main:{
+				if(StringZZZ.isEmpty(sUrlRepo)){
+					ExceptionZZZ ez = new ExceptionZZZ("Url des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+									
+				String sHost = JgitUtilSSH.computeRepositoryHostFromUrlSSH(sUrlRepo);			
+				String sAccount = JgitUtilSSH.computeRepositoryAccountFromUrlSSH(sUrlRepo);				
+				sReturn = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);
+			}//end main:
+			return sReturn;
+		}
+		
 	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryUrlBaseSSH(String sHostIn, String sAccountIn) throws ExceptionZZZ{
 		String sReturn = null;
@@ -37,6 +57,8 @@ public class JgitUtilSSH implements IConstantZZZ{
 		}//end main:
 		return sReturn;
 	}
+	
+	
 	
 	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryUrlSSH(String sUrlBaseSSHin, String sRepositoryProjectIn) throws ExceptionZZZ{

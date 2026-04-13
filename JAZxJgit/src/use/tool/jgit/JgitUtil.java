@@ -17,6 +17,27 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtil implements IConstantZZZ {
 	
+	public static String computeRepositoryHostFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(JgitUtil.isUrlHTTPS(sUrlRepo)) {
+				sReturn = JgitUtilHTTPS.computeRepositoryHostFromUrlHTTPS(sUrlRepo);
+			}else if(JgitUtil.isUrlSSH(sUrlRepo)) {
+				sReturn = JgitUtilSSH.computeRepositoryHostFromUrlSSH(sUrlRepo);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlRepo + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	public static String computeRepositoryUrlPartFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
