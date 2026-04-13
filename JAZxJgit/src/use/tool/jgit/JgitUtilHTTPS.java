@@ -28,6 +28,10 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 
+	public static String computeRepositoryAccountFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilHTTPS.getAccountFromUrl(sUrlRepo);
+	}
+	
 	public static String computeRepositoryHostFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilHTTPS.getHostFromUrl(sUrlRepo);
 	}

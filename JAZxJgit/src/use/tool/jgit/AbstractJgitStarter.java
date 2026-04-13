@@ -254,8 +254,14 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
 			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
 				String sRepositoryTotalRemote = this.searchRepositoryRemote();
-				
-				JgitUtilSSH.computeRepositoryUrlBaseFromRepositoryUrlSSH(sRepositoryTotalRemote);
+				if(JgitUtil.isUrlHTTPS(sRepositoryTotalRemote)){
+					JgitUtilHTTPS.computeRepositoryUrlBaseFromUrlHTTPS(sRepositoryTotalRemote);
+				}else if(JgitUtil.isUrlSSH(sRepositoryTotalRemote)){
+					JgitUtilSSH.computeRepositoryUrlBaseFromUrlSSH(sRepositoryTotalRemote);
+				}else {
+					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sRepositoryTotalRemote + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 			}
 		}
 		return this.sRepositoryBaseRemote;

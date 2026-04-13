@@ -16,6 +16,10 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilSSH implements IConstantZZZ{
 	
+	public static String computeRepositoryAccountFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilSSH.getAccountFromUrl(sUrlRepo);
+	}
+	
 	public static String computeRepositoryHostFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilSSH.getHostFromUrl(sUrlRepo);
 	}
