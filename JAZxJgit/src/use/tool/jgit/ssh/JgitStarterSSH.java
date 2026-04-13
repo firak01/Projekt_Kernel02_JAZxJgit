@@ -201,7 +201,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//Konfiguriere JGit für SSH				
 				boolean bSuccess = this.configureGit();
 				if(bSuccess) {
-					System.out.println("Git erfolgrech konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert");
 				}else {
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
@@ -387,7 +387,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//Konfiguriere JGit für SSH
 				boolean bSuccess = this.configureGit();
 				if(bSuccess) {
-					System.out.println("Git erfolgrech konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert");
 				}else {
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;

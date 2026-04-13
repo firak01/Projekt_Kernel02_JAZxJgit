@@ -220,7 +220,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				//Konfiguriere JGit für HTTPS
 				boolean bSuccess = this.configureGit();
 				if(bSuccess) {
-					System.out.println("Git erfolgrech konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert");
 				}else {
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
@@ -333,7 +333,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			//Konfiguriere JGit für HTTPS
 			boolean bSuccess = this.configureGit();
 			if(bSuccess) {
-				System.out.println("Git erfolgrech konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert");
 			}else {
 				System.out.println("Git NICHT erfolgreich konfiguriert");
 				break main;
