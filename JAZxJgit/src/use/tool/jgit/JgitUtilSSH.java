@@ -16,10 +16,17 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilSSH implements IConstantZZZ{
 	
+	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+	public static String computeRepositoryProtocolFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilSSH.getProtocolFromUrl(sUrlRepo);
+	}
+	
+	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryAccountFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilSSH.getAccountFromUrl(sUrlRepo);
 	}
 	
+	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryHostFromUrlSSH(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilSSH.getHostFromUrl(sUrlRepo);
 	}
@@ -122,6 +129,22 @@ public class JgitUtilSSH implements IConstantZZZ{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
 			
 			sReturn = StringZZZ.mid(sRepositoryRemoteUrlSSH, "@", ":");
+		}//end main:
+		return sReturn;
+	}
+	
+	
+	/** Z.B.  von git@github.com:firak01
+	 * @param sRepositoryRemoteUrlSSH
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProtocolFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			
+			sReturn = StringZZZ.left(sRepositoryRemoteUrlSSH+"@", "@");
 		}//end main:
 		return sReturn;
 	}

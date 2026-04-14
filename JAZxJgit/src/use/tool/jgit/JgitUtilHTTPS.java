@@ -28,10 +28,17 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 
+	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
+	public static String computeRepositoryProtocolFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilHTTPS.getProtocolFromUrl(sUrlRepo);
+	}
+	
+	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
 	public static String computeRepositoryAccountFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilHTTPS.getAccountFromUrl(sUrlRepo);
 	}
 	
+	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
 	public static String computeRepositoryHostFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilHTTPS.getHostFromUrl(sUrlRepo);
 	}
@@ -104,6 +111,21 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
 			
 			sReturn = UrlLogicZZZ.getHost(sRepositoryRemoteUrlHTTPS);
+		}//end main:
+		return sReturn;
+	}
+	
+	/** Z.B.  von https://github.com/firak01
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProtocolFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
+			
+			sReturn = UrlLogicZZZ.getProtocol(sRepositoryRemoteUrlHTTPS);
 		}//end main:
 		return sReturn;
 	}

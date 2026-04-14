@@ -17,6 +17,27 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtil implements IConstantZZZ {
 	
+	public static String computeRepositoryConnectionTypeFromProtocol(String sProtocol) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sProtocol)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(sProtocol.equalsIgnoreCase("git")) {
+				sReturn = "SSH";
+			}else if(sProtocol.equalsIgnoreCase("https")) {
+				sReturn = "HTTPS";
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Protokol für Git Repository. Unbekannter Typ: '" + sProtocol + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	public static String computeRepositoryConnectionTypeFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
@@ -25,10 +46,25 @@ public class JgitUtil implements IConstantZZZ {
 				throw ez;				
 			}
 			
+			String sProtocol = JgitUtil.computeRepositoryProtocolFromUrlRepo(sUrlRepo);			
+			sReturn = JgitUtil.computeRepositoryConnectionTypeFromProtocol(sReturn);
+			
+		}//end main:
+		return sReturn;
+	}
+	
+	public static String computeRepositoryProtocolFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
 			if(JgitUtil.isUrlHTTPS(sUrlRepo)) {
-				sReturn = JgitUtilHTTPS.computeRepositoryConnectionTypeFromUrlHTTPS(sUrlRepo);
+				sReturn = JgitUtilHTTPS.computeRepositoryProtocolFromUrlHTTPS(sUrlRepo);
 			}else if(JgitUtil.isUrlSSH(sUrlRepo)) {
-				sReturn = JgitUtilSSH.computeRepositoryConnectinTypeFromUrlSSH(sUrlRepo);
+				sReturn = JgitUtilSSH.computeRepositoryProtocolFromUrlSSH(sUrlRepo);
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlRepo + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;

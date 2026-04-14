@@ -291,7 +291,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	
 	@Override
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
-		String sRepositoryBaseRemoteIn = this.getRepositoryBaseRemote();
+		String sRepositoryBaseRemoteIn = this.computeRepositoryBaseRemote();
 		String sRepositoryProjectIn = this.getRepositoryProject();
 		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
 	}
@@ -302,7 +302,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		main:{
 			String sRepositoryBaseRemote=null; String sRepositoryProject=null;
 			if(StringZZZ.isEmpty(sRepositoryBaseRemoteIn)) {
-				sRepositoryBaseRemote = this.getRepositoryBaseRemote();
+				sRepositoryBaseRemote = this.computeRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
 					ExceptionZZZ ez = new ExceptionZZZ("RepositoryBaseRemote", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;	
@@ -460,7 +460,9 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 												
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
 				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
-				String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
+				//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
+				//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
+				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
 				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 					JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
@@ -485,7 +487,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			}
 			
 			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
-			boolean bRemoteAliasAvailable = StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
+			boolean bRemoteAliasAvailable = !StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
 //			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
 //				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 //				throw ez;
@@ -512,7 +514,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sRepositoryLocalIn, sRepositoryProjectIn);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryLocalTotal);
 			if(!objDirectoryRepositoryLocalTotal.exists()){
-				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
@@ -523,11 +525,18 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
 				sRepositoryRemoteByAliasIn = repo.getConfig()
 						       .getString("remote",sRepositoryRemoteAlias,"url");
-				System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAliasIn +"'");																
+				if(StringZZZ.isEmpty(sRepositoryRemoteByAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAliasIn +"'");
+				
+				
 			}
 			this.setRepositoryTotalRemote(sRepositoryRemoteByAliasIn);
 			
-			
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}

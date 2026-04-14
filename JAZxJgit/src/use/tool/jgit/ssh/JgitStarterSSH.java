@@ -148,7 +148,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 							
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//################################################
 						
 				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
 				if(bLocalRepositoryConfigured) {
@@ -205,7 +204,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
-				//+++++++++++++++++++++++++++++++++++++++++++++++++
+				//######################################################
 				//Konfiguriere JGit für SSH				
 				boolean bSuccess = this.configureGit();
 				if(bSuccess) {
@@ -215,6 +214,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					break main;
 				}
 				
+				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
 				Git git = this.getGitObject();
 		        boolean bSuccessPull = this.pullit(git);
@@ -226,7 +226,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 		        git.close();
 		        bReturn = true;
-	        //###############################################################	  
+		        //#######################################################	  
 			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
@@ -419,7 +419,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
-				//+++++++++++++++++++++++++++++++++++++++++++++++++
+				//######################################################
 				//Konfiguriere JGit für SSH
 				boolean bSuccessConfigureGit = this.configureGit();
 				if(bSuccessConfigureGit) {
@@ -428,16 +428,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
 				}
-				
-				//+++++++++++++++++++++++++++++++++++++++++++++++++
-				//Remote Repository, wenn nicht uebergeben, suchen aus der lokalen Konfiguration
-//				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
-//				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
-				
 							
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
@@ -449,11 +439,12 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					break main;
 				}
  
+				//+++++++++++++++++++++++++++++++++++
 		        //Führe den Push durch
 		        Git git = this.getGitObject();
 		        
 		        //a) Zugriff sicherstellen
-		        //   Das passiert duch die lokalen ssh-id Dateien
+		        //   Das passiert durch die lokalen ssh-id Dateien
 		        
 		        //b) Mache den push	
 		        bReturn = this.pushit(git);
@@ -477,7 +468,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        JgitStarterSSH.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
