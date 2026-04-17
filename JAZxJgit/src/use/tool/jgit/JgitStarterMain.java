@@ -132,7 +132,18 @@ public class JgitStarterMain implements IConstantZZZ{
 		//siehe: https://www.vogella.com/tutorials/JGit/article.html
 		//siehe: https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
 		
-		try {												
+		try {	
+			//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
+			//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
+			//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.
+			System.out.println("Vorhandene Umgebungsvariablen, seit Eclipsestart:");
+			System.out.println(System.getenv("MY_TRUSTSTORE"));
+			System.out.println(System.getenv("sPATZZZ"));
+			System.out.println(System.getenv("sRLZZZ"));
+			System.out.println(System.getenv("sRRHZZZ"));		
+			System.out.println(System.getenv("sRRACZZZ"));
+			
+			
 			String sAction=null;
 			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
 						
@@ -178,6 +189,7 @@ public class JgitStarterMain implements IConstantZZZ{
 			
 			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
 			//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
+			//a) Das Füllen des FlagContainers
 			FlagContainerZZZ objFlagContainer = null;					
 			String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
 			if(!StringZZZ.isEmpty(sFlagZJson)) {
@@ -185,7 +197,8 @@ public class JgitStarterMain implements IConstantZZZ{
 				objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
 			}						
 			
-			//Ggfs. uebergebene Flags setzen:
+			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+			//b) Das Auslesen des FlagContainers und ggfs. uebergebene Flags setzen:
 			if(objFlagContainer!=null) {
 				HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
 				for(int i=0; i< hmFlagByContainer.size(); i++) {

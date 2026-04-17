@@ -20,6 +20,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.IConfigJGIT;
+import use.tool.jgit.IJgitEnabledZZZ;
 import use.tool.jgit.JgitStarterMain;
 import use.tool.jgit.JgitUtil;
 import use.tool.jgit.JgitUtilHTTPS;
@@ -727,7 +728,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 			String sPAT = this.getPersonalAccessToken();
 			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-			boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
+			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
 			if(bIgnoreConflicts) {
 				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 				

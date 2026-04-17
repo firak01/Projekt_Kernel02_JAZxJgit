@@ -1,6 +1,6 @@
-package use.tool.jgit.https;
+package use.tool.jgit.ssh;
 
-public interface IJgitStarterHTTPSEnabled {
+public interface IJgitStarterSSHEnabled {
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################

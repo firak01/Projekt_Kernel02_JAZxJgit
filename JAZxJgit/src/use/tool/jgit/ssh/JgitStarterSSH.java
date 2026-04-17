@@ -31,6 +31,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.tool.jgit.IConfigJGIT;
+import use.tool.jgit.IJgitEnabledZZZ;
 import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.JgitStarterMain;
 import use.tool.jgit.JgitUtil;
@@ -297,62 +298,44 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	public boolean pullit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {
-				//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
-				System.out.println("Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
-				
-				// aber mal explizit als pullCommand
-				PullCommand pullCommand = git.pull();
-				
-				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
-				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
-				pullCommand.setRemote(sRemoteRepositoryAlias);
+			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
+			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();		
+			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);
 
+			//TODOGOON20260417: TEST... Erzwinge den Weg.
+			bIgnoreConflicts=false;			
+			if(bIgnoreConflicts) {
+				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 				
-				
-				// pull from remote, hier mit Auswertung des Ergebnisses	
-				PullResult pullResult = pullCommand.call();
-				
-				
-				if (pullResult.isSuccessful()) {
-				    System.out.println("Pull erfolgreich");
-				    bReturn = true;
-				} else {
-				    System.out.println("Pull fehlgeschlagen");
-				    bReturn = false;
-				}
-
-				MergeResult mergeResult = pullResult.getMergeResult();
-				if(mergeResult!=null) {
-					System.out.println("MergeResult: " + mergeResult.getMergeStatus());
-				}else {
-					System.out.println("MergeResult: Kein Status zurueckgegeben.");
-				}
-				
-				FetchResult fetchResult = pullResult.getFetchResult();
-				if(fetchResult!=null) {
-					System.out.println("FetchResult: " + fetchResult.getMessages());
-				}else {
-					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
-				}
-								
-				
-				//###############################################################
-			}catch(InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			}catch(TransportException te) {
-				ExceptionZZZ ez = new ExceptionZZZ(te);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				String sBranch = "master";
+				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);					
+			}else {
+				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
 			}
 		}//end main:
 		return bReturn;
 	}
-
 	
+	@Override
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{			
+			bReturn = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote);				
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			bReturn = JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git);
+		}//end main:
+		return bReturn;
+	}
+
+	//##############################
+	//###### PUSH #################
 	@Override
 	public boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
@@ -524,4 +507,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		}//end main:
 		return bReturn;
 	}
+
+	
 }

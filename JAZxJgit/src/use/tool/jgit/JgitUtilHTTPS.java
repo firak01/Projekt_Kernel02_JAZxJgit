@@ -27,6 +27,29 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
+	public static final String sPROTOCOL_PART = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL;
+	
+	public static String addProtocolToUrl(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("UrlRepo", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+		
+			//1. Prüfen, ob das Protokol (mit Separatoren) schon da ist.
+			String sProtocolPartFound = JgitUtil.getProtocolPart(sUrlRepo);
+			if(StringZZZ.isEmpty(sProtocolPartFound)) {
+				//dann einfach davorhängen
+				sReturn = JgitUtilHTTPS.sPROTOCOL_PART + sUrlRepo;
+			}else {
+				//das gefundene Protokol entfernen
+				String sUrlRepoWithoutProtocol = StringZZZ.stripLeft(sUrlRepo, sProtocolPartFound);
+				sReturn = JgitUtilHTTPS.sPROTOCOL_PART +  sUrlRepoWithoutProtocol;
+			}
+		}//end main:
+		return sReturn;
+	}
 
 	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
 	public static String computeRepositoryProtocolFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
@@ -41,6 +64,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
 	public static String computeRepositoryHostFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilHTTPS.getHostFromUrl(sUrlRepo);
+	}
+	
+	//Z.B. HTTPS Version:	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	public static String computeRepositoryProjectFromUrlHTTPS(String sUrlRepo) throws ExceptionZZZ{
+		return JgitUtilHTTPS.getProjectFromUrl(sUrlRepo);
 	}
 	
 	//Z.B. HTTPS Version: 	https://github.com/firak01   also ohne das Projekt
@@ -114,6 +142,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		}//end main:
 		return sReturn;
 	}
+	
+	/** Z.B. von https://github.com/firak01/Projekt_Kernel02_JAZDummy.git 
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProjectFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
+		return JgitUtil.getProjectFromUrl(sRepositoryRemoteUrlHTTPS);
+	}
+	
 	
 	/** Z.B.  von https://github.com/firak01
 	 * @param sRepositoryRemoteUrlHTTPS
@@ -409,6 +447,14 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return bReturn;
     }
 
+	/** Anders als bei SSH kann hier ein Pull nur durch Zerlegung in Fetch und Merge gemacht werden.
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sPAT
+	 * @param sRepoRemote
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
 	public static boolean pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{

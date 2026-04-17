@@ -17,11 +17,37 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtil implements IConstantZZZ {
 	
+	public static String addProtocolToUrl(String sProtocol, String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sProtocol)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Protokol", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("UrlRepo", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(sProtocol.equalsIgnoreCase("git")) {
+				sReturn = JgitUtilSSH.addProtocolToUrl(sUrlRepo);
+			}else if(sProtocol.equalsIgnoreCase("https")) {
+				sReturn = JgitUtilHTTPS.addProtocolToUrl(sUrlRepo);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Protokol für Git Repository. Unbekannter Typ: '" + sProtocol + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	public static String computeRepositoryConnectionTypeFromProtocol(String sProtocol) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sProtocol)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Protokol", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;				
 			}
 			
@@ -86,6 +112,27 @@ public class JgitUtil implements IConstantZZZ {
 				sReturn = JgitUtilHTTPS.computeRepositoryHostFromUrlHTTPS(sUrlRepo);
 			}else if(JgitUtil.isUrlSSH(sUrlRepo)) {
 				sReturn = JgitUtilSSH.computeRepositoryHostFromUrlSSH(sUrlRepo);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlRepo + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
+	public static String computeRepositoryProjectFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(JgitUtil.isUrlHTTPS(sUrlRepo)) {
+				sReturn = JgitUtilHTTPS.computeRepositoryProjectFromUrlHTTPS(sUrlRepo);
+			}else if(JgitUtil.isUrlSSH(sUrlRepo)) {
+				sReturn = JgitUtilSSH.computeRepositoryProjectFromUrlSSH(sUrlRepo);
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlRepo + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -250,7 +297,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 	}
 	
 	/** z.B.: https://github.com/firak01   oder  git@github.com:firak01
-	 * 
+	 *  liefert nur das Protokoll zurück.
 	 * @param sUrlRepo
 	 * @return
 	 * @throws ExceptionZZZ
@@ -274,6 +321,46 @@ Repository existingRepo = new FileRepositoryBuilder()
 				break main;
 			}
 									
+		}//end main:
+		return sReturn;
+	}
+	
+	/** z.B.: https://github.com/firak01   oder  git@github.com:firak01
+	 *  liefert das Protokoll PLUS die Protokol-Separatorzeichen zurück.
+	 * @param sUrlRepo
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProtocolPart(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) break main;
+			
+			String sProtocol = JgitUtil.getProtocol(sUrlRepo);
+			if(sProtocol.equalsIgnoreCase("git")) {
+				sReturn = sProtocol + "@";
+			}else if(sProtocol.equalsIgnoreCase("https")) {
+				sReturn = sProtocol + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL;
+			}											
+		}//end main:
+		return sReturn;
+	}
+
+	
+	/** Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git 
+	 *       von https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getProjectFromUrl(String sRepositoryRemoteUrl) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrl)) break main;
+			
+			String sUrlWithoutEnding = StringZZZ.stripRight(sRepositoryRemoteUrl, ".git");
+			String sProject = StringZZZ.right(sUrlWithoutEnding, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = sProject;
 		}//end main:
 		return sReturn;
 	}
