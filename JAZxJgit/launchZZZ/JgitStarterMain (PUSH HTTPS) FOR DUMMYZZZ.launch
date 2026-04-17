@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/Projekt_Tool_DevEditor/src/use/tool/dev/jgit/JgitStarterMainDEV.java"/>
+<listEntry value="/JAZxJgit/src/use/tool/jgit/JgitStarterMain.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="use.tool.dev.jgit.JgitStarterMainDEV"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="use.tool.jgit.JgitStarterMain"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-push -https -pat &quot;$.{sPATZZZ#PAT per Umgebungsvariable fehlt}&quot;&#13;&#10;-rrh &quot;$.{sRRHZZZ#RepositoryRemote Host per Umgebungsvariable fehlt}&quot;&#13;&#10;-rrac &quot;$.{sRRACZZZ#RepositoryRemote Account per Umgebungsvariable fehlt}&quot;&#13;&#10;-rl &quot;$.{sRLZZZ#RepositoryLocal per Umgebungsvariable fehlt}&quot;&#13;&#10;-project &quot;Projekt_Kernel02_JAZDummy&quot;"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Projekt_Tool_DevEditor"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JAZxJgit"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=${env_var:MY_TRUSTSTORE}&#13;&#10;-Djavax.net.ssl.trustStorePassword=changeit"/>
 </launchConfiguration>
