@@ -300,15 +300,20 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
 			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();		
-			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);
-
-			//TODOGOON20260417: TEST... Erzwinge den Weg.
-			bIgnoreConflicts=false;			
+			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
 			if(bIgnoreConflicts) {
 				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 				
+				TODOGOON20260418;//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
+				                 //1) hier THEIRS oder OURS übergeben als Strategie
+				
+				                
 				String sBranch = "master";
-				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);					
+				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
+				
+								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
+				                //   in der erst versucht wird zu und danach 
+				                //   nur Konflikte per THEIRS oder OURS aufgelöst werden.
 			}else {
 				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
 			}

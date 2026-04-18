@@ -3,7 +3,10 @@ package use.tool.jgit;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -238,6 +241,43 @@ public class JgitUtil implements IConstantZZZ {
 			throw ez;
 		}
 	}
+	
+	
+	  /**
+     * Findet den Remote-Namen (z.B. "origin") anhand einer URL.
+     * Hintergrund: 
+     * 
+     *  Ich bekomme folgende JGit Fehlermeldung: 
+     *  org.eclipse.jgit.api.errors.InvalidConfigurationException: 
+     *  No value for key remote.git@github.com:firak01/Projekt_Kernel02_JAZDummy.git.url found in configuration
+     *  
+     *  Es wird unter "origin" nachgesehen. 
+     *  In dem lokalen Repository gibt es in der Datei .git\config den Eintrag: [remote "origin"] url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git 
+     *  Der Grund für den Fehler liegt daran, dass ich in pullCommand.setRemote("einString")
+     *  für "einString" die Url angeben. Das ist aber bei SSH falsch und funktioniert nur bei HTTPS.
+     *  Ich benötige nun eine statische Methode, mit der ich den Einrag für remote bekomme, wenn ich die URL als Suchwert verwende:  
+     */
+    public static String findRemoteNameByUrl(Git git, String url) {
+        if (git == null || url == null) {
+            return null;
+        }
+
+        Repository repo = git.getRepository();
+        Config config = repo.getConfig();
+
+        // Alle Remote-Namen holen (origin, upstream, etc.)
+        Set<String> remotes = config.getSubsections("remote");
+
+        for (String remoteName : remotes) {
+            String remoteUrl = config.getString("remote", remoteName, "url");
+
+            if (remoteUrl != null && remoteUrl.equals(url)) {
+                return remoteName;
+            }
+        }
+
+        return null; // nichts gefunden
+    }
 	
 	/* https://git-scm.com/book/de/v2/Anhang-B:-Git-in-deine-Anwendungen-einbetten-JGit
 	// Create a new repository

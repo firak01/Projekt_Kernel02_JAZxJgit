@@ -192,18 +192,41 @@ public class JgitUtilSSH implements IConstantZZZ{
 	}
 	
 	
+	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	 * @param sRepositoryRemoteUrlSSH
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getUrlPartFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			
+			String sUrlSSHWithoutProtocol = StringZZZ.right("@" + sRepositoryRemoteUrlSSH, "@");
+			String sUrlSSHWithoutProtocolAndProject = StringZZZ.left(sUrlSSHWithoutProtocol + UrlLogicZZZ.sURL_SEPARATOR_PATH,UrlLogicZZZ.sURL_SEPARATOR_PATH );
+			sReturn = sUrlSSHWithoutProtocolAndProject;			
+		}//end main:
+		return sReturn;
+	}
+	
 	//######################################################
 	//###  PULL
 	
 	
 	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
+	 * 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim SSH Weg nicht direkt 
+	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
+	 *        
+	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
+	 * 
 	 * @param git
 	 * @param credentialsProvider
-	 * @param sRepoRemote
+	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static boolean pullSSH(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+	public static boolean pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {	
@@ -212,23 +235,29 @@ public class JgitUtilSSH implements IConstantZZZ{
 				
 				// aber mal explizit als pullCommand
 				PullCommand pullCommand = git.pull();
-
-				 //Original, Aber jetzt in der Util mal so machen wie in HTTPS und die Url berechnen.
-//				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
-//				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
-//				pullCommand.setRemote(sRemoteRepositoryAlias);
-
-				//Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.
-				TODOGOON20260417;//Das liefert aber noch ein Projekt mit. Rauskommen soll aber github.com:firak01
-				String sUrlBaseIn = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				String sUrlBaseWithProtocolIn = JgitUtil.addProtocolToUrl("git", sUrlBaseIn);
-				String sRepositoryProjectIn = JgitUtil.computeRepositoryProjectFromUrlRepo(sRepoRemote);
-				String sUrlRepoRemote = JgitUtil.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
-				pullCommand.setRemote(sUrlRepoRemote);
+			
+				//In der Utility - Klasse das so machen wie in HTTPS und die Url berechnen:
 				
+				//Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
+				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
+				String sUrlBaseIn = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlBaseWithProtocolIn = JgitUtil.addProtocolToUrl("git", sUrlBaseIn);
+				String sRepositoryProjectIn = JgitUtil.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlRepoRemote = JgitUtil.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				//pullCommand.setRemote(sUrlRepoRemote); //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
+				                                         //      Statt dessen den "Aliasnamen" übergeben.
+				System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
+				
+				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.
+				//Müssen wir aus der Url den Aliasnamen errechnen.
+				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
+				
+				String sRemoteRepositoryAlias = JgitUtil.findRemoteNameByUrl(git, sUrlRepoRemote);
+				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
+				pullCommand.setRemote(sRemoteRepositoryAlias);
+
 				// pull from remote, hier mit Auswertung des Ergebnisses	
 				PullResult pullResult = pullCommand.call();
-				
 				
 				if (pullResult.isSuccessful()) {
 				    System.out.println("Pull erfolgreich");
@@ -327,16 +356,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 
 	//Z.B.: SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryUrlPartFromUrlSSH(String sUrlSSH) throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			String sUrlPartDomainFromSshRepo = StringZZZ.right("@" + sUrlSSH, "@");
-			sUrlPartDomainFromSshRepo = StringZZZ.left(sUrlPartDomainFromSshRepo + ":", ":");
-			
-			String sUrlPartRepoFromSshRepo = StringZZZ.right(":" + sUrlSSH, ":");
-			
-			sReturn = sUrlPartDomainFromSshRepo + "/" + sUrlPartRepoFromSshRepo;			
-		}//end main:
-		return sReturn;
+		return JgitUtilSSH.getUrlPartFromUrl(sUrlSSH);
 	}
 
 }

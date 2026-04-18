@@ -168,6 +168,31 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return sReturn;
 	}
 	
+	/** Z.B.  von https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @param sRepositoryRemoteUrlHTTPS
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String getUrlPartFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
+				
+				//String sUrlPartDomainFromHttpsRepo =StringZZZ.right("@" + sUrlHTTPS, "@");				
+				/////sUrlPartDomainFromHttpsRepo = StringZZZ.left(sUrlPartDomainFromHttpsRepo + ":", ":");				
+				////String sUrlPartRepoFromHttpsRepo = StringZZZ.right(":" + sUrlHTTPS, ":");				
+				////sReturn = sUrlPartDomainFromHttpsRepo + "/" + sUrlPartRepoFromHttpsRepo;
+				
+			sReturn = UrlLogicZZZ.getUrlWithoutParameter(sRepositoryRemoteUrlHTTPS);
+				
+			String sUrlPartDomainFromHttpsRepo = UrlLogicZZZ.getHost(sRepositoryRemoteUrlHTTPS); 
+			String sUrlPartRepoFromHttpsRepo = UrlLogicZZZ.getPath(sReturn); 
+			sReturn = sUrlPartDomainFromHttpsRepo + sUrlPartRepoFromHttpsRepo;
+		}//end main:
+		return sReturn;
+	}
+	
+	
 	/** Für den HTTPS Weg:
 	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
 	 * 
@@ -574,26 +599,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryUrlPartFromUrlHTTPS(String sUrlHTTPS) throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			
-			
-			//String sUrlPartDomainFromHttpsRepo =StringZZZ.right("@" + sUrlHTTPS, "@");
-			
-			
-			/////sUrlPartDomainFromHttpsRepo = StringZZZ.left(sUrlPartDomainFromHttpsRepo + ":", ":");
-			
-			////String sUrlPartRepoFromHttpsRepo = StringZZZ.right(":" + sUrlHTTPS, ":");
-			
-			////sReturn = sUrlPartDomainFromHttpsRepo + "/" + sUrlPartRepoFromHttpsRepo;
-			
-			sReturn = UrlLogicZZZ.getUrlWithoutParameter(sUrlHTTPS);
-			
-			String sUrlPartDomainFromHttpsRepo = UrlLogicZZZ.getHost(sUrlHTTPS); 
-			String sUrlPartRepoFromHttpsRepo = UrlLogicZZZ.getPath(sReturn); 
-			sReturn = sUrlPartDomainFromHttpsRepo + sUrlPartRepoFromHttpsRepo;
-		}//end main:
-		return sReturn;
+		return JgitUtilHTTPS.getUrlPartFromUrl(sUrlHTTPS);
 	}
 
 	//######################
