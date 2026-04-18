@@ -728,7 +728,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 			String sPAT = this.getPersonalAccessToken();
 			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
+			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
 			if(bIgnoreConflicts) {
 				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 				

@@ -300,7 +300,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
 			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();		
-			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
+			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
 			if(bIgnoreConflicts) {
 				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 				
