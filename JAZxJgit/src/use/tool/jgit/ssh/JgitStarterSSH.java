@@ -299,13 +299,13 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		boolean bReturn = false;
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
-			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();		
-			boolean bIgnoreConflicts = this.getFlag(IJgitEnabledZZZ.FLAGZ.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
-			if(bIgnoreConflicts) {
-				//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
-				
-				TODOGOON20260418;//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
-				                 //1) hier THEIRS oder OURS übergeben als Strategie
+			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+			
+			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
+			boolean bAutosolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+			if(bIgnoreConflicts & !bAutosolveConflicts) {				
+				//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
+				///1) hier THEIRS oder OURS übergeben als Strategie
 				
 				                
 				String sBranch = "master";
@@ -314,8 +314,11 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
 				                //   in der erst versucht wird zu und danach 
 				                //   nur Konflikte per THEIRS oder OURS aufgelöst werden.
-			}else {
+			}else if (!bIgnoreConflicts & !bAutosolveConflicts) {
 				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Unerwartete FLAG Kombination; bIgnoreConflicts="+bIgnoreConflicts + " | bAutosolveConflicts="+bAutosolveConflicts, iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
 			}
 		}//end main:
 		return bReturn;
@@ -511,7 +514,5 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			}
 		}//end main:
 		return bReturn;
-	}
-
-	
+	}	
 }

@@ -29,7 +29,7 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
-
+import use.tool.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.tool.jgit.ssh.JgitStarterSSH;
 
 public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarter, IJgitEnabledZZZ{
@@ -612,6 +612,48 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		return bReturn;
 	}		
 	
+	
+	//###################################
+	//### FLAGLOCAL Handling
+	@Override
+	public boolean getFlagLocal(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
+	}
+
+	@Override
+	public boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		boolean[] baReturn=null;
+		main:{
+			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
+				baReturn = new boolean[objaEnumFlag.length];
+				int iCounter=-1;
+				for(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
+					iCounter++;
+					boolean bReturn = this.setFlagLocal(objEnumFlag, bFlagValue);
+					baReturn[iCounter]=bReturn;
+				}
+			}
+		}//end main:
+		return baReturn;
+	}
+
+	@Override
+	public boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagLocalExists(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean proofFlagSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagSetBefore(objEnumFlag.name());
+	}
+
+
 	
 	//###################################
 	//### FLAG Handling

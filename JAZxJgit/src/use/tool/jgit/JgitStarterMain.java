@@ -180,8 +180,9 @@ public class JgitStarterMain implements IConstantZZZ{
 			
 			//++++++++++++++++++++++++++++++++
 			//-z  Flags:
-			//Per Konsole uebergeben:  -z {"IGNORE_CHECKOUT_CONFLICTS":true}
+			//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
 			HashMap<String,Boolean> hmFlag = null;
+			HashMap<String,Boolean> hmFlagLocal = null;
 			
 			//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
 			//       Von dort dann über .getHashMapFlagZPassed holen 
@@ -234,12 +235,22 @@ public class JgitStarterMain implements IConstantZZZ{
 				//Ggfs. uebergebene Flags setzen
 				hmFlag = objConfig.getHashMapFlagPassed();
 				if(hmFlag!=null) {
-				for(int i=0; i< hmFlag.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-					Boolean boolFlagValue = hmFlag.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					objStarterSSH.setFlag(sFlagName, bFlagValue);
+					for(int i=0; i< hmFlag.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+						Boolean boolFlagValue = hmFlag.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterSSH.setFlag(sFlagName, bFlagValue);
+					}
 				}
+				
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				if(hmFlagLocal!=null) {
+					for(int i=0; i< hmFlagLocal.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterSSH.setFlagLocal(sFlagName, bFlagValue);
+					}
 				}
 				
 				for(String sActionTemp : listasAction) {				
@@ -271,12 +282,22 @@ public class JgitStarterMain implements IConstantZZZ{
 				//Ggfs. uebergebene Flags setzen
 				hmFlag = objConfig.getHashMapFlagPassed();
 				if(hmFlag!=null) {
-				for(int i=0; i< hmFlag.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-					Boolean boolFlagValue = hmFlag.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					objStarterHTTPS.setFlag(sFlagName, bFlagValue);
+					for(int i=0; i< hmFlag.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+						Boolean boolFlagValue = hmFlag.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterHTTPS.setFlag(sFlagName, bFlagValue);
+					}
 				}
+				
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				if(hmFlagLocal!=null) {
+					for(int i=0; i< hmFlagLocal.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterHTTPS.setFlagLocal(sFlagName, bFlagValue);
+					}
 				}
 				
 				for(String sActionTemp : listasAction) {				

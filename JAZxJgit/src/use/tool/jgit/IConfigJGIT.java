@@ -1,6 +1,7 @@
 package use.tool.jgit;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zKernel.IKernelConfigZZZ;
 
 public interface IConfigJGIT {
 
@@ -10,7 +11,9 @@ public interface IConfigJGIT {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rrh:rra:rrac:project:z:"; //ConnectionType: HTTPS oder SSH
+	final static String sPATTERN4GIT_DEFAULT="pull|push|ssh|https|rl:pat:rrh:rra:rrac:project:"; 
+													//ConnectionType: HTTPS oder SSH
+	
 													  //gefolgt jeweils von einer URL
 													  //pat = Personal Access Token fuer HTTPS
 													  //rl  = Repository local, Basis Pfad
@@ -18,7 +21,11 @@ public interface IConfigJGIT {
 													  //rra  = Repository remote, Alias. Wie in .git\config Datei angegeben
 													  //rrac = Repository remote, Account
 													  //project = Name des Repository, ohne Basis
-	                                              //z = Flags, die dann JSON aehnlich uebergeben werden
+	
+													  //Merke: sPATTERN4FLAG_DEFAULT besteht aus
+	                                              	  //z = Flags, die dann JSON aehnlich uebergeben werden
+													  //zlocal = Lokale Flags, die dann JSON aehnlich uebergeben werden
+	final static String sPATTERN_DEFAULT= sPATTERN4GIT_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = "origin";

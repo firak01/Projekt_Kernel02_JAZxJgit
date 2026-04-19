@@ -66,7 +66,7 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 		saArg[5] = ConfigJGIT.sPROJECT_PATH;
 		saArg[6] = "-z";
 		saArg[7] = this.getConfigFlagzJsonDefault();
-		
+	
 		return saArg;
 	}
 	
