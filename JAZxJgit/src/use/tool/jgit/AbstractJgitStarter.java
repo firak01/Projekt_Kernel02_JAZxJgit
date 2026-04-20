@@ -53,9 +53,6 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
 		
 
-	
-	
-
 	//### aus IJgitStarter
 	@Override
 	public void addFileTrackedChanged() throws ExceptionZZZ {		
@@ -220,14 +217,12 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 
 	@Override
 	public String getConnectionType() throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sConnectionType;
 	}
 
 	@Override
 	public void setConnectionType(String sConnectionType) throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		
+		this.sConnectionType = sConnectionType;
 	}
 	
 	@Override
@@ -616,18 +611,17 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	//###################################
 	//### FLAGLOCAL Handling
 	@Override
-	public boolean getFlagLocal(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.getFlagLocal(objEnumFlag.name());
 	}
 
 	@Override
-	public boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-		return this.setFlagCustom(objEnumFlag.name(), bFlagValue);
+	public boolean setFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
 	}
 
 	@Override
-	public boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+	public boolean[] setFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
 		boolean[] baReturn=null;
 		main:{
 			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
@@ -644,16 +638,57 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 
 	@Override
-	public boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-		return this.proofFlagCustomExists(objEnumFlag.name());
+	public boolean proofFlagLocalExists(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagLocalExists(objEnumFlag.name());
 	}
 
 	@Override
-	public boolean proofFlagSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 
 
+	//###################################
+	//### FLAG CUSTOM Handling
+	//###################################			
+	
+	//### aus IJgitEnabledZZZ
+	@Override
+	public boolean getFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
+		return this.getFlagCustom(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean setFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlagCustom(objEnumFlag.name(), bFlagValue);
+	}
+
+	@Override
+	public boolean[] setFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		boolean[] baReturn=null;
+		main:{
+			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
+				baReturn = new boolean[objaEnumFlag.length];
+				int iCounter=-1;
+				for(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag:objaEnumFlag) {
+					iCounter++;
+					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
+					baReturn[iCounter]=bReturn;
+				}
+			}
+		}//end main:
+		return baReturn;
+	}
+
+	@Override
+	public boolean proofFlagCustomExists(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagCustomExists(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean proofFlagCustomSetBefore(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagCustomSetBefore(objEnumFlag.name());
+	}
 	
 	//###################################
 	//### FLAG Handling

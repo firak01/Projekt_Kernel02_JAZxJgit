@@ -12,6 +12,20 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	
 	
 	public enum FLAGZLOCAL {
+		DUMMY
+	}
+	
+	//damit muss man nicht mehr tippen hinter dem enum .name()
+	public abstract boolean getFlagLocal(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean proofFlagSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	
+	//#############################################################
+	//### FLAGZCustom
+	//#############################################################
+	public enum FLAGZCUSTOM{
 		DUMMY (1 << 0), 
 		MERGE_IGNORE_CHECKOUT_CONFLICTS     (1 << 1), // beim PULL / MERGE werden Konflikte unterdrückt. Es wird gemäß der Strategie ausgewählt was gewinnt
 		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
@@ -21,7 +35,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 		
 		private final int mask;
 		
-		private FLAGZLOCAL(int mask) {
+		private FLAGZCUSTOM(int mask) {
 			this.mask = mask;
 		}
 		
@@ -29,13 +43,13 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 			return mask;
 		}
 	}
-	
-	//damit muss man nicht mehr tippen hinter dem enum .name()
-	public abstract boolean getFlagLocal(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
-	public abstract boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	public abstract boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	public abstract boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
-	public abstract boolean proofFlagSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+		
+	boolean getFlagCustom(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	boolean setFlagCustom(FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean[] setFlagCustom(FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean proofFlagCustomExists(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	boolean proofFlagCustomSetBefore(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+		
 	
 	//#############################################################
 	//### FLAGZ
@@ -49,6 +63,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
 	boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
 	boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	
 	
 	
 	
