@@ -182,6 +182,7 @@ public class JgitStarterMain implements IConstantZZZ{
 			//-z  Flags:
 			//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
 			HashMap<String,Boolean> hmFlag = null;
+			HashMap<String,Boolean> hmFlagCustom = null;
 			HashMap<String,Boolean> hmFlagLocal = null;
 			
 			//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
@@ -243,13 +244,23 @@ public class JgitStarterMain implements IConstantZZZ{
 					}
 				}
 				
-				hmFlagLocal = objConfig.getHashMapFlagCustom();
+				hmFlagCustom = objConfig.getHashMapFlagCustom();
+				if(hmFlagCustom!=null) {
+					for(int i=0; i< hmFlagCustom.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterSSH.setFlagCustom(sFlagName, bFlagValue);
+					}
+				}
+				
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
 				if(hmFlagLocal!=null) {
 					for(int i=0; i< hmFlagLocal.size(); i++) {
 						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
 						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
 						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlagCustom(sFlagName, bFlagValue);
+						objStarterSSH.setFlagLocal(sFlagName, bFlagValue);
 					}
 				}
 				
@@ -290,15 +301,26 @@ public class JgitStarterMain implements IConstantZZZ{
 					}
 				}
 				
-				hmFlagLocal = objConfig.getHashMapFlagCustom();
+				hmFlagCustom = objConfig.getHashMapFlagCustom();
+				if(hmFlagCustom!=null) {
+					for(int i=0; i< hmFlagCustom.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+						Boolean boolFlagValue = hmFlagCustom.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterHTTPS.setFlagCustom(sFlagName, bFlagValue);
+					}
+				}
+				
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
 				if(hmFlagLocal!=null) {
 					for(int i=0; i< hmFlagLocal.size(); i++) {
 						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
 						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
 						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlagCustom(sFlagName, bFlagValue);
+						objStarterHTTPS.setFlagLocal(sFlagName, bFlagValue);
 					}
 				}
+				
 				
 				for(String sActionTemp : listasAction) {				
 					switch(sActionTemp) {
@@ -328,10 +350,8 @@ public class JgitStarterMain implements IConstantZZZ{
 			
 			
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();		
 		} catch (ExceptionZZZ e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JGitInternalException e) {
 			e.printStackTrace();
