@@ -623,7 +623,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 
 	@Override
 	public boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
+		return this.setFlagCustom(objEnumFlag.name(), bFlagValue);
 	}
 
 	@Override
@@ -645,7 +645,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 
 	@Override
 	public boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-		return this.proofFlagLocalExists(objEnumFlag.name());
+		return this.proofFlagCustomExists(objEnumFlag.name());
 	}
 
 	@Override

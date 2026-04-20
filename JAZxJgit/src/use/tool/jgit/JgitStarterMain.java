@@ -243,13 +243,13 @@ public class JgitStarterMain implements IConstantZZZ{
 					}
 				}
 				
-				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				hmFlagLocal = objConfig.getHashMapFlagCustom();
 				if(hmFlagLocal!=null) {
 					for(int i=0; i< hmFlagLocal.size(); i++) {
 						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
 						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
 						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlagLocal(sFlagName, bFlagValue);
+						objStarterSSH.setFlagCustom(sFlagName, bFlagValue);
 					}
 				}
 				
@@ -290,13 +290,13 @@ public class JgitStarterMain implements IConstantZZZ{
 					}
 				}
 				
-				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				hmFlagLocal = objConfig.getHashMapFlagCustom();
 				if(hmFlagLocal!=null) {
 					for(int i=0; i< hmFlagLocal.size(); i++) {
 						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
 						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
 						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlagLocal(sFlagName, bFlagValue);
+						objStarterHTTPS.setFlagCustom(sFlagName, bFlagValue);
 					}
 				}
 				
