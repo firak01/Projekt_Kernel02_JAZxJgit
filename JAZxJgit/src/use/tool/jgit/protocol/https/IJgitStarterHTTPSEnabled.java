@@ -1,4 +1,4 @@
-package use.tool.jgit.https;
+package use.tool.jgit.protocol.https;
 
 import use.tool.jgit.IJgitEnabledZZZ;
 

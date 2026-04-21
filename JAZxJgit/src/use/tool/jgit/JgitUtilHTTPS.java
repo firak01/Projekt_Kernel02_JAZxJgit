@@ -2,12 +2,14 @@ package use.tool.jgit;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -25,6 +27,8 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.tool.jgit.merge.GitPreMergeCheck;
+import use.tool.jgit.merge.ResultPreMergeCheck;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
 	public static final String sPROTOCOL_PART = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL;
@@ -432,6 +436,30 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
 		        }
 		
+		        
+		        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+		        //             ohne eine Exception durchlaufen kann
+//		        Status status = git.status().call();
+//
+//		        if (!status.isClean()) {
+//		            System.out.println("Working directory not clean!");
+//		            if(status.hasUncommittedChanges()) {
+//		            	System.out.println("Has uncommited changes:");
+//		            	Set<String> setUncommittedChanges = status.getUncommittedChanges();
+//		            	for(String sUncommittedChange : setUncommittedChanges) {
+//		            		System.out.println("- " + sUncommittedChange);
+//		            	}
+//		            }
+//		        }
+		        
+		        //20260421: 2a) Vorprüfung per eigener, gekapselter Routine
+		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+		        if (!check.isClean()) {
+		            check.printReport();
+		            break main; // Merge abbrechen
+		        }
+		        
+		        //2b) Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
 		        MergeCommand mergeCommand = git.merge();
 		        mergeCommand.include(remoteBranchObjectId);
 		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);

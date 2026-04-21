@@ -1,4 +1,4 @@
-package use.tool.jgit.https;
+package use.tool.jgit.protocol.https;
 
 import java.io.File;
 import java.util.Set;
@@ -25,7 +25,8 @@ import use.tool.jgit.JgitStarterMain;
 import use.tool.jgit.JgitUtil;
 import use.tool.jgit.JgitUtilHTTPS;
 import use.tool.jgit.JgitUtilSSH;
-import use.tool.jgit.MergeAnalysisResult;
+import use.tool.jgit.merge.GitPostMergeAnalyse;
+import use.tool.jgit.merge.ResultPostMergeAnalysis;
 
 
 
@@ -350,19 +351,24 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);//JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
-			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository prüfen/erfüllen.");
+				break main;
+			}
+			
+			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();			
 			bReturn = objMergeStatus.isSuccessful();
 			if(bReturn) break main;
 			
-			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateiene mit den Konflikten auflisten
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
 			boolean bAnyConflict = JgitUtil.logConflicts(objMergeResult);
 			bReturn = !bAnyConflict;
 			
 			
 			System.out.println("##### ANALYSE #######");
-			MergeAnalysisResult objAnalyseResult = JgitUtil.analyzeMergeResult(objMergeResult);
-			boolean bIsDirtyWorktress = objAnalyseResult.isDirtyWorktree();
-			System.out.println("Dirty Worktree found. Vielleicht lokale Version erst committen?");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			objAnalyseResult.printReport();
+			
 					
 		}//end main:
 		return bReturn;

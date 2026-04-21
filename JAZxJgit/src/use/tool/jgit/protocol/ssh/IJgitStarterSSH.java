@@ -1,4 +1,4 @@
-package use.tool.jgit.ssh;
+package use.tool.jgit.protocol.ssh;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;

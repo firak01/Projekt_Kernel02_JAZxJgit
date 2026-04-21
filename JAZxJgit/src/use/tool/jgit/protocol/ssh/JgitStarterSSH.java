@@ -1,4 +1,4 @@
-package use.tool.jgit.ssh;
+package use.tool.jgit.protocol.ssh;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -37,7 +37,7 @@ import use.tool.jgit.JgitStarterMain;
 import use.tool.jgit.JgitUtil;
 import use.tool.jgit.JgitUtilHTTPS;
 import use.tool.jgit.JgitUtilSSH;
-import use.tool.jgit.https.JgitStarterHTTPS;
+import use.tool.jgit.protocol.https.JgitStarterHTTPS;
 
 
 

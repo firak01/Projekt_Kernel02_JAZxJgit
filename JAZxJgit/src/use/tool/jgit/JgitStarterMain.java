@@ -18,8 +18,8 @@ import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.tool.jgit.ConfigJGIT;
-import use.tool.jgit.https.JgitStarterHTTPS;
-import use.tool.jgit.ssh.JgitStarterSSH;
+import use.tool.jgit.protocol.https.JgitStarterHTTPS;
+import use.tool.jgit.protocol.ssh.JgitStarterSSH;
 
 public class JgitStarterMain implements IConstantZZZ{
 

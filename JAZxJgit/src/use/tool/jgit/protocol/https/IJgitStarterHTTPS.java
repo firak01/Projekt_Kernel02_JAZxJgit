@@ -1,4 +1,4 @@
-package use.tool.jgit.https;
+package use.tool.jgit.protocol.https;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;

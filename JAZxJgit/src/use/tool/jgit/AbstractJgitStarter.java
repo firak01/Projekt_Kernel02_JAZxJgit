@@ -30,7 +30,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.tool.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
-import use.tool.jgit.ssh.JgitStarterSSH;
+import use.tool.jgit.protocol.ssh.JgitStarterSSH;
 
 public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarter, IJgitEnabledZZZ{
 	private static final long serialVersionUID = -1998325674945232389L;
