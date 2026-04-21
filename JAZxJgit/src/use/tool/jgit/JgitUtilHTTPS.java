@@ -209,8 +209,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static boolean pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
-		boolean bReturn = false;
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+		MergeResult objReturn = null;
 		main:{
 	        try {
 	
@@ -338,8 +338,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
 					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
 					 
-					MergeResult mergeResult = mergeCommand.call();
-					System.out.println("Merge-Status:" + mergeResult.getMergeStatus());
+					objReturn = mergeCommand.call();
+					//System.out.println("Merge-Status:" + mergeResult.getMergeStatus());
 																					
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {
@@ -362,8 +362,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            //Pull erneut versuchen
 		            git.pull().call();
 		        }
-				
-				bReturn = true;	
+								
 	        }catch(IOException ioe) {
 	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
 	        	throw ez;
@@ -378,12 +377,21 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				throw ez;
 			}       
 	    }//end main:
-	    return bReturn;
+	    return objReturn;
 	}
 	
 	
-	public static boolean pullSingleBranchHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
-		boolean bReturn = false;
+	//++++++++++++++++++++++++++++++++++++++++
+	public static MergeResult pullSingleBranchHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
+		return pullSingleBranchHTTPS_(git, credentialsProvider, sPAT, remoteUrl, branch, true);
+	}
+	
+	public static MergeResult pullSingleBranchHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+		return pullSingleBranchHTTPS_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail);
+    }
+	
+	private static MergeResult pullSingleBranchHTTPS_(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+		MergeResult objReturn = null;
 		main:{
 	        try {
 	
@@ -428,33 +436,33 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        mergeCommand.include(remoteBranchObjectId);
 		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
 		
-		        MergeResult result = mergeCommand.call();
+		        objReturn = mergeCommand.call();
 		
 		        // =========================
 		        // 3. Ergebnis prüfen
 		        // =========================
-		        if (!result.getMergeStatus().isSuccessful()) {
+		        if (!objReturn.getMergeStatus().isSuccessful()) {
 		
-		            switch (result.getMergeStatus()) {
+		            switch (objReturn.getMergeStatus()) {
 		
 		                case CONFLICTING:
-		                    System.out.println("Merge conflicts detected!");
-		                    // Hier kannst du später automatische Konfliktlösung einbauen
+		                    System.out.println("Merge conflicts detected!");		                    
 		                    break;
 		
 		                case FAILED:
-		                    throw new IllegalStateException("Merge failed: " + result.toString());
+		                	System.out.println("Merge conflicts detected!");	
+		                    if(!bSuppressExceptionOnMergeFail) throw new IllegalStateException("Merge failed: " + objReturn.toString());
+		                    break;
 		
 		                case ALREADY_UP_TO_DATE:
 		                    System.out.println("Already up-to-date.");
 		                    break;
 		
 		                default:
-		                    System.out.println("Merge status: " + result.getMergeStatus());
+		                    System.out.println("Merge status: " + objReturn.getMergeStatus());
 		            }
 		        }
 
-        		bReturn = true;
 	        }catch(IOException ioe) {
 	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
 	        	throw ez;
@@ -469,7 +477,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				throw ez;
 			}       
 		}//end main:
-		return bReturn;
+		return objReturn;
     }
 
 	/** Anders als bei SSH kann hier ein Pull nur durch Zerlegung in Fetch und Merge gemacht werden.
@@ -480,8 +488,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static boolean pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
-		boolean bReturn = false;
+	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+		MergeResult objReturn = null;
 		main:{
 			try {	
 				// aber mal explizit als pullCommand
@@ -546,10 +554,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				MergeCommand mergeCommand = git.merge();
 				mergeCommand.include(objRef);
 					
-				MergeResult mergeResult = mergeCommand.call();
-				System.out.println("Merge-Status:" + mergeResult.getMergeStatus());//pullResult.getMergeResult());
+				objReturn = mergeCommand.call();
+				System.out.println("Merge-Status:" + objReturn.getMergeStatus());//pullResult.getMergeResult());
 																				
-				bReturn = true;
 				//###############################################################		
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -562,7 +569,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				throw ez;
 			}
 		}//end main:
-		return bReturn;
+		return objReturn;
 	}
 	
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
@@ -671,7 +678,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		 return objReturn;
 	}
 	
-	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {		
+	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
+		MergeResult objReturn = null;
 		main:{
 	        try {
 		        if (branch == null || branch.trim().isEmpty()) {
@@ -715,29 +723,26 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		                merge.include(remoteObject);
 		                merge.setStrategy(MergeStrategy.RECURSIVE);
 		
-		                MergeResult result = merge.call();
+		                objReturn = merge.call();
 		
-		                System.out.println("Merge-Status: " + result.getMergeStatus());
+		                System.out.println("Merge-Status: " + objReturn.getMergeStatus());
 		
 		                // =========================
 		                // 3. Ergebnis prüfen
 		                // =========================
-		                if (result.getMergeStatus().isSuccessful()) {
-		                    return result;
+		                if (objReturn.getMergeStatus().isSuccessful()) {
+		                	System.out.println("Merge SUCCESSFUL.");
+		                    
+		                }else if (objReturn.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
+		                	// normale Merge-Konflikte (nicht Checkout)
+		                    System.out.println("Merge conflicts detected (content-level).");		                   
+		                
+		                }else if (objReturn.getMergeStatus().equals(MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
+		                	System.out.println("Merge ALREADY UP TO DATE.");		                   
+		                }else {
+		                	// 	andere Fälle
+		                	throw new IllegalStateException("Merge failed: " + objReturn.getMergeStatus());
 		                }
-		
-		                if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
-		                    System.out.println("Merge conflicts detected (content-level).");
-		                    return result; // normale Merge-Konflikte (nicht Checkout)
-		                }
-		
-		                if (result.getMergeStatus().equals(MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
-		                    return result;
-		                }
-		
-		                // andere Fälle
-		                throw new IllegalStateException("Merge failed: " + result.getMergeStatus());
-		
 		            } catch (CheckoutConflictException cce) {
 		
 		                System.out.println("CheckoutConflict erkannt – versuche automatische Bereinigung...");
@@ -770,7 +775,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            }
 		        }
  
-        		throw new IllegalStateException("Unexpected end of method");
+        		//throw new IllegalStateException("Unexpected end of method");
         
 	        }catch(IOException ioe) {
 	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
@@ -785,7 +790,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}       
-		}//end main:		
+		}//end main:	
+		return objReturn;
     }
 
 }//end class

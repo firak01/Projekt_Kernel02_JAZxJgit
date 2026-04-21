@@ -12,7 +12,22 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	
 	
 	public enum FLAGZLOCAL {
-		DUMMY
+		DUMMYFLAGZLOCAL (1 << 0), 
+		MERGE_IGNORE_CHECKOUT_CONFLICTS     (1 << 1), // beim PULL / MERGE werden Konflikte unterdrückt. Es wird gemäß der Strategie ausgewählt was gewinnt
+		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
+		USE_STRATEGY__MERGE_CONFLICT_THEIRS (1 << 3), 
+		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4),
+		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5); //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
+		
+		private final int mask;
+		
+		private FLAGZLOCAL(int mask) {
+			this.mask = mask;
+		}
+		
+		public int getMask() {
+			return mask;
+		}
 	}
 	
 	//damit muss man nicht mehr tippen hinter dem enum .name()
@@ -26,22 +41,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	//### FLAGZCustom
 	//#############################################################
 	public enum FLAGZCUSTOM{
-		DUMMY (1 << 0), 
-		MERGE_IGNORE_CHECKOUT_CONFLICTS     (1 << 1), // beim PULL / MERGE werden Konflikte unterdrückt. Es wird gemäß der Strategie ausgewählt was gewinnt
-		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
-		USE_STRATEGY__MERGE_CONFLICT_THEIRS (1 << 3), 
-		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4),
-		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5);//beim PULL / MEGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
-		
-		private final int mask;
-		
-		private FLAGZCUSTOM(int mask) {
-			this.mask = mask;
-		}
-		
-		public int getMask() {
-			return mask;
-		}
+		DUMMYFLAGZCUSTOM
 	}
 		
 	boolean getFlagCustom(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
@@ -55,7 +55,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	//### FLAGZ
 	//#############################################################
 	public enum FLAGZ{
-		DUMMY
+		DUMMYFLAGZ
 	}
 		
 	boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;

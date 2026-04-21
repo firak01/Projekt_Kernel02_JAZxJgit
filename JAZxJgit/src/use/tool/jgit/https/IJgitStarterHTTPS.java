@@ -12,7 +12,18 @@ public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarte
 	
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
 	
+	
+	
+	//+++++++ PULL: Welche Methode verwendet wird, wird über ein Flag gesteuert
+	//a) pull ohne Mergekonflikte abzufangen, über alle Branches (wird aber nicht verwendet)
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
+	
+	//b) pull ohne MergeKonflikte abzufangen, über einen Branch
+	public boolean pullitSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
+	
+	//c) pull, die Konfliktdateien werden gezielt zurückgesetzt
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
+	
+	//d) pull mit dem Automatuschen auflösen von Mergekonflikten, ggfs. mit Strategie, die auch per Flag gesteuert wird
 	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;	               
 }

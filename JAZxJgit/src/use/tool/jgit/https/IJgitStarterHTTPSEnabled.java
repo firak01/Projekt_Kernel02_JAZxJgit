@@ -2,7 +2,7 @@ package use.tool.jgit.https;
 
 import use.tool.jgit.IJgitEnabledZZZ;
 
-public interface IJgitStarterHTTPSEnabled {
+public interface IJgitStarterHTTPSEnabled extends IJgitEnabledZZZ{
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################

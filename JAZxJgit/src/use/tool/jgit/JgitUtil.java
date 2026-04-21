@@ -3,12 +3,16 @@ package use.tool.jgit;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import basic.zBasic.ExceptionZZZ;
@@ -441,5 +445,243 @@ Repository existingRepo = new FileRepositoryBuilder()
 			if(sProtocol.equals("https")) bReturn = true;
 		}//end main:
 		return bReturn;
+	}
+	
+//	public static boolean logConflicts(MergeResult mergeResult) throws ExceptionZZZ {
+//		boolean bReturn = false;
+//		main:{
+//			if(mergeResult==null) {
+//				ExceptionZZZ ez = new ExceptionZZZ("MergeResult", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;				
+//			}
+//			
+//			// >>> HIER: Konfliktdateien auslesen <<<
+//			Map<String, int[][]> conflicts = mergeResult.getConflicts();
+//			if (conflicts == null) {
+//				//Pre-Merge-Abbruch wegen Dirty Working Tree
+//				
+//				
+//			}else if (conflicts != null && !conflicts.isEmpty()) {
+//				//
+//				System.out.println("Conflicting files:");
+//
+//		         for (Map.Entry<String, int[][]> entry : conflicts.entrySet()) {
+//		             String filePath = entry.getKey();
+//		             System.out.println(" - " + filePath);
+//		
+//		             // Optional: Detailinfos (Zeilenbereiche)
+//		             int[][] chunks = entry.getValue();
+//		             if (chunks != null) {
+//		                 for (int i = 0; i < chunks.length; i++) {
+//		                     int[] c = chunks[i];
+//		                     System.out.println("   conflict chunk " + i +
+//		                             " [baseStart=" + c[0] +
+//		                             ", baseEnd=" + c[1] +
+//		                             ", oursStart=" + c[2] +
+//		                             ", oursEnd=" + c[3] +
+//		                             ", theirsStart=" + c[4] +
+//		                             ", theirsEnd=" + c[5] + "]");
+//		                 }
+//		             }
+//		         }
+//		         
+//		         bReturn = true;
+//		     } else {
+//		         System.out.println("No detailed conflict info available.");
+//		     }
+//		}//end main:
+//		return bReturn;	
+//	}
+	
+	public static boolean logConflicts(MergeResult mergeResult) throws ExceptionZZZ {
+	    boolean bReturn = false;
+	    main:{
+	        if(mergeResult==null) {
+	            ExceptionZZZ ez = new ExceptionZZZ("MergeResult", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+	            throw ez;                
+	        }
+
+	        MergeResult.MergeStatus status = mergeResult.getMergeStatus();
+	        System.out.println("MergeStatus: " + status);
+
+	        // =========================================
+	        // 1. Erfolgsfälle (kein Problem)
+	        // =========================================
+	        if(status.isSuccessful()) {
+
+	            switch(status) {
+	                case FAST_FORWARD:
+	                case FAST_FORWARD_SQUASHED:
+	                    System.out.println("Fast-forward merge performed.");
+	                    break;
+
+	                case ALREADY_UP_TO_DATE:
+	                    System.out.println("Already up-to-date.");
+	                    break;
+
+	                case MERGED:
+	                case MERGED_SQUASHED:
+	                case MERGED_NOT_COMMITTED:
+	                    System.out.println("Merge successful.");
+	                    break;
+
+	                default:
+	                    System.out.println("Successful merge with status: " + status);
+	            }
+
+	            break main; // kein Fehler
+	        }
+
+	        // =========================================
+	        // 2. Echte Konflikte (Merge wurde durchgeführt)
+	        // =========================================
+	        if(status == MergeResult.MergeStatus.CONFLICTING) {
+
+	            System.out.println("Merge conflicts detected!");
+
+	            Map<String, int[][]> conflicts = mergeResult.getConflicts();
+
+	            if (conflicts != null && !conflicts.isEmpty()) {
+	                System.out.println("Conflicting files:");
+
+	                for (Map.Entry<String, int[][]> entry : conflicts.entrySet()) {
+	                    String filePath = entry.getKey();
+	                    System.out.println(" - " + filePath);
+
+	                    // Detailinfos
+	                    int[][] chunks = entry.getValue();
+	                    if (chunks != null) {
+	                        for (int i = 0; i < chunks.length; i++) {
+	                            int[] c = chunks[i];
+	                            System.out.println("   conflict chunk " + i +
+	                                    " [baseStart=" + c[0] +
+	                                    ", baseEnd=" + c[1] +
+	                                    ", oursStart=" + c[2] +
+	                                    ", oursEnd=" + c[3] +
+	                                    ", theirsStart=" + c[4] +
+	                                    ", theirsEnd=" + c[5] + "]");
+	                        }
+	                    }
+	                }
+
+	                bReturn = true;
+	                break main;
+	            } else {
+	                System.out.println("Conflict status but no detailed conflict info available.");
+	                bReturn = true;
+	                break main;
+	            }
+	        }
+
+	        // =========================================
+	        // 3. FAILED → häufig Dirty Worktree oder andere Ursachen
+	        // =========================================
+	        if(status == MergeResult.MergeStatus.FAILED) {
+
+	            System.out.println("Merge FAILED.");
+
+	            Map<String, MergeFailureReason> failingPaths = mergeResult.getFailingPaths();
+
+	            if (failingPaths != null && !failingPaths.isEmpty()) {
+
+	                System.out.println("Failing paths:");
+
+	                for (Map.Entry<String, MergeFailureReason> entry : failingPaths.entrySet()) {
+	                    String filePath = entry.getKey();
+	                    MergeFailureReason reason = entry.getValue();
+
+	                    System.out.println(" - " + filePath + " : " + reason);
+
+	                    // Spezifische Diagnose
+	                    if(reason == MergeFailureReason.DIRTY_WORKTREE) {
+	                        System.out.println("   -> Local changes would be overwritten (DIRTY_WORKTREE).");
+	                    } else if(reason == MergeFailureReason.COULD_NOT_DELETE) {
+	                        System.out.println("   -> File could not be deleted.");
+	                   // } else if(reason == MergeFailureReason.COULD_NOT_RENAME) {
+	                   //     System.out.println("   -> File could not be renamed.");
+	                    }
+	                }
+
+	                bReturn = true;
+	                break main;
+
+	            } else {
+	                System.out.println("FAILED but no failing paths information available.");
+	                bReturn = true;
+	                break main;
+	            }
+	        }
+
+	        // =========================================
+	        // 4. Sonstige Fälle
+	        // =========================================
+	        System.out.println("Unhandled merge status: " + status);
+	        bReturn = true;
+
+	    }//end main:
+	    return bReturn;    
+	}
+	
+	public static MergeAnalysisResult analyzeMergeResult(MergeResult mergeResult) throws ExceptionZZZ {
+	    MergeAnalysisResult result = new MergeAnalysisResult();
+
+	    main:{
+	        if(mergeResult==null) {
+	            ExceptionZZZ ez = new ExceptionZZZ("MergeResult", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+	            throw ez;                
+	        }
+
+	        MergeResult.MergeStatus status = mergeResult.getMergeStatus();
+	        result.setStatus(status);//.status = status;
+
+	        // =========================
+	        // 1. Erfolgsfall
+	        // =========================
+	        if(status != null && status.isSuccessful()) {
+	            break main;
+	        }
+
+	        // =========================
+	        // 2. Konflikte
+	        // =========================
+	        Map<String, int[][]> conflicts = mergeResult.getConflicts();
+	        if(conflicts != null && !conflicts.isEmpty()) {
+	            result.setConflicts(conflicts);//result.conflicts = conflicts;
+	            result.hasConflicts(true);//result.hasConflicts = true;
+	        }
+
+	        // =========================
+	        // 3. Failing Paths
+	        // =========================
+	        //Merke: Aus Versionssicherheitsgründen MergeResult.MergeFailureReason angepasst mit generischem ?
+	        Map<String, ?> failingPaths = mergeResult.getFailingPaths();
+	        if(failingPaths != null && !failingPaths.isEmpty()) {
+	            result.setFailingPaths(failingPaths);
+	            result.hasFailures(true);
+
+	            // Speziell prüfen auf DIRTY_WORKTREE
+//	            for(Map.Entry<String, ?> entry : failingPaths.entrySet()) {
+//	                if(entry.getValue() == MergeResult.MergeFailureReason.DIRTY_WORKTREE) {
+//	                    result.isDirtyWorktree = true;
+//	                    break;
+//	                }
+//	            }
+	            
+	            for (Map.Entry<String, ?> entry : failingPaths.entrySet()) {
+	                String filePath = entry.getKey();
+	                Object reason = entry.getValue();
+
+	                System.out.println(" - " + filePath + " : " + reason);
+
+	                if (reason != null && "DIRTY_WORKTREE".equals(reason.toString())) {
+	                	 result.isDirtyWorktree(true);
+		                 break;
+	                }
+	            }
+	        }
+
+	    }//end main
+
+	    return result;
 	}
 }
