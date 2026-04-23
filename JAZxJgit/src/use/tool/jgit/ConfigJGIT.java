@@ -110,6 +110,19 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 		}//end main:		
 		return sReturn;
 	}
+
+	@Override
+	public String readActionCommit() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("commit");			
+		}//end main:		
+		return sReturn;
+	}
 	
 	@Override
 	public String readActionPush() throws ExceptionZZZ {
@@ -120,6 +133,19 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("push");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String readActionCommitAndPush() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("commitAndPush");			
 		}//end main:		
 		return sReturn;
 	}

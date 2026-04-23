@@ -31,7 +31,9 @@ public interface IConfigJGIT {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = "origin";
 	
 	public String readActionPull() throws ExceptionZZZ;
+	public String readActionCommit() throws ExceptionZZZ;
 	public String readActionPush() throws ExceptionZZZ;
+	public String readActionCommitAndPush() throws ExceptionZZZ;
 	
 	public String getConnectionTypeDefault() throws ExceptionZZZ;
 	public String readConnectionType() throws ExceptionZZZ;	

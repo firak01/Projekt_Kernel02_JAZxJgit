@@ -810,9 +810,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				Git git = this.getGitObject();
 				boolean bSuccessPush = this.pushit(git);
 		        if(bSuccessPush) {
-					System.out.println("pull erfolgreich");
+					System.out.println("push erfolgreich");
 				}else {
-					System.out.println("pull NICHT erfolgreich");
+					System.out.println("push NICHT erfolgreich");
 					break main;
 				}
 				git.close();

@@ -35,13 +35,18 @@ public class ResultPreMergeCheck {
     public void printReport() {
         if (clean) {
             System.out.println("Repository ist sauber. Merge kann durchgeführt werden.");
+            System.out.println("-------------------------------\n");
             return;
         }
 
         System.out.println("Repository ist NICHT sauber:");
         for (int i = 0; i < problems.size(); i++) {
+        	//zusätzliche Trennzeilen zwischen den Lösungen
+            if(i>=1) System.out.println("  -------------------------------\n");
+            
             System.out.println("- Problem: " + problems.get(i));
-            System.out.println("  Lösung: " + solutions.get(i));
+            System.out.println("- Lösung: " + solutions.get(i));                      
         }
+        System.out.println("-------------------------------\n");
     }
 }

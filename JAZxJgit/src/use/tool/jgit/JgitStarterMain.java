@@ -170,7 +170,13 @@ public class JgitStarterMain implements IConstantZZZ{
 			sAction = objConfig.readActionPull();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionCommit();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionPush();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
+			sAction = objConfig.readActionCommitAndPush();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			if(listasAction.isEmpty()) {

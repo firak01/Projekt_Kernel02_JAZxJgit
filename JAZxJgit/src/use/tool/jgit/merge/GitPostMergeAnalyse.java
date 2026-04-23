@@ -42,8 +42,10 @@ public class GitPostMergeAnalyse implements IConstantZZZ{
 		            result.setConflicts(conflicts);
 		            result.hasConflicts(true);
 
+		            String sFiles = ResultUtil.formatSet(conflicts.keySet());
+
 		            result.addProblem(
-		                "Merge-Konflikte in Dateien vorhanden",
+		                "Merge-Konflikte in folgenden Dateien:\n" + sFiles,
 		                "Konflikte manuell auflösen und anschließend committen."
 		            );
 		        }
@@ -57,11 +59,36 @@ public class GitPostMergeAnalyse implements IConstantZZZ{
 		            result.setFailingPaths(failingPaths);
 		            result.hasFailures(true);
 
+		            // Nur Dateinamen
+		            String sFiles = ResultUtil.formatSet(failingPaths.keySet());
+
 		            result.addProblem(
-		                "Fehler beim Merge (Failing Paths vorhanden)",
+		                "Fehler beim Merge in folgenden Dateien:\n" + sFiles,
 		                "Details prüfen und betroffene Dateien korrigieren."
 		            );
 
+		            // Optional: Details inkl. Reason
+		            StringBuilder sbDetails = new StringBuilder();
+		            int icount = 0;
+		            for (Map.Entry<String, ?> entry : failingPaths.entrySet()) {
+		                icount++;
+		                if (icount >= 2) sbDetails.append("\n");
+
+		                String path = entry.getKey();
+		                Object reason = entry.getValue();
+
+		                sbDetails.append("  * ").append(path);
+		                if (reason != null) {
+		                    sbDetails.append(" (").append(reason.toString()).append(")");
+		                }
+		            }
+
+		            result.addProblem(
+		                "Details zu Failing Paths:\n" + sbDetails.toString(),
+		                "Ursachen analysieren (z. B. DIRTY_WORKTREE)."
+		            );
+
+		            // Spezielle Prüfung auf DIRTY_WORKTREE
 		            for (Map.Entry<String, ?> entry : failingPaths.entrySet()) {
 		                Object reason = entry.getValue();
 
@@ -76,7 +103,6 @@ public class GitPostMergeAnalyse implements IConstantZZZ{
 		                }
 		            }
 		        }
-	
 		    }//end main
 	
 		    return result;

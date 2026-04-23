@@ -439,20 +439,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        
 		        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
 		        //             ohne eine Exception durchlaufen kann
-//		        Status status = git.status().call();
-//
-//		        if (!status.isClean()) {
-//		            System.out.println("Working directory not clean!");
-//		            if(status.hasUncommittedChanges()) {
-//		            	System.out.println("Has uncommited changes:");
-//		            	Set<String> setUncommittedChanges = status.getUncommittedChanges();
-//		            	for(String sUncommittedChange : setUncommittedChanges) {
-//		            		System.out.println("- " + sUncommittedChange);
-//		            	}
-//		            }
-//		        }
-		        
-		        //20260421: 2a) Vorprüfung per eigener, gekapselter Routine
+		        //: 2a) Vorprüfung per eigener, gekapselter Routine
 		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
 		        if (!check.isClean()) {
 		            check.printReport();
@@ -542,10 +529,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				}
 					
 				//++++++++++++++++++++++++++++++++
-				//siehe .git\config Datei, Zeile:
-				//fetch = +refs/heads/*:refs/remotes/origin/*
-				//Minierklaerung: 
-		/*
+				//Minierklaerung: DOKU BITTE STEHEN LASSEN				
+				/*
+				siehe .git\config Datei, Zeile:
+				fetch = +refs/heads/*:refs/remotes/origin/*
+
 				Das ist ein sogenannter RefSpec (Reference Specification).
 				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
 				

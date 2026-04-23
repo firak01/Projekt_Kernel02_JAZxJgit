@@ -92,15 +92,20 @@ public class ResultPostMergeAnalysis {
     public void printReport() {
         if (isSuccessful() && problems.isEmpty()) {
             System.out.println("Merge erfolgreich und ohne Probleme.");
+            System.out.println("-------------------------------\n");
             return;
         }
 
         System.out.println("Probleme nach dem Merge:");
 
         for (int i = 0; i < problems.size(); i++) {
+            //zusätzliche Trennzeilen zwischen den Lösungen
+            if(i>=1) System.out.println("  -------------------------------\n");
+            
             System.out.println("- Problem: " + problems.get(i));
-            System.out.println("  Lösung: " + solutions.get(i));
+            System.out.println("- Lösung: " + solutions.get(i));
         }
+        System.out.println("-------------------------------\n");
     }
 
     @Override
