@@ -364,13 +364,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 	
 	
-	//##############################################################################
-	@Override
-	public boolean commitit() throws ExceptionZZZ {
-			Git git = this.getGitObject();				
-			return this.commitit(git);
-	}
-	
+	//##############################################################################	
 	@Override
 	public boolean commitit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -410,6 +404,9 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		}//end main:
 		return bReturn;
 	}
+	
+	
+	
 	
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
@@ -541,7 +538,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	
 	
 	@Override
-	public abstract boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;
+	public abstract boolean commitAndPushit(IConfigJGIT objConfig) throws ExceptionZZZ;
 
 	@Override
 	public abstract boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ;

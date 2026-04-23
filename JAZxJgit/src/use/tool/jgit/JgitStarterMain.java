@@ -269,8 +269,14 @@ public class JgitStarterMain implements IConstantZZZ{
 					case "pull":
 						bReturn = objStarterSSH.pullit(objConfig);
 						break;
+					case "commit":
+						bReturn = objStarterSSH.commitit(objConfig);						
+						break;
 					case "push":
 						bReturn = objStarterSSH.pushit(objConfig);						
+						break;
+					case "commitAndPush":
+						bReturn = objStarterSSH.commitAndPushit(objConfig);						
 						break;
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -326,9 +332,15 @@ public class JgitStarterMain implements IConstantZZZ{
 					switch(sActionTemp) {
 					case "pull":
 						bReturn = objStarterHTTPS.pullit(objConfig);
-						break;
+						break;						
+					case "commit":
+						bReturn = objStarterHTTPS.commitit(objConfig);						
+						break;						
 					case "push":
 						bReturn = objStarterHTTPS.pushit(objConfig);						
+						break;
+					case "commitAndPush":
+						bReturn = objStarterHTTPS.commitAndPushit(objConfig);						
 						break;
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
