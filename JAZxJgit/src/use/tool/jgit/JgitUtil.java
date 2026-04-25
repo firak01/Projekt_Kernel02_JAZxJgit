@@ -549,20 +549,53 @@ Repository existingRepo = new FileRepositoryBuilder()
 	                    System.out.println(" - " + filePath);
 
 	                    // Detailinfos
+	                    //z.B.: baseStart=0, baseEnd=19, oursStart=10
+	                    //Bedeutet:
+	                    /*
+	                    Diese Zahlen beschreiben die Positionen im Vergleich der drei Versionen:
+
+						base = gemeinsamer Vorfahr (Common Ancestor)
+						ours = dein lokaler Stand
+						theirs = Remote-Stand (fehlt hier in deinem Ausschnitt)
+						
+						Konkret:
+						
+						baseStart=0, baseEnd=19
+						→ Im gemeinsamen Vorfahr liegt der betroffene Bereich in den Zeilen 0 bis 19
+						oursStart=10
+						→ In deiner lokalen Version beginnt der entsprechende Bereich bei Zeile 10
+						
+						👉 Das bedeutet:
+						Der gleiche logische Codeblock wurde zwischen base → yours (und vermutlich auch base → theirs) unterschiedlich verändert → klassischer Mergekonflikt
+	                     */
 	                    int[][] chunks = entry.getValue();
 	                    if (chunks != null) {
 	                        for (int i = 0; i < chunks.length; i++) {
 	                            int[] c = chunks[i];
-	                            System.out.println("   conflict chunk " + i +
-	                                    " [baseStart=" + c[0] +
-	                                    ", baseEnd=" + c[1] +
-	                                    ", oursStart=" + c[2] +
-	                                    ", oursEnd=" + c[3] +
-	                                    ", theirsStart=" + c[4] +
-	                                    ", theirsEnd=" + c[5] + "]");
-	                        }
-	                    }
-	                }
+	                            
+	                            System.out.println("   conflict chunk " + i + "[");
+	                            if(c.length>=1) {
+	                            	System.out.print("baseStart=" + c[0]);
+	                            };
+	                            if(c.length>=2) {
+	                            	System.out.print(", baseEnd=" + c[1]);
+	                            };
+	                            if(c.length>=3) {
+	                            	System.out.print(", oursStart=" + c[2]);
+	                            };
+	                            if(c.length>=4) {
+	                            	System.out.print(", oursEnd=" + c[3]);
+	                            };
+	                            if(c.length>=5) {
+	                            	System.out.print(", theirsStart=" + c[4]);
+	                            };
+	                            if(c.length>=6) {
+	                            	System.out.print(", theirsEnd=" + c[5]);
+	                            };
+	                            System.out.print("]\n");
+	                        }//end for
+	                    }//end   if (chunks != null) {
+	                }//end for
 
 	                bReturn = true;
 	                break main;
