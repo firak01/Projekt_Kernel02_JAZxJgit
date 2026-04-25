@@ -303,7 +303,24 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			
 			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
 			boolean bAutosolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
-			if(bIgnoreConflicts & !bAutosolveConflicts) {				
+			
+			
+			//Zum Testen gezielt steuern
+			bIgnoreConflicts = false;
+			bAutosolveConflicts = false;
+			if (!bIgnoreConflicts & !bAutosolveConflicts) {
+				//Normaler Pull, Konflikte ausgeben, nicht auflösen
+				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
+				
+				String sBranch = "master";
+				//https version   bReturn = this.pullitSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
+				
+			} else if(bIgnoreConflicts & !bAutosolveConflicts) {
+
+				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
+				//https version bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
+				
 				//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
 				///1) hier THEIRS oder OURS übergeben als Strategie
 				
@@ -314,10 +331,16 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
 				                //   in der erst versucht wird zu und danach 
 				                //   nur Konflikte per THEIRS oder OURS aufgelöst werden.
-			}else if (!bIgnoreConflicts & !bAutosolveConflicts) {
-				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
+				
+								
+			} else if(!bIgnoreConflicts & bAutosolveConflicts) {
+				
+				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
+				String sBranch = "master";
+				//HTTPS VERSION bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+			
 			}else {
-				ExceptionZZZ ez = new ExceptionZZZ("Unerwartete FLAG Kombination; bIgnoreConflicts="+bIgnoreConflicts + " | bAutosolveConflicts="+bAutosolveConflicts, iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 		}//end main:
