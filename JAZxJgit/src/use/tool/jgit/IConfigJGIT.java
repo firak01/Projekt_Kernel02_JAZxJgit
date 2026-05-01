@@ -11,7 +11,7 @@ public interface IConfigJGIT {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_DEFAULT="pull|commit|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:"; 
+	final static String sPATTERN4GIT_DEFAULT="pull|commit|fetch|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:"; 
 													//ConnectionType: HTTPS oder SSH
 	
 													  //gefolgt jeweils von einer URL
@@ -32,6 +32,7 @@ public interface IConfigJGIT {
 	
 	public String readActionPull() throws ExceptionZZZ;
 	public String readActionCommit() throws ExceptionZZZ;
+	public String readActionFetch() throws ExceptionZZZ;
 	public String readActionPush() throws ExceptionZZZ;
 	public String readActionCommitAndPush() throws ExceptionZZZ;
 	

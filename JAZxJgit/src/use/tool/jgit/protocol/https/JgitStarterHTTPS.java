@@ -22,7 +22,7 @@ import use.tool.jgit.AbstractJgitStarter;
 import use.tool.jgit.IConfigJGIT;
 import use.tool.jgit.IJgitEnabledZZZ;
 import use.tool.jgit.JgitStarterMain;
-import use.tool.jgit.JgitUtil;
+import use.tool.jgit.JgitUtilZZZ;
 import use.tool.jgit.JgitUtilHTTPS;
 import use.tool.jgit.JgitUtilSSH;
 import use.tool.jgit.merge.GitPostMergeAnalyse;
@@ -45,6 +45,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	public String getPersonalAccessToken() throws ExceptionZZZ {
 		return this.sPAT;
 	}
+	
+	
 	
 	//### aus IJgitStarter
 	@Override
@@ -118,7 +120,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				//Den gibt es für SSH aber nicht... 
 				//Darum muss die URL zum verwendeten Protokol stimmen.
 				String sRepositoryBaseRemote = null;
-				if(JgitUtil.isUrlSSH(sDirectoryRepositoryRemote)) {
+				if(JgitUtilZZZ.isUrlSSH(sDirectoryRepositoryRemote)) {
 					String sAccount = JgitUtilSSH.getAccountFromUrl(sDirectoryRepositoryRemote);
 					String sHost = JgitUtilSSH.getHostFromUrl(sDirectoryRepositoryRemote);	
 					sRepositoryBaseRemote = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);				
@@ -135,7 +137,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			
 				//+++ HTTPS Zugriff sicherstellen
 				Git git = this.getGitObject();
-				CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
+				CredentialsProvider credentialsProvider = JgitUtilHTTPS.createCredentialsProviderByToken(git, this.getPersonalAccessToken());
 				System.out.println("Git Credentials Provider created done.");
 				this.setCredentialsProviderObject(credentialsProvider);
 			
@@ -151,6 +153,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 	
+	//###########################################################################
+	//###### PULL ###############################################################
 	@Override 
 	public boolean pullit(IConfigJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -185,7 +189,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 							throw ez;
 						}
 						
-						sConnectionTypeIn = JgitUtil.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+						sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
 					}else {
 						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
@@ -267,9 +271,27 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult = JgitUtilHTTPS.pullHTTPS(git, credentialsProvider, sPAT, sRepoRemote);	
+			MergeResult objMergeResult = JgitUtilHTTPS.pullHTTPS(git, credentialsProvider, sPAT, sRepoRemote);
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
+			
 			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
 			bReturn = objMergeStatus.isSuccessful();
+			if(bReturn) break main;
+			
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
+			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			bReturn = !bAnyConflict;
+			
+			
+			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			objAnalyseResult.printReport();
+			
+			
 		}//end main:
 		return bReturn;
 	}
@@ -278,9 +300,27 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote);	
+			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote);
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
+			
 			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
 			bReturn = objMergeStatus.isSuccessful();
+			if(bReturn) break main;
+			
+			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
+			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			bReturn = !bAnyConflict;
+			
+			
+			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			objAnalyseResult.printReport();
+			
 		}//end main:
 		return bReturn;
 	}
@@ -290,6 +330,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		boolean bReturn = false;
 		main:{					
 			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
+			
 			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
 			bReturn = objMergeStatus.isSuccessful();
 		}//end main:
@@ -306,16 +351,17 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				break main;
 			}
 			
-			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();			
+			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();				
 			bReturn = objMergeStatus.isSuccessful();
 			if(bReturn) break main;
 			
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			boolean bAnyConflict = JgitUtil.logConflicts(objMergeResult);
+			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### ANALYSE #######");
+			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
 			
@@ -324,10 +370,52 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 	
+	//#############################################################
+		//### PULL ####################################################
+		@Override
+		public boolean pullit(Git git) throws ExceptionZZZ {
+			boolean bReturn = false;
+			main:{
+				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+				String sPAT = this.getPersonalAccessToken();
+				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+				boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
+				boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+				
+				//Zum Testen gezielt steuern
+				//bIgnoreConflicts = false;
+				//bAutoResolveConflicts = false;
+				if (!bIgnoreConflicts & !bAutoResolveConflicts) {
+					//Normaler Pull, Konflikte ausgeben, nicht auflösen
+					//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
+					
+					String sBranch = "master";
+					bReturn = this.pullitSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+									
+				} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
+
+					//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
+					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
+									
+				} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
+					
+					//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
+					String sBranch = "master";
+					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+				
+				}else {
+					ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+			}//end main:
+			return bReturn;
+		}
+	
 	
 	
 			
-	//###############################################
+	//####################################################################
+	//###### COMMIT ######################################################
 	@Override
 	public boolean commitit(IConfigJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
@@ -360,7 +448,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 						throw ez;
 					}
 					
-					sConnectionTypeIn = JgitUtil.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
 				}else {
 					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -478,7 +566,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 						throw ez;
 					}
 					
-					sConnectionTypeIn = JgitUtil.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
 				}else {
 					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -569,7 +657,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
 			    System.out.println(("FETCH DONE"));
 				
 			    bReturn = true;
@@ -590,49 +678,32 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 
-	public CredentialsProvider createCredentialsProviderByToken(Git git) {
-		//aus Eclipse-Push Konfiguration:
-				//entspricht dem Github - Projekt - SSH
-				//git@github.com:firak01/HIS_QISSERVER_FGL.git
-				
-				//aus Github - Projekt - HTTPS
-				//https://github.com/firak01/HIS_QISSERVER_FGL.git
-				
-				//##################
-				//Authentifizierung mit https
-				/*https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
-				Authenticating with a remote
-				Most remote repos will require authentication (at least for the push command). In this tutorial, we’ll be working with remote repositories hosted on GitHub, which has two common authentication methods:
-		    	Using a personal access token (PAT) for authentication over HTTPS
-		    	Using SSH keys for authentication over SSH
-				To keep things simple in this tutorial, we’ll only be covering HTTPS authentication; SSH is more complex and will be covered in part 2 of this two-part blog post.
-
-				So in the following examples, we’ll be using a personal access token (PAT) for authentication via HTTPS. For more information on creating a PAT token, see the GitHub docs.
-				Providing Credentials for Authentication
-
-				The JGit command objects for operations such as git push, git pull, and git clone all share a setCredentialsProvider method that allows us to provide credentials to authenticate with the remote repository.
-
-				The setCredentialsProvider method takes a CredentialsProvider instance as its parameter. This interface has many implementations, the one we need to use for a PAT token is the UsernamePasswordCredentialsProvider (more commonly used for basic authentication).
-				Constructing a CredentialsProvider for a PAT token
-
-				The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
-				 */
-				
-				
-				CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
-				//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht
-				
-				/*Fehler:
-				 Exception in thread "main" org.eclipse.jgit.errors.UnsupportedCredentialItem: ssh://git@github.com:22: org.eclipse.jgit.transport.CredentialItem$YesNoType:The authenticity of host 'github.com' can't be established.
-		RSA key fingerprint is.... .
-		Are you sure you want to continue connecting?
-			at org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider.get(UsernamePasswordCredentialsProvider.java:119)
-				 */
-
-			 
-		return credentialsProvider;
-	}
+		
 	
+	//##################################################
+//	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
+//		
+//		Status status = git.status().call();
+//
+//        Set<String> added = status.getAdded();
+//        for (String add : added) {
+//            System.out.println("Added: " + add);
+//        }
+//        Set<String> uncommittedChanges = status.getUncommittedChanges();
+//        for (String uncommitted : uncommittedChanges) {
+//            System.out.println("Uncommitted: " + uncommitted);
+//        }
+//
+//        Set<String> untracked = status.getUntracked();
+//        for (String untrack : untracked) {
+//            System.out.println("Untracked: " + untrack);
+//        }
+//	}
+	
+	
+	
+	//##################################################################################
+	//####### PUSH #####################################################################
 	@Override
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -662,7 +733,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				//                  //Variante B) ohne sPAT in URL
 				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 		
-				String sUrlPartFromRepo = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
+				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
 				pushCommand.setRemote("https://firak01:" + sPAT + "@" + sUrlPartFromRepo);
 				
 				
@@ -696,25 +767,6 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 	
-	//##################################################
-	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
-		
-		Status status = git.status().call();
-
-        Set<String> added = status.getAdded();
-        for (String add : added) {
-            System.out.println("Added: " + add);
-        }
-        Set<String> uncommittedChanges = status.getUncommittedChanges();
-        for (String uncommitted : uncommittedChanges) {
-            System.out.println("Uncommitted: " + uncommitted);
-        }
-
-        Set<String> untracked = status.getUntracked();
-        for (String untrack : untracked) {
-            System.out.println("Untracked: " + untrack);
-        }
-	}
 
 	@Override 
 	public boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ {
@@ -750,7 +802,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 							throw ez;
 						}
 						
-						sConnectionTypeIn = JgitUtil.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+						sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
 					}else {
 						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
@@ -859,7 +911,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
 		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
 			    System.out.println(("FETCH DONE"));
 			}catch(TransportException tex) {
 				ExceptionZZZ ez = new ExceptionZZZ(tex);
@@ -872,48 +924,161 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 
+	
+	
+	//##############################
+	//###### FETCH #################
 	@Override
-	public boolean pullit(Git git) throws ExceptionZZZ {
+	public boolean fetchit(IConfigJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
-			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-			String sPAT = this.getPersonalAccessToken();
-			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
-			boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
-			
-			//Zum Testen gezielt steuern
-			//bIgnoreConflicts = false;
-			//bAutoResolveConflicts = false;
-			if (!bIgnoreConflicts & !bAutoResolveConflicts) {
-				//Normaler Pull, Konflikte ausgeben, nicht auflösen
-				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
-				
-				String sBranch = "master";
-				bReturn = this.pullitSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
-								
-			} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
-
-				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
-								
-			} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
-				
-				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
-				String sBranch = "master";
-				bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
-			
+		try {
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+						
+			//################################################
+			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
+			boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
+			if(bLocalRepositoryConfigured) {
+				System.out.println("Lokales Repository erfolgreich konfiguriert");
 			}else {
-				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+				//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+			}
+							
+			//######################################################################################
+			//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
+			String sConnectionTypeIn = objConfig.readConnectionType();
+			if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+				if(bLocalRepositoryConfigured) {
+					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
+					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
+					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
+						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+					
+					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+				}else {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+			}
+			
+		
+			String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
+			if(StringZZZ.isEmpty(sRepositoryRemoteHost)){
+				ExceptionZZZ ez = new ExceptionZZZ("Hostname des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sRepositoryRemoteAccount = objConfig.readRepositoryRemoteAccount();
+			if(StringZZZ.isEmpty(sRepositoryRemoteAccount)){
+				ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+
+			
+			//+++++++++++++++++++++++								
+			this.setConnectionType(sConnectionTypeIn);
+			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
+			this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
+							
+			
+			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
+			if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+			
+			//#################### Besonderheit HTTPS
+			String sPatIn = objConfig.readPersonalAccessToken();
+			if(StringZZZ.isEmpty(sPatIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository, Personal Access Token (PAT)", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setPersonalAccessToken(sPatIn);
+			
+			
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit();
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den commit
+			Git git = this.getGitObject();
+			boolean bSuccessFetch = this.fetchit(git);
+			if(bSuccessFetch) {
+				System.out.println("STATUS AFTER FETCH: SUCCESSFUL");
+				this.printStatus(git);
+				  bReturn = true;
+			}else {
+				System.out.println("STATUS AFTER FETCH: FAILED");
+				this.printStatus(git);	
+				bReturn = false;
+			}
+		
+		    git.close();
+		  
+        //###############################################################
+		
+		}catch(IllegalStateException ie) {
+			ExceptionZZZ ez = new ExceptionZZZ(ie);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
+		}
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean fetchit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//Finde geaenderte und neue Dateien fuer den Commit			
+				System.out.println("STATUS BEFORE FETCH");		
+				this.printStatus(git);
+		        //##################################################################
+		        
+				//s. ChatGPT vom 20260313
+		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+		        	        
+		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
+
+		        
+		        String sRepositoryRemote = this.getRepositoryTotalRemote();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+			    System.out.println(("FETCH DONE"));
+			  	
+				
+				//##################################################################		        
+		        System.out.println("STATUS AFTER FETCH");
+		        this.printStatus(git);
+		        
+		        bReturn = true;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}
 		}//end main:
 		return bReturn;
 	}
-
-	
-
-
-
-	
 }

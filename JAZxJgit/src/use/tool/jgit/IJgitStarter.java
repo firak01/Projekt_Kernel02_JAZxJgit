@@ -68,6 +68,9 @@ public interface IJgitStarter {
 	
 	public boolean commitAndPushit(IConfigJGIT objConfig) throws ExceptionZZZ;
 	
+	public boolean fetchit(IConfigJGIT objConfig) throws ExceptionZZZ;	
+	public boolean fetchit(Git git) throws ExceptionZZZ;
+	
 	
 	public boolean pushit(IConfigJGIT objConfig) throws ExceptionZZZ;
 	public boolean pushit(Git git) throws ExceptionZZZ;

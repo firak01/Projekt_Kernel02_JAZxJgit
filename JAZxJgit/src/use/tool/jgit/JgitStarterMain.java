@@ -173,6 +173,9 @@ public class JgitStarterMain implements IConstantZZZ{
 			sAction = objConfig.readActionCommit();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionFetch();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionPush();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
@@ -278,6 +281,9 @@ public class JgitStarterMain implements IConstantZZZ{
 					case "commit":
 						bReturn = objStarterSSH.commitit(objConfig);						
 						break;
+					case "fetch":
+						bReturn = objStarterSSH.fetchit(objConfig);
+						break;
 					case "push":
 						bReturn = objStarterSSH.pushit(objConfig);						
 						break;
@@ -341,7 +347,10 @@ public class JgitStarterMain implements IConstantZZZ{
 						break;						
 					case "commit":
 						bReturn = objStarterHTTPS.commitit(objConfig);						
-						break;						
+						break;	
+					case "fetch":
+						bReturn = objStarterHTTPS.fetchit(objConfig);
+						break;
 					case "push":
 						bReturn = objStarterHTTPS.pushit(objConfig);						
 						break;

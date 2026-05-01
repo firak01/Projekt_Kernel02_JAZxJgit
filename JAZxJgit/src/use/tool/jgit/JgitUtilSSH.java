@@ -1,7 +1,10 @@
 package use.tool.jgit;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
@@ -19,6 +22,8 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.tool.jgit.merge.GitPreMergeCheck;
+import use.tool.jgit.merge.ResultPreMergeCheck;
 
 public class JgitUtilSSH implements IConstantZZZ{
 	public static final String sPROTOCOL_PART = "git@";
@@ -27,12 +32,12 @@ public class JgitUtilSSH implements IConstantZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlRepo)) {
-				ExceptionZZZ ez = new ExceptionZZZ("UrlRepo", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("UrlRepo", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;				
 			}
 		
 			//1. Prüfen, ob das Protokol (mit Separatoren) schon da ist.
-			String sProtocolPartFound = JgitUtil.getProtocolPart(sUrlRepo);
+			String sProtocolPartFound = JgitUtilZZZ.getProtocolPart(sUrlRepo);
 			if(StringZZZ.isEmpty(sProtocolPartFound)) {
 				//dann einfach davorhängen
 				sReturn = JgitUtilSSH.sPROTOCOL_PART + sUrlRepo;
@@ -173,7 +178,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @throws ExceptionZZZ
 	 */
 	public static String getProjectFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
-		return JgitUtil.getProjectFromUrl(sRepositoryRemoteUrlSSH);
+		return JgitUtilZZZ.getProjectFromUrl(sRepositoryRemoteUrlSSH);
 	}
 	
 	/** Z.B.  von git@github.com:firak01
@@ -226,12 +231,28 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static boolean pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
-		boolean bReturn = false;
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
 		main:{
 			try {	
-				//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
-				System.out.println("Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
+				//!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+		        //             ohne eine Exception durchlaufen kann
+		        //Vorprüfung per eigener, gekapselter Routine
+		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+		        if (!check.isClean()) {
+		            check.printReport();
+		            break main; // Merge abbrechen
+		        }
+		        
+		        //+++++++++++++++++++++++++
+		        //wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+				System.out.println("SSH-Loesung: Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				
 				
 				// aber mal explizit als pullCommand
 				PullCommand pullCommand = git.pull();
@@ -240,10 +261,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 				
 				//Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
-				String sUrlBaseIn = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
-				String sUrlBaseWithProtocolIn = JgitUtil.addProtocolToUrl("git", sUrlBaseIn);
-				String sRepositoryProjectIn = JgitUtil.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-				String sUrlRepoRemote = JgitUtil.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
+				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 				//pullCommand.setRemote(sUrlRepoRemote); //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
 				                                         //      Statt dessen den "Aliasnamen" übergeben.
 				System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
@@ -252,7 +273,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				//Müssen wir aus der Url den Aliasnamen errechnen.
 				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
 				
-				String sRemoteRepositoryAlias = JgitUtil.findRemoteNameByUrl(git, sUrlRepoRemote);
+				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
 				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
 				pullCommand.setRemote(sRemoteRepositoryAlias);
 
@@ -261,26 +282,24 @@ public class JgitUtilSSH implements IConstantZZZ{
 				
 				if (pullResult.isSuccessful()) {
 				    System.out.println("Pull erfolgreich");
-				    bReturn = true;
 				} else {
 				    System.out.println("Pull fehlgeschlagen");
-				    bReturn = false;
 				}
 
-				MergeResult mergeResult = pullResult.getMergeResult();
-				if(mergeResult!=null) {
-					System.out.println("MergeResult: " + mergeResult.getMergeStatus());
+				objReturn = pullResult.getMergeResult();
+				if(objReturn!=null) {
+					System.out.println("MergeResult: " + objReturn.getMergeStatus());
 				}else {
 					System.out.println("MergeResult: Kein Status zurueckgegeben.");
 				}
 				
-				FetchResult fetchResult = pullResult.getFetchResult();
-				if(fetchResult!=null) {
-					System.out.println("FetchResult: " + fetchResult.getMessages());
-				}else {
-					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
-				}																				
-				bReturn = true;
+				//20260428 wofuer braucht es den fetchResult
+//				FetchResult fetchResult = pullResult.getFetchResult();
+//				if(fetchResult!=null) {
+//					System.out.println("FetchResult: " + fetchResult.getMessages());
+//				}else {
+//					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
+//				}																				
 				//###############################################################		
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -293,7 +312,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				throw ez;
 			}
 		}//end main:
-		return bReturn;
+		return objReturn;
 	}
 	
 	

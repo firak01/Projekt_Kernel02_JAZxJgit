@@ -9,7 +9,7 @@ import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
-import use.tool.jgit.JgitUtil;
+import use.tool.jgit.JgitUtilZZZ;
 
 public class GitPostMergeAnalyse implements IConstantZZZ{
 
@@ -18,7 +18,7 @@ public class GitPostMergeAnalyse implements IConstantZZZ{
 	
 		    main:{
 		        if(mergeResult==null) {
-		            ExceptionZZZ ez = new ExceptionZZZ("MergeResult", iERROR_PARAMETER_MISSING, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+		            ExceptionZZZ ez = new ExceptionZZZ("MergeResult", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 		            throw ez;                
 		        }
 	
