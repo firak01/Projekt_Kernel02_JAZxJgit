@@ -230,7 +230,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		if(StringZZZ.isEmpty(this.sRepositoryRemoteHost)) {
 			String sUrlRepo = this.searchRepositoryRemote();
 			
-			String sRepositoryRemoteHost = JgitUtil.computeRepositoryHostFromUrlRepo(sUrlRepo);
+			String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepo);
 			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
 		}
 		return this.sRepositoryRemoteHost;
@@ -253,12 +253,12 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
 			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
 				String sRepositoryTotalRemote = this.searchRepositoryRemote();
-				if(JgitUtil.isUrlHTTPS(sRepositoryTotalRemote)){
+				if(JgitUtilZZZ.isUrlHTTPS(sRepositoryTotalRemote)){
 					JgitUtilHTTPS.computeRepositoryUrlBaseFromUrlHTTPS(sRepositoryTotalRemote);
-				}else if(JgitUtil.isUrlSSH(sRepositoryTotalRemote)){
+				}else if(JgitUtilZZZ.isUrlSSH(sRepositoryTotalRemote)){
 					JgitUtilSSH.computeRepositoryUrlBaseFromUrlSSH(sRepositoryTotalRemote);
 				}else {
-					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sRepositoryTotalRemote + "'", iERROR_PARAMETER_VALUE, JgitUtil.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sRepositoryTotalRemote + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 			}
@@ -322,7 +322,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			}
 			
 			
-			sReturn = JgitUtil.computeRepositoryUrl(sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryUrl(sRepositoryBaseRemote, sRepositoryProject);			
 			
 		}//end main:
 		return sReturn;
@@ -405,9 +405,10 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 		return bReturn;
 	}
 	
+	@Override
+	public abstract boolean fetchit(Git git) throws ExceptionZZZ;
 	
-	
-	
+	//#######################################
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
@@ -441,7 +442,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 					throw ez;				
 				}
 				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
-				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
 				
 				//++++++++++ Erst das lokale Git-Repository initialisieren
 				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
@@ -460,7 +461,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
 				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-					JgitUtil.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+					JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
 				}
 				bReturn = true;
 				//######################################
@@ -517,7 +518,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 			String sRepositoryRemoteByAliasIn = null;
 			if(bRemoteAliasAvailable) {
 				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
-				Repository repo = JgitUtil.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
 				sRepositoryRemoteByAliasIn = repo.getConfig()
 						       .getString("remote",sRepositoryRemoteAlias,"url");
 				if(StringZZZ.isEmpty(sRepositoryRemoteByAliasIn)){
@@ -564,45 +565,45 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 	
 	
-	//############# STATIC METHODEN
-	//Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
-	//Das ist unschoen, darum Fehler abfangen
-	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-			 try {
-				Git git4Fetch = Git.open(objFileDir); 
-				System.out.println("Git-Repository 4 Fetch repository opened.");
-					
-			    FetchCommand gitCommandFetch = git4Fetch.fetch();
-			    
-			    //Laut chat gpt nicht immer die URL notwendig, da die Remote Daten schon im .git/config stehen, wuerde auch ein Alias funktionieren
-			    //aber, die RemoteUrl - einmal ermittelt - geht auch.
-			    gitCommandFetch.setRemote(sRepositoryRemote); 
-			    gitCommandFetch.call();
-	        }catch(TransportException tex) {
-		        String msg = tex.getMessage();
-		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
-		            System.out.println("Nothing to fetch - Repository ist aktuell.");	           
-		        }else {
-		        	// alle anderen Fehler weiterwerfen!
-		        	ExceptionZZZ ez = new ExceptionZZZ(tex);
-					throw ez;
-		        }
-	        }catch (IOException ioe) {
-					ExceptionZZZ ez = new ExceptionZZZ(ioe);
-					throw ez;
-			} catch (InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			} catch (GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}			
-			bReturn = true;
-		}//end main:
-		return bReturn;
-	}		
+//	//############# STATIC METHODEN
+//	//Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
+//	//Das ist unschoen, darum Fehler abfangen
+//	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote) throws ExceptionZZZ {
+//		boolean bReturn = false;
+//		main:{
+//			 try {
+//				Git git4Fetch = Git.open(objFileDir); 
+//				System.out.println("Git-Repository 4 Fetch repository opened.");
+//					
+//			    FetchCommand gitCommandFetch = git4Fetch.fetch();
+//			    
+//			    //Laut chat gpt nicht immer die URL notwendig, da die Remote Daten schon im .git/config stehen, wuerde auch ein Alias funktionieren
+//			    //aber, die RemoteUrl - einmal ermittelt - geht auch.
+//			    gitCommandFetch.setRemote(sRepositoryRemote); 
+//			    gitCommandFetch.call();
+//	        }catch(TransportException tex) {
+//		        String msg = tex.getMessage();
+//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+//		            System.out.println("Nothing to fetch - Repository ist aktuell.");	           
+//		        }else {
+//		        	// alle anderen Fehler weiterwerfen!
+//		        	ExceptionZZZ ez = new ExceptionZZZ(tex);
+//					throw ez;
+//		        }
+//	        }catch (IOException ioe) {
+//					ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//					throw ez;
+//			} catch (InvalidRemoteException ire) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ire);
+//				throw ez;
+//			} catch (GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			}			
+//			bReturn = true;
+//		}//end main:
+//		return bReturn;
+//	}		
 	
 	
 	//###################################

@@ -125,6 +125,19 @@ public class ConfigJGIT extends AbstractKernelConfigZZZ implements IConfigJGIT{
 	}
 	
 	@Override
+	public String readActionFetch() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("fetch");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
 	public String readActionPush() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
