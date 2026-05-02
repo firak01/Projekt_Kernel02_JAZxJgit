@@ -37,7 +37,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 	//### aus IJgitStarterHTTPS
 	@Override
-	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
+public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		this.sPAT = sPat;
 	}
 

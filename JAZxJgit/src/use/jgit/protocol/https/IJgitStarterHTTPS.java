@@ -7,7 +7,7 @@ import basic.zBasic.ExceptionZZZ;
 import use.jgit.IJgitStarter;
 
 public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarter{
-	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ;
+	public void 	setPersonalAccessToken(String sPat) throws ExceptionZZZ;
 	public String getPersonalAccessToken() throws ExceptionZZZ;
 	
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;

@@ -1,19 +1,78 @@
 package use.jgit.resolve;
 
+import basic.zBasic.ExceptionZZZ;
 import use.jgit.IJgitEnabledZZZ;
+import use.jgit.IJgitEnabledZZZ.FLAGZ;
+import use.jgit.IJgitEnabledZZZ.FLAGZCUSTOM;
+import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 
 public interface IJgitResolverEnabled {
 	
 	public enum ConflictStrategy {
-        OURS,
-        THEIRS
+        OURS,   //lokale Version bleibt
+        THEIRS, //remote Version bleibt
+        NEWEST  //Noch nicht implementiert, aber mit Workaround denkbar
     }
 	
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################
-
 	public enum FLAGZLOCAL {
-		DUMMY //Hier kommen Flags hin, die speziell für HTTPS gedacht sind					
+		DUMMYFLAGZLOCAL (1 << 0), 		
+		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
+		USE_STRATEGY_MERGE_CONFLICT_THEIRS (1 << 3), 
+		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4),
+		; //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
+		
+		private final int mask;
+		
+		private FLAGZLOCAL(int mask) {
+			this.mask = mask;
+		}
+		
+		public int getMask() {
+			return mask;
+		}
 	}
+	
+	//damit muss man nicht mehr tippen hinter dem enum .name()
+	public abstract boolean getFlagLocal(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean proofFlagLocalSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	
+	//#############################################################
+	//### FLAGZCustom
+	//#############################################################
+	public enum FLAGZCUSTOM{
+		DUMMYFLAGZCUSTOM
+	}
+		
+	boolean getFlagCustom(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	boolean setFlagCustom(FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean[] setFlagCustom(FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean proofFlagCustomExists(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	boolean proofFlagCustomSetBefore(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+		
+	
+	//#############################################################
+	//### FLAGZ
+	//#############################################################
+	public enum FLAGZ{
+		DUMMYFLAGZ
+	}
+		
+	boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	boolean setFlag(FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	
+	
+	
+	
+	//#######################################################################################
+	// STATUS	
+	//............ hier erst einmal nicht .....................
 }
