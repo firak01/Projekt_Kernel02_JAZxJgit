@@ -111,7 +111,7 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	public static String createCommentCommitMetadata02() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
-			sReturn =  "(by Projekt_Tool_DevEditor)";
+			sReturn =  "(by 'Projekt_Tool_DevEditor')";
 		}//end main:
 		return sReturn;
 	}
