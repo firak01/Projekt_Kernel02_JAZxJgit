@@ -3,7 +3,7 @@ package use.jgit.config;
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 
-public interface IConfigStarterJGIT {
+public interface IConfigStarterJGIT extends IConfigJGIT{
 
 	//#####################################################################
 	//####### Konfiguration der Argumgentuebergabe von aussen an das Program (s. GetOptZZZ).
@@ -11,7 +11,7 @@ public interface IConfigStarterJGIT {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_DEFAULT="pull|commit|fetch|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:"; 
+	final static String sPATTERN4GIT_DEFAULT="pull|commit|fetch|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:comment:"; 
 													  //Aktionen, ggfs. kombinierbar, aber meist nur 1 pro start:
 	                                                  //                pull, commit, fetch, push, commitAndPush 
 													  //ConnectionType: HTTPS oder SSH
@@ -23,6 +23,7 @@ public interface IConfigStarterJGIT {
 													  //rra  = Repository remote, Alias. Wie in .git\config Datei angegeben
 													  //rrac = Repository remote, Account
 													  //project = Name des Repository, ohne Basis
+													  //comment = Kommentar, z.B. für einen Commit
 	
 													  //Merke: sPATTERN4FLAG_DEFAULT besteht aus
 	                                              	  //z = Flags, die dann JSON aehnlich uebergeben werden
@@ -46,10 +47,6 @@ public interface IConfigStarterJGIT {
 	public String readPersonalAccessToken() throws ExceptionZZZ;
 	public String getPersonalAccessTokenDefault() throws ExceptionZZZ;
 	
-	public String readRepositoryLocal() throws ExceptionZZZ;
-	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ;
-	
-	
 	//Die URL zum Repository direkte angeben als Alternative zum in .git/config ueber einen Alias definierte remote Repository.
 	//Hier erst einmal eine Basis URL/ein Basis Verzeichnis....
 	public String readRepositoryRemoteHost() throws ExceptionZZZ;
@@ -62,10 +59,5 @@ public interface IConfigStarterJGIT {
 	//Verwende den Accountnamen
 	public String readRepositoryRemoteAccount() throws ExceptionZZZ;
 	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ;
-	
-	//... daran kommt dann noch das Projektverzeichnis
-	public String getRepositoryProjectNameDefault() throws ExceptionZZZ;
-	public String readRepositoryProjectName() throws ExceptionZZZ;
-	
 		
 }

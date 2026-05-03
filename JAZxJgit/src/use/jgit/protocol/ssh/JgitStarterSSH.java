@@ -37,13 +37,13 @@ import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
-import use.jgit.tool.JgitUtilHTTPS;
-import use.jgit.tool.JgitUtilSSH;
-import use.jgit.tool.JgitUtilZZZ;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
 import use.jgit.tool.push.ResultPostPushAnalysis;
+import use.jgit.util.JgitUtilHTTPS;
+import use.jgit.util.JgitUtilSSH;
+import use.jgit.util.JgitUtilZZZ;
 
 
 
@@ -390,6 +390,8 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
+				
+				String sComment = objConfig.readComment();
 	
 				
 				//+++++++++++++++++++++++								
@@ -418,7 +420,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git);
+				boolean bSuccessCommit = this.commitit(git, sComment);
 		        if(bSuccessCommit) {
 		        	System.out.println("STATUS AFTER COMMIT: SUCCESSFULL");
 		        	this.printStatus(git);
@@ -501,6 +503,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					throw ez;
 				}
 	
+				String sComment = objConfig.readComment();
 				
 				//+++++++++++++++++++++++								
 				this.setConnectionType(sConnectionTypeIn);
@@ -515,6 +518,8 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
+				
+				
 				//######################################################
 				//Konfiguriere JGit für SSH
 				boolean bSuccessConfigureGit = this.configureGit();
@@ -528,7 +533,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git);
+				boolean bSuccessCommit = this.commitit(git, sComment);
 				if(bSuccessCommit) {
 					System.out.println("commit erfolgreich");
 				}else {

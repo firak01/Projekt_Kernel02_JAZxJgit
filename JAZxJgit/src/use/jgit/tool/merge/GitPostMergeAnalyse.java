@@ -9,7 +9,7 @@ import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
-import use.jgit.tool.JgitUtilZZZ;
+import use.jgit.util.JgitUtilZZZ;
 
 public class GitPostMergeAnalyse implements IConstantZZZ{
 

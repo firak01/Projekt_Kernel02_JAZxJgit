@@ -1,4 +1,4 @@
-package use.jgit.tool;
+package use.jgit.util;
 
 import java.io.File;
 import java.io.IOException;

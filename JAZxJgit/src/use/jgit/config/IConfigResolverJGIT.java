@@ -3,7 +3,7 @@ package use.jgit.config;
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 
-public interface IConfigResolverJGIT {
+public interface IConfigResolverJGIT extends IConfigJGIT{
 
 	//#####################################################################
 	//####### Konfiguration der Argumgentuebergabe von aussen an das Program (s. GetOptZZZ).
@@ -11,11 +11,12 @@ public interface IConfigResolverJGIT {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4RESOLVER_DEFAULT="conflict|filepath:"; 
+	final static String sPATTERN4RESOLVER_DEFAULT="conflict|rl:roject:filepath:comment:"; 
 	                                                //Aktionen;
 													//conflict = löse in einer angegebenen die angezeigten Konflikte automatisch
 	                                                //           Konflikte werden in einer Datei mit <<<< oder >>>> angezeigt, etc.
-	
+													//rl       = Pfad zum lokalen repository
+													//project  = Name des Projekts... gleich Verzeichnis unterhalb des lokalen Repositories
 													//filepath = Gefolgt von dem Pfad zu der Datei, die den Konflikt hat. 
 	
 													//Merke: sPATTERN4FLAG_DEFAULT besteht aus
@@ -29,4 +30,6 @@ public interface IConfigResolverJGIT {
 	
 	public String readFilePath() throws ExceptionZZZ;
 	public String getFilePathDefault() throws ExceptionZZZ;
+	
+
 }

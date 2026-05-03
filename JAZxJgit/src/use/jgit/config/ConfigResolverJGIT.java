@@ -31,17 +31,7 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigResolverJGIT extends AbstractKernelConfigZZZ implements IConfigResolverJGIT{
-	private static String sPROJECT_PATH = "Projekt_Tool_DevEditor";
-	private static String sPROJECT_NAME = "Projekt_Tool_DevEditor"; //normalerweise kuerzer, z.B. sPROJECT_NAME = "JAZKernel";
-	//private static String sDIRECTORY_CONFIG_DEFAULT = "c:\\fglKernel\\KernelConfig";//Wenn der String absolut angegeben ist, so muss er auch vorhanden sein.
-	private static String sDIRECTORY_CONFIG_DEFAULT = "<z:Null/>";//Merke: Ein Leerstring ist der Root vom Classpath, z.B. in Eclipse der src-Ordner. Ein "." oder ein NULL-Wert ist der Projektordner in Eclipse
-	private static String sFILE_CONFIG_DEFAULT = "";                //wird hier nicht benutzt... z.B.: "ZKernelConfigKernel_default.ini";
-	private static String sKEY_APPLICATION_DEFAULT = "DEV";
-	private static String sNUMBER_SYSTEM_DEFAULT= "";               //wird hier nicht benutzt    z.B.: "01";
-	
-	
-
+public class ConfigResolverJGIT extends AbstractConfigJGIT implements IConfigResolverJGIT{
 	
 	public ConfigResolverJGIT() throws ExceptionZZZ{
 		super();
@@ -64,31 +54,6 @@ public class ConfigResolverJGIT extends AbstractKernelConfigZZZ implements IConf
 		saArg[7] = this.getConfigFlagzJsonDefault();
 	
 		return saArg;
-	}
-	
-	@Override
-	public String getApplicationKeyDefault() {
-		return ConfigResolverJGIT.sKEY_APPLICATION_DEFAULT;
-	}
-	@Override
-	public String getConfigDirectoryNameDefault() {
-		return ConfigResolverJGIT.sDIRECTORY_CONFIG_DEFAULT;
-	}
-	@Override
-	public String getConfigFileNameDefault() {		
-		return ConfigResolverJGIT.sFILE_CONFIG_DEFAULT;
-	}	
-	@Override
-	public String getSystemNumberDefault() {
-		return ConfigResolverJGIT.sNUMBER_SYSTEM_DEFAULT;
-}
-	@Override
-	public String getProjectName() {
-		return ConfigResolverJGIT.sPROJECT_NAME;
-	}
-	@Override
-	public String getProjectDirectory() {
-		return ConfigResolverJGIT.sPROJECT_PATH;
 	}
 	
 	//######################################

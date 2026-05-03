@@ -22,11 +22,11 @@ import use.jgit.AbstractJgitStarter;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterJGIT;
-import use.jgit.tool.JgitUtilHTTPS;
-import use.jgit.tool.JgitUtilSSH;
-import use.jgit.tool.JgitUtilZZZ;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
+import use.jgit.util.JgitUtilHTTPS;
+import use.jgit.util.JgitUtilSSH;
+import use.jgit.util.JgitUtilZZZ;
 
 
 
@@ -467,7 +467,8 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 				ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-
+			
+			String sComment = objConfig.readComment();
 			
 			//+++++++++++++++++++++++								
 			this.setConnectionType(sConnectionTypeIn);
@@ -482,6 +483,8 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			}
 			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 			
+			
+						
 			//#################### Besonderheit HTTPS
 			String sPatIn = objConfig.readPersonalAccessToken();
 			if(StringZZZ.isEmpty(sPatIn)){
@@ -505,7 +508,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git);
+			boolean bSuccessCommit = this.commitit(git, sComment);
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
@@ -585,6 +588,8 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 				ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			String sComment = objConfig.readComment();
 
 			
 			//+++++++++++++++++++++++								
@@ -623,7 +628,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git);
+			boolean bSuccessCommit = this.commitit(git, sComment);
 			if(!bSuccessCommit) {
 				System.out.println("commit NICHT erfolgreich");
 				bReturn = false;

@@ -32,9 +32,9 @@ import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.ssh.JgitStarterSSH;
-import use.jgit.tool.JgitUtilHTTPS;
-import use.jgit.tool.JgitUtilSSH;
-import use.jgit.tool.JgitUtilZZZ;
+import use.jgit.util.JgitUtilHTTPS;
+import use.jgit.util.JgitUtilSSH;
+import use.jgit.util.JgitUtilZZZ;
 
 public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarter, IJgitEnabledZZZ{
 	private static final long serialVersionUID = -1998325674945232389L;
@@ -368,9 +368,14 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 	}
 	
 	
-	//##############################################################################	
+	//##############################################################################
 	@Override
 	public boolean commitit(Git git) throws ExceptionZZZ {
+		return this.commitit(git, null);
+	}
+	
+	@Override
+	public boolean commitit(Git git, String sCommentIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -385,16 +390,11 @@ public abstract class AbstractJgitStarter<T> extends AbstractObjectWithFlagZZZ<T
 				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
 		        this.addFileUntracked(git);
 				
-		        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-				long lTimestamp = DateTimeZZZ.computeTimestamp();
-				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-				String sDateFormated = dateFormater.format(lTimestamp);
-		
-				//Hier den Namen des Rechners einfügen
-				String sHostname = EnvironmentZZZ.getHostName();
-				
+		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
+		        String sComment = JgitUtilZZZ.createCommentCommit(sCommentIn);
+		        
 				CommitCommand gitCommandCommit = git.commit();
-				gitCommandCommit.setMessage(sDateFormated + " (Host: '" + sHostname + "') by Java-Class from a module of Projekt_Tool_DevEditor");
+				gitCommandCommit.setMessage(sComment);
 				gitCommandCommit.call();
 		        
 		        System.out.println("STATUS AFTER COMMIT");

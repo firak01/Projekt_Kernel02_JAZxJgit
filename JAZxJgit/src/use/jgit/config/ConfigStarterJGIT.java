@@ -31,14 +31,7 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigStarterJGIT extends AbstractKernelConfigZZZ implements IConfigStarterJGIT{
-	private static String sPROJECT_PATH = "Projekt_Tool_DevEditor";
-	private static String sPROJECT_NAME = "Projekt_Tool_DevEditor"; //normalerweise kuerzer, z.B. sPROJECT_NAME = "JAZKernel";
-	//private static String sDIRECTORY_CONFIG_DEFAULT = "c:\\fglKernel\\KernelConfig";//Wenn der String absolut angegeben ist, so muss er auch vorhanden sein.
-	private static String sDIRECTORY_CONFIG_DEFAULT = "<z:Null/>";//Merke: Ein Leerstring ist der Root vom Classpath, z.B. in Eclipse der src-Ordner. Ein "." oder ein NULL-Wert ist der Projektordner in Eclipse
-	private static String sFILE_CONFIG_DEFAULT = "";                //wird hier nicht benutzt... z.B.: "ZKernelConfigKernel_default.ini";
-	private static String sKEY_APPLICATION_DEFAULT = "DEV";
-	private static String sNUMBER_SYSTEM_DEFAULT= "";               //wird hier nicht benutzt    z.B.: "01";
+public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStarterJGIT{
 	
 	
 
@@ -63,36 +56,11 @@ public class ConfigStarterJGIT extends AbstractKernelConfigZZZ implements IConfi
 		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
 		saArg[3] = "origin";
 		saArg[4] = "-rl";
-		saArg[5] = ConfigStarterJGIT.sPROJECT_PATH;
+		saArg[5] = IConfigStarterJGIT.sPROJECT_PATH;  //Das eigene Projekt als Default
 		saArg[6] = "-z";
 		saArg[7] = this.getConfigFlagzJsonDefault();
 	
 		return saArg;
-	}
-	
-	@Override
-	public String getApplicationKeyDefault() {
-		return ConfigStarterJGIT.sKEY_APPLICATION_DEFAULT;
-	}
-	@Override
-	public String getConfigDirectoryNameDefault() {
-		return ConfigStarterJGIT.sDIRECTORY_CONFIG_DEFAULT;
-	}
-	@Override
-	public String getConfigFileNameDefault() {		
-		return ConfigStarterJGIT.sFILE_CONFIG_DEFAULT;
-	}	
-	@Override
-	public String getSystemNumberDefault() {
-		return ConfigStarterJGIT.sNUMBER_SYSTEM_DEFAULT;
-}
-	@Override
-	public String getProjectName() {
-		return ConfigStarterJGIT.sPROJECT_NAME;
-	}
-	@Override
-	public String getProjectDirectory() {
-		return ConfigStarterJGIT.sPROJECT_PATH;
 	}
 	
 	//######################################
@@ -248,30 +216,7 @@ public class ConfigStarterJGIT extends AbstractKernelConfigZZZ implements IConfi
 		return IConfigStarterJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	}
 	
-	//++++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
-		return null;
-	}
-		
-	//++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String readRepositoryProjectName() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sProject = objOpt.readValue("project");
-			if(StringZZZ.isEmpty(sProject)) {
-				sProject = this.getRepositoryProjectNameDefault();				
-			}
-			
-			sReturn = sProject;
-		}//end main:		
-		return sReturn;
-	}
+
 	
 	@Override
 	public String readRepositoryRemoteHost() throws ExceptionZZZ {
@@ -342,24 +287,5 @@ public class ConfigStarterJGIT extends AbstractKernelConfigZZZ implements IConfi
 		return sReturn;
 	}
 	
-	//++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
-		return ConfigStarterJGIT.sPROJECT_PATH; //Also das eigene Verzeichnis als Default
-	}
-	@Override
-	public String readRepositoryLocal() throws ExceptionZZZ {		
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("rl");
-			if(sReturn==null){
-				sReturn = this.getRepositoryLocalBaseDefault();
-			}
-		}//end main:		
-		return sReturn;
-	}
+	
 }

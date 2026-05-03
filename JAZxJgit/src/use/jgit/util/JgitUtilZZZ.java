@@ -1,7 +1,8 @@
-package use.jgit.tool;
+package use.jgit.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,8 +25,10 @@ import org.eclipse.jgit.transport.RemoteRefUpdate;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 
 public class JgitUtilZZZ implements IConstantZZZ {
@@ -55,6 +58,65 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		}//end main:
 		return sReturn;
 	}
+	
+	public static String createCommentCommitDefault() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{			
+			sReturn = JgitUtilZZZ.createCommentCommit(null);
+		}//end main:
+		return sReturn;
+	}
+	
+	public static String createCommentCommit(String sCommentIn) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			String sComment = "";
+			if(!StringZZZ.isEmpty(sCommentIn)) {
+				sComment = sCommentIn;
+			}
+			
+			String sCommentMetadata = JgitUtilZZZ.createCommentCommitTemplate();
+			if(!StringZZZ.isEmpty(sCommentMetadata)) {
+				sReturn = String.format(sCommentMetadata, sComment);
+			}
+		}//end main:
+		return sReturn;
+	}
+	
+	public static String createCommentCommitTemplate() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			String sMetadata01 = JgitUtilZZZ.createCommentCommitMetadata01();
+			String sMetadata02 = JgitUtilZZZ.createCommentCommitMetadata02();
+			sReturn = sMetadata01 + " %s " + sMetadata02;
+		}//end main:
+		return sReturn;	
+	}
+	
+	public static String createCommentCommitMetadata01() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			long lTimestamp = DateTimeZZZ.computeTimestamp();
+			SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+			String sDateFormated = dateFormater.format(lTimestamp);
+
+			//Hier den Namen des Rechners einfügen
+			String sHostname = EnvironmentZZZ.getHostName();
+			
+			sReturn = sDateFormated + " (Host: '" + sHostname + "')";
+		}//end main:
+		return sReturn;	
+	}
+	
+	public static String createCommentCommitMetadata02() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			sReturn =  "(by Projekt_Tool_DevEditor)";
+		}//end main:
+		return sReturn;
+	}
+	
+	//##########################################################
 	
 	public static String computeRepositoryConnectionTypeFromProtocol(String sProtocol) throws ExceptionZZZ {
 		String sReturn = null;

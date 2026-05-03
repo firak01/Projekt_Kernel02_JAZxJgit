@@ -65,6 +65,7 @@ public interface IJgitStarter {
 	
 	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;	
 	public boolean commitit(Git git) throws ExceptionZZZ;
+	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	
 	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 	

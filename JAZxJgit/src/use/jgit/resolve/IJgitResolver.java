@@ -11,5 +11,6 @@ import use.jgit.config.IConfigStarterJGIT;
 public interface IJgitResolver {
 	
 	public boolean conflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean conflictit(String sFilepath) throws ExceptionZZZ;	
+	public boolean conflictit(String sFilepath, String sComment) throws ExceptionZZZ;	
+	public boolean conflictit(String sFilepath) throws ExceptionZZZ;
 }

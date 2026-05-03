@@ -43,7 +43,9 @@ public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJg
 					throw ez;
 				}
 				
-				boolean bSuccessConflict = this.conflictit(sFilePath);
+				String sComment = objConfig.readComment();
+				
+				boolean bSuccessConflict = this.conflictit(sFilePath, sComment);
 				if(bSuccessConflict) {
 					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePath + "')");					
 					bReturn = true;
@@ -58,6 +60,11 @@ public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJg
 	
 	@Override
 	public boolean conflictit(String sFilePath) throws ExceptionZZZ {
+		return this.conflictit(sFilePath, null);
+	}
+	
+	@Override
+	public boolean conflictit(String sFilePath, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			if(StringZZZ.isEmpty(sFilePath)) {
@@ -99,7 +106,14 @@ public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJg
 				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
-			bReturn = objWriter.write(sResolved);	
+			bReturn = objWriter.write(sResolved);
+			
+			//###########################################################
+			//Anschliessend muss aber ein Commit gemacht werden... Damit Eclipse das Aufloesen des Konflikts auch merkt.
+			//TODOGOON20260503
+			//IDEE: Wenn THEIRS gewinnt, dann bleibt alles lokal
+			//      Wenn OURS gewinnt, dann muss das noch gepusht werden.
+
 			
 		}//end main:
 		return bReturn;
