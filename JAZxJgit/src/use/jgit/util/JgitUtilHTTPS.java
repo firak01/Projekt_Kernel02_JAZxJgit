@@ -29,6 +29,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
 
@@ -162,7 +163,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 
 		
 		
-	/** Z.B.  von https://github.com/firak01
+	/** Z.B.  von  https://github.com/firak01
+	 *        oder https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	 * @param sRepositoryRemoteUrlHTTPS
 	 * @return
 	 * @throws ExceptionZZZ
@@ -172,7 +174,13 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
 			
-			sReturn = StringZZZ.right(UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryRemoteUrlHTTPS, UrlLogicZZZ.sURL_SEPARATOR_PATH);	
+			//Neben dem Host steht der Account
+			String sHost = JgitUtilHTTPS.getHostFromUrl(sRepositoryRemoteUrlHTTPS);	
+			
+			
+			//sReturn = StringZZZ.mid(sRepositoryRemoteUrlHTTPS+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+UrlLogicZZZ.sURL_SEPARATOR_PATH, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			//sReturn = StringZZZ.midLeftRight(sRepositoryRemoteUrlHTTPS+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+UrlLogicZZZ.sURL_SEPARATOR_PATH, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = StringZZZ.midRightLeft(sRepositoryRemoteUrlHTTPS+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+UrlLogicZZZ.sURL_SEPARATOR_PATH, UrlLogicZZZ.sURL_SEPARATOR_PATH);
 		}//end main:
 		return sReturn;
 	}
@@ -466,30 +474,6 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		MergeResult objReturn = null;
 		main:{
 	        try {
-	TODOGOON20260504;//BAUE HIER EIN:
-	/*
-	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-			try {	
-				// aber mal explizit als pullCommand
-				PullCommand pullCommand = git.pull();
-					
-				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				
-				//Also zerlegen des pull in fetch und merge.								
-				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
-				
-				//original url mit Token, wie beim push arbeiten
-				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				System.out.println("Url fuer Fetch: '" + sUrl + "'");
-				
-				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
-				if(fetchResult==null) break main;
-	 */
-	
-	
 		        if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
 		        }
@@ -511,6 +495,10 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            branch = "master"; // Default für Java 1.7 Projekte 😉
 		        }
 		
+		        //Pull bei HTTPS geht nicht direkt, sondern ueber Zerlegen des pull in fetch und merge.								
+				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
+				
+		        
 		        Repository repo = git.getRepository();
 		
 		        String remoteRef = "refs/heads/" + branch;
@@ -519,15 +507,19 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================
-		        FetchCommand fetchCommand = git.fetch();
-		        fetchCommand.setRemote(remoteUrl);
-		        fetchCommand.setRefSpecs(new RefSpec(remoteRef + ":" + localTrackingRef));
-		
-		        if (credentialsProvider != null) {
-		            fetchCommand.setCredentialsProvider(credentialsProvider);
-		        }
-		
-		        fetchCommand.call();
+				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(remoteUrl);
+				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(remoteUrl);
+				//sollte identisch sein... this.getRepositoryRemoteAccount();
+				
+				
+				//original url mit Token, wie beim push arbeiten				
+				String sUrl = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;
+				System.out.println("Url fuer Fetch: '" + sUrl + "'");
+		        
+		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
+				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				if(fetchResult==null) break main;
+		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
 		        // =========================
 		        // 2. MERGE (gezielt!)
@@ -546,7 +538,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        objReturn = mergeCommand.call();
 		
 		        // =========================
-		        // 3. Ergebnis prüfen
+		        // 3. Ergebnis prüfen, im Problemfall wird MergeResult in der aufrufenden Methode noch weiter analysiert.
 		        // =========================
 		        if (!objReturn.getMergeStatus().isSuccessful()) {
 		

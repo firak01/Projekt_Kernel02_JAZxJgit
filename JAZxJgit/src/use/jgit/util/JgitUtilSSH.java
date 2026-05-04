@@ -143,6 +143,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	
 	
 	/** Z.B.  von git@github.com:firak01
+	 *       oder git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 	 * @param sRepositoryRemoteUrlSSH
 	 * @return
 	 * @throws ExceptionZZZ
@@ -152,7 +153,14 @@ public class JgitUtilSSH implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
 			
-			sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlSSH, ":");
+			//klappt vielleicht nicht immer... sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlSSH, ":");
+			
+			//Neben dem Host steht der Account
+			String sHost = JgitUtilSSH.getHostFromUrl(sRepositoryRemoteUrlSSH);	
+		
+			//sReturn = StringZZZ.mid(sRepositoryRemoteUrlSSH+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			//sReturn = StringZZZ.midLeftRight(sRepositoryRemoteUrlSSH+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = StringZZZ.midRightLeft(sRepositoryRemoteUrlSSH+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
 		}//end main:
 		return sReturn;
 	}

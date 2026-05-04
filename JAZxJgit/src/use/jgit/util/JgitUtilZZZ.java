@@ -196,6 +196,27 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;
 	}
 	
+	public static String computeRepositoryAccountFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sUrlRepo)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			if(JgitUtilZZZ.isUrlHTTPS(sUrlRepo)) {
+				sReturn = JgitUtilHTTPS.computeRepositoryAccountFromUrlHTTPS(sUrlRepo);
+			}else if(JgitUtilZZZ.isUrlSSH(sUrlRepo)) {
+				sReturn = JgitUtilSSH.computeRepositoryAccountFromUrlSSH(sUrlRepo);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlRepo + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	public static String computeRepositoryProjectFromUrlRepo(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
