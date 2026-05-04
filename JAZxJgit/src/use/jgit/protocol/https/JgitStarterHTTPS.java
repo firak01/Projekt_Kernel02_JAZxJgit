@@ -342,10 +342,10 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 	}
 	
 	@Override
-	public boolean pullitSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);//JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
+			MergeResult objMergeResult = JgitUtilHTTPS.pullHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);//JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
@@ -390,7 +390,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 					//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
 					
 					String sBranch = "master";
-					bReturn = this.pullitSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
 									
 				} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
 

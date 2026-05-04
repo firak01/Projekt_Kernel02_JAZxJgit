@@ -264,9 +264,8 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//Normaler Pull, Konflikte ausgeben, nicht auflösen
 				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
 				
-				String sBranch = "master";
-				//https version   bReturn = this.pullitSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
-				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal);
+				String sBranch = "master";				
+				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
 				
 			} else if(bIgnoreConflicts & !bAutosolveConflicts) {
 
@@ -304,6 +303,35 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote);
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
+			
+			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
+			bReturn = objMergeStatus.isSuccessful();
+			if(bReturn) break main;
+			
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
+			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			bReturn = !bAnyConflict;
+			
+			
+			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			objAnalyseResult.printReport();
+			
+			
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{			
+			MergeResult objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;

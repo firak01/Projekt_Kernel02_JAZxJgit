@@ -18,8 +18,8 @@ public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarte
 	//a) pull ohne Mergekonflikte abzufangen, über alle Branches (wird aber nicht verwendet)
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
 	
-	//b) pull ohne MergeKonflikte abzufangen, über einen Branch
-	public boolean pullitSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
+	//b) pull ohne MergeKonflikte abzufangen, über einen ganz konkreten Branch
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
 	
 	//c) pull, die Konfliktdateien werden gezielt zurückgesetzt
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;

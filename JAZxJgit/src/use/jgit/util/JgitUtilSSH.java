@@ -315,6 +315,103 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return objReturn;
 	}
 	
+	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
+	 * 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim SSH Weg nicht direkt 
+	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
+	 *        
+	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
+	 * 
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+			try {	
+				
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
+				//!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+		        //             ohne eine Exception durchlaufen kann
+		        //Vorprüfung per eigener, gekapselter Routine
+		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+		        if (!check.isClean()) {
+		            check.printReport();
+		            break main; // Merge abbrechen
+		        }
+		        
+		        //+++++++++++++++++++++++++
+		        //wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+				System.out.println("SSH-Loesung: Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				
+				
+				// aber mal explizit als pullCommand
+				PullCommand pullCommand = git.pull();
+			
+				//In der Utility - Klasse das so machen wie in HTTPS und die Url berechnen:
+				
+				//Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
+				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
+				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
+				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				//pullCommand.setRemote(sUrlRepoRemote); //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
+				                                         //      Statt dessen den "Aliasnamen" übergeben.
+				System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
+				
+				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.
+				//Müssen wir aus der Url den Aliasnamen errechnen.
+				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
+				
+				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
+				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
+				pullCommand.setRemote(sRemoteRepositoryAlias);
+
+				// pull from remote, hier mit Auswertung des Ergebnisses	
+				PullResult pullResult = pullCommand.call();
+				
+				if (pullResult.isSuccessful()) {
+				    System.out.println("Pull erfolgreich");
+				} else {
+				    System.out.println("Pull fehlgeschlagen");
+				}
+
+				objReturn = pullResult.getMergeResult();
+				if(objReturn!=null) {
+					System.out.println("MergeResult: " + objReturn.getMergeStatus());
+				}else {
+					System.out.println("MergeResult: Kein Status zurueckgegeben.");
+				}
+				
+				//20260428 wofuer braucht es den fetchResult
+//				FetchResult fetchResult = pullResult.getFetchResult();
+//				if(fetchResult!=null) {
+//					System.out.println("FetchResult: " + fetchResult.getMessages());
+//				}else {
+//					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
+//				}																				
+				//###############################################################		
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return objReturn;
+	}
+	
 	
 	/** Für den SSH Weg:
 	 * 
