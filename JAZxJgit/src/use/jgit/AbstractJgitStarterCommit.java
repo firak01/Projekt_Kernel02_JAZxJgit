@@ -36,41 +36,24 @@ import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
+/** Abstrakte Klasse, die alles enthält um in einem lokalen Repository einen commit zu machen.
+ *  Merke: Das Remote Repository kennt sie nicht
+ *         Also muss eine Klasse, die etwas mit dem remote Repository machen will von einen anderen, erweiterten abstrakten Klasse erben.
+ * @author Fritz Lindhauer
+ *
+ * @param <T>
+ */
 public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarterCommit, IJgitEnabledZZZ{
 	private static final long serialVersionUID = -1998325674945232389L;
 	
 	protected volatile Git gitObject = null;
 	
-//	protected volatile Git gitObject = null;
-//	protected volatile CredentialsProvider credentialsProviderObject = null;
-//	
-//	protected volatile String sConnectionType=null;
-//	
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
 	
-	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
-	protected volatile String sRepositoryTotalLocal=null;  //Geamt Verzeichnis
-//
-//	protected volatile String sRepositoryRemoteAlias=null;
-//	
-//	protected volatile String sRepositoryRemoteHost=null;
-//	protected volatile String sRepositoryRemoteAccount=null;
-//	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
-//	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
-//		
-//
-//	//### aus IJgitStarter
-//	
-//	@Override 
-//	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ{
-//		return this.credentialsProviderObject;
-//	}
-//	
-//	@Override
-//	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ{
-//		this.credentialsProviderObject = objCredentialsProvider;
-//	}
-//	
+	protected volatile String sRepositoryLocalBase=null;  //Basis Verzeichnis
+	protected volatile String sRepositoryLocalTotal=null;  //Geamt Verzeichnis
+
+	//### aus IJgitStarterCommit	
 	@Override
 	public String getRepositoryProject() throws ExceptionZZZ {
 		return this.sRepositoryProject;
@@ -82,196 +65,25 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	}
 	
 	@Override
-	public String getRepositoryBaseLocal() throws ExceptionZZZ {
-		return this.sRepositoryBaseLocal;
+	public String getRepositoryLocalBase() throws ExceptionZZZ {
+		return this.sRepositoryLocalBase;
 	}
 	
 	@Override
-	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ {
-		this.sRepositoryBaseLocal = sRepositoryBaseLocal;
+	public void setRepositoryLocalBase(String sRepositoryLocalBase) throws ExceptionZZZ {
+		this.sRepositoryLocalBase = sRepositoryLocalBase;
 	}
 	
 	@Override
-	public String getRepositoryTotalLocal() throws ExceptionZZZ {
-		return this.sRepositoryTotalLocal;
+	public String getRepositoryLocalTotal() throws ExceptionZZZ {
+		return this.sRepositoryLocalTotal;
 	}
 	
 	@Override
-	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ {
-		this.sRepositoryTotalLocal = sRepositoryTotalLocal;
+	public void setRepositoryTotalLocal(String sRepositoryLocalTotal) throws ExceptionZZZ {
+		this.sRepositoryLocalTotal = sRepositoryLocalTotal;
 	}
 
-//	//++++++++++++++++++++++++++++
-//	@Override
-//	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
-//		if(this.sRepositoryRemoteAlias==null) {
-//			this.sRepositoryRemoteAlias = IJgitStarter.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
-//		}
-//		return this.sRepositoryRemoteAlias;
-//	}
-//
-//	@Override
-//	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ {
-//		this.sRepositoryRemoteAlias = sRepositoryRemoteAlias;
-//	}
-//	
-//	@Override
-//	public String getRepositoryRemoteAccount() throws ExceptionZZZ {
-//		return this.sRepositoryRemoteAccount;
-//	}
-//
-//	@Override
-//	public void setRepositoryRemoteAccount(String sRepositoryRemoteAccount) throws ExceptionZZZ {
-//		this.sRepositoryRemoteAccount = sRepositoryRemoteAccount;
-//	}
-//
-//	@Override
-//	public String getConnectionType() throws ExceptionZZZ {
-//		return this.sConnectionType;
-//	}
-//
-//	@Override
-//	public void setConnectionType(String sConnectionType) throws ExceptionZZZ {
-//		this.sConnectionType = sConnectionType;
-//	}
-//	
-//	@Override
-//	public String getRepositoryRemoteHost() throws ExceptionZZZ {
-//		if(StringZZZ.isEmpty(this.sRepositoryRemoteHost)) {
-//			String sUrlRepo = this.searchRepositoryRemote();
-//			
-//			String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepo);
-//			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
-//		}
-//		return this.sRepositoryRemoteHost;
-//	}
-//
-//	@Override
-//	public void setRepositoryRemoteHost(String sRepositoryRemoteHost) throws ExceptionZZZ {
-//		this.sRepositoryRemoteHost = sRepositoryRemoteHost;
-//	}
-//	
-//	@Override
-//	public String getRepositoryBaseRemote() throws ExceptionZZZ {
-//		if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-//			String sHost=this.getRepositoryRemoteHost();
-//			String sAccount=this.getRepositoryRemoteAccount();
-//			if(!(StringZZZ.isEmpty(sHost) | StringZZZ.isEmpty(sAccount))){
-//				this.sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sHost, sAccount);
-//			}
-//			
-//			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
-//			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-//				String sRepositoryTotalRemote = this.searchRepositoryRemote();
-//				if(JgitUtilZZZ.isUrlHTTPS(sRepositoryTotalRemote)){
-//					JgitUtilHTTPS.computeRepositoryUrlBaseFromUrlHTTPS(sRepositoryTotalRemote);
-//				}else if(JgitUtilZZZ.isUrlSSH(sRepositoryTotalRemote)){
-//					JgitUtilSSH.computeRepositoryUrlBaseFromUrlSSH(sRepositoryTotalRemote);
-//				}else {
-//					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sRepositoryTotalRemote + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//			}
-//		}
-//		return this.sRepositoryBaseRemote;
-//	}
-//
-//	@Override
-//	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ {
-//		this.sRepositoryBaseRemote = sRepositoryBaseRemote;
-//	}
-//	
-//	@Override
-//	abstract public String getRepositoryTotalRemote() throws ExceptionZZZ;		
-//		
-//
-//	@Override
-//	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
-//		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
-//	}
-//	
-//	@Override
-//	public String computeRepositoryBaseRemote() throws ExceptionZZZ{
-//		String sHost = this.getRepositoryRemoteHost();
-//		String sAccount = this.getRepositoryRemoteAccount();
-//		return this.computeRepositoryBaseRemote(sHost, sAccount);
-//	}
-//	
-//	@Override
-//	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
-//		String sRepositoryBaseRemoteIn = this.computeRepositoryBaseRemote();
-//		String sRepositoryProjectIn = this.getRepositoryProject();
-//		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
-//	}
-//	
-//	@Override
-//	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemoteIn, String sRepositoryProjectIn) throws ExceptionZZZ{
-//		String sReturn = null;
-//		main:{
-//			String sRepositoryBaseRemote=null; String sRepositoryProject=null;
-//			if(StringZZZ.isEmpty(sRepositoryBaseRemoteIn)) {
-//				sRepositoryBaseRemote = this.computeRepositoryBaseRemote();
-//				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
-//					ExceptionZZZ ez = new ExceptionZZZ("RepositoryBaseRemote", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;	
-//				}
-//			}else {
-//				sRepositoryBaseRemote = sRepositoryBaseRemoteIn;
-//			}
-//			
-//			
-//			
-//			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-//				sRepositoryProject = this.getRepositoryProject();
-//				if(StringZZZ.isEmpty(sRepositoryProject)) {
-//					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;	
-//				}
-//			}else {
-//				sRepositoryProject = sRepositoryProjectIn;				
-//			}
-//			
-//			
-//			sReturn = JgitUtilZZZ.computeRepositoryUrl(sRepositoryBaseRemote, sRepositoryProject);			
-//			
-//		}//end main:
-//		return sReturn;
-//	}
-//	
-//	@Override
-//	public String searchRepositoryRemote() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();					
-//			sReturn = this.searchRepositoryRemote(sRepositoryRemoteAlias);
-//		}//end main:
-//		return sReturn;
-//	}
-//	
-//	@Override
-//	public String searchRepositoryRemote(String sRepositoryRemoteAlias) throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			Git git = this.getGitObject();			
-//			if(git==null) {
-//				ExceptionZZZ ez = new ExceptionZZZ("Git Object", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;	
-//			}
-//			
-//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)) {
-//				ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteAlias", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;	
-//			}
-//			
-//			
-//			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
-//			String sRepositoryRemoteByAlias = git.getRepository().getConfig()
-//					       .getString("remote",sRepositoryRemoteAlias,"url");
-//			System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAlias +"'");											
-//			sReturn = sRepositoryRemoteByAlias;
-//		}//end main:
-//		return sReturn;
-//	}
 	
 	
 	//##############################################################################
@@ -425,7 +237,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 			try {
 				//A) Lokal
 				//a) Lokales Basis Verzeichnis
-				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
+				String sDirectoryRepositoryLocal = this.getRepositoryLocalBase();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;

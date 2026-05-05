@@ -33,7 +33,7 @@ import use.jgit.tool.resolve.GitConflictResolverUtil;
 import use.jgit.util.JgitUtilZZZ;
 
 
-
+//Die Ausgangsklasse konnte zwar Konflikte auflösen, aber nicht diese Änderung committen.
 //public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitResolver, IJgitResolverEnabled{
 
 //Zwar muss nun auch ein Commit gemacht werden, aber das ist zuviel
@@ -79,29 +79,29 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 	}
 	
 	@Override
-	public boolean conflictit(String sFilePath) throws ExceptionZZZ {
-		return this.conflictit(sFilePath, null);
+	public boolean conflictit(String sFilePathTotal) throws ExceptionZZZ {
+		return this.conflictit(sFilePathTotal, null);
 	}
 	
 	@Override
-	public boolean conflictit(String sFilePath, String sComment) throws ExceptionZZZ {
+	public boolean conflictit(String sFilePathTotal, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			if(StringZZZ.isEmpty(sFilePath)) {
+			if(StringZZZ.isEmpty(sFilePathTotal)) {
 				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			File objFile = new File(sFilePath);
+			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -143,7 +143,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
-				TODOGOON20260505; //Wenn der Filepath nicht absulut ist... baseRepository und Projekt holen und voranstellen
+				//TODOGOON20260505; //Wenn der Filepath nicht absulut ist... baseRepository und Projekt holen und voranstellen
 				                  //Am besten eine utility Methode bauen  ... createFilePathLocalUsed(baseRepo, Project, Filepath)
 				                  //dann ist das an den verschiedenen Stellen flexibel.
 				String sFilePath = objConfig.readFilePath();
@@ -152,14 +152,32 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
+				String sRepositoryLocalBase = objConfig.readRepositoryLocal();//darf theoretisch leer sein
+				this.setRepositoryLocalBase(sRepositoryLocalBase);
+				String sRepositoryProject = objConfig.readRepositoryProjectName(); //darf theoretisch leer sein
+				this.setRepositoryProject(sRepositoryProject);
+				
+				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
 				String sComment = objConfig.readComment();
 				
-				boolean bSuccessConflict = this.conflictCommitit(sFilePath, sComment);
+				
+				//Konfiguriere JGit für HTTPS							
+				boolean bSuccess = this.configureGit();
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+				
+				//Finde geaenderte und neue Dateien fuer den commit
+				Git git = this.getGitObject();				
+				boolean bSuccessConflict = this.conflictCommitit(git, sFilePathTotal, sComment);
 				if(bSuccessConflict) {
-					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePath + "')");					
+					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePathTotal + "')");					
 					bReturn = true;
 				}else {
-					System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED ('" + sFilePath + "')");					
+					System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED ('" + sFilePathTotal + "')");					
 					bReturn = false;
 				}
 				
@@ -171,30 +189,30 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 	}
 	
 	@Override
-	public boolean conflictCommitit(String sFilePath) throws ExceptionZZZ {
-		return this.conflictCommitit(sFilePath, null);
+	public boolean conflictCommitit(Git git, String sFilePath) throws ExceptionZZZ {
+		return this.conflictCommitit(git, sFilePath, null);
 	}
 	
 	@Override
-	public boolean conflictCommitit(String sFilePath, String sComment) throws ExceptionZZZ {
+	public boolean conflictCommitit(Git git, String sFilePathTotal, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 		try {
-			if(StringZZZ.isEmpty(sFilePath)) {
+			if(StringZZZ.isEmpty(sFilePathTotal)) {
 				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			File objFile = new File(sFilePath);
+			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -220,11 +238,12 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
-	
-			//TODOGOON20260505 Nun muss der gewuenschte Commit gemacht werden.
+
+			
 			//+++++++++++++++++++++++++++++++
+			//Nun muss der gewuenschte Commit gemacht werden.
+
 			//Finde geaenderte und neue Dateien fuer den commit
-			Git git = this.getGitObject();
 			boolean bSuccessCommit = this.commitit(git, sComment);
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");

@@ -593,7 +593,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        	        
 		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
@@ -719,7 +719,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        	        
 		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
@@ -920,7 +920,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        	        
 		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();

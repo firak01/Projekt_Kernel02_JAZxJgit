@@ -42,11 +42,6 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	protected volatile CredentialsProvider credentialsProviderObject = null;
 	
 	protected volatile String sConnectionType=null;
-	
-//	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
-//	
-//	protected volatile String sRepositoryBaseLocal=null;  //Basis Verzeichnis
-//	protected volatile String sRepositoryTotalLocal=null;  //Geamt Verzeichnis
 
 	protected volatile String sRepositoryRemoteAlias=null;
 	
@@ -67,36 +62,6 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 		this.credentialsProviderObject = objCredentialsProvider;
 	}
 	
-//	@Override
-//	public String getRepositoryProject() throws ExceptionZZZ {
-//		return this.sRepositoryProject;
-//	}
-//	
-//	@Override 
-//	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ {
-//		this.sRepositoryProject = sRepositoryProject;
-//	}
-//	
-//	@Override
-//	public String getRepositoryBaseLocal() throws ExceptionZZZ {
-//		return this.sRepositoryBaseLocal;
-//	}
-//	
-//	@Override
-//	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ {
-//		this.sRepositoryBaseLocal = sRepositoryBaseLocal;
-//	}
-//	
-//	@Override
-//	public String getRepositoryTotalLocal() throws ExceptionZZZ {
-//		return this.sRepositoryTotalLocal;
-//	}
-//	
-//	@Override
-//	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ {
-//		this.sRepositoryTotalLocal = sRepositoryTotalLocal;
-//	}
-
 	//++++++++++++++++++++++++++++
 	@Override
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
@@ -283,7 +248,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 //			try {
 				//A) Lokal
 				//a) Lokales Basis Verzeichnis
-				String sDirectoryRepositoryLocal = this.getRepositoryBaseLocal();
+				String sDirectoryRepositoryLocal = this.getRepositoryLocalBase();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -303,7 +268,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 //				}
 //				
 //				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProjectLocal);
-				String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+				String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
 				if(!objFileDirTotal.exists()) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
@@ -370,7 +335,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryBaseLocal(sRepositoryLocalIn);
+			this.setRepositoryLocalBase(sRepositoryLocalIn);
 			
 			
 			String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
@@ -418,153 +383,11 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	@Override
 	public abstract boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 
-	//##################################################
-//	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
-//		
-//		Status status = git.status().call();
-//
-//        Set<String> added = status.getAdded();
-//        for (String add : added) {
-//            System.out.println("Added: " + add);
-//        }
-//        Set<String> uncommittedChanges = status.getUncommittedChanges();
-//        for (String uncommitted : uncommittedChanges) {
-//            System.out.println("Uncommitted: " + uncommitted);
-//        }
-//
-//        Set<String> untracked = status.getUntracked();
-//        for (String untrack : untracked) {
-//            System.out.println("Untracked: " + untrack);
-//        }
-//	}
+	
 	
 	
 	//############# STATIC METHODEN
-	
-	
-	
-//	//###################################
-//	//### FLAGLOCAL Handling
-//	@Override
-//	public boolean getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-//		return this.getFlagLocal(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean setFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
-//	}
-//
-//	@Override
-//	public boolean[] setFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		boolean[] baReturn=null;
-//		main:{
-//			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
-//				baReturn = new boolean[objaEnumFlag.length];
-//				int iCounter=-1;
-//				for(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
-//					iCounter++;
-//					boolean bReturn = this.setFlagLocal(objEnumFlag, bFlagValue);
-//					baReturn[iCounter]=bReturn;
-//				}
-//			}
-//		}//end main:
-//		return baReturn;
-//	}
-//
-//	@Override
-//	public boolean proofFlagLocalExists(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagLocalExists(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagSetBefore(objEnumFlag.name());
-//	}
-//
-//
-//	//###################################
-//	//### FLAG CUSTOM Handling
-//	//###################################			
-//	
-//	//### aus IJgitEnabledZZZ
-//	@Override
-//	public boolean getFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
-//		return this.getFlagCustom(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean setFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		return this.setFlagCustom(objEnumFlag.name(), bFlagValue);
-//	}
-//
-//	@Override
-//	public boolean[] setFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		boolean[] baReturn=null;
-//		main:{
-//			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
-//				baReturn = new boolean[objaEnumFlag.length];
-//				int iCounter=-1;
-//				for(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag:objaEnumFlag) {
-//					iCounter++;
-//					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
-//					baReturn[iCounter]=bReturn;
-//				}
-//			}
-//		}//end main:
-//		return baReturn;
-//	}
-//
-//	@Override
-//	public boolean proofFlagCustomExists(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagCustomExists(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean proofFlagCustomSetBefore(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagCustomSetBefore(objEnumFlag.name());
-//	}
-//	
-//	//###################################
-//	//### FLAG Handling
-//		
-//	
-//	//### aus IJgitEnabledZZZ
-//	@Override
-//	public boolean getFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-//		return this.getFlag(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean setFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		return this.setFlag(objEnumFlag.name(), bFlagValue);
-//	}
-//
-//	@Override
-//	public boolean[] setFlag(IJgitEnabledZZZ.FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-//		boolean[] baReturn=null;
-//		main:{
-//			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
-//				baReturn = new boolean[objaEnumFlag.length];
-//				int iCounter=-1;
-//				for(IJgitEnabledZZZ.FLAGZ objEnumFlag:objaEnumFlag) {
-//					iCounter++;
-//					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
-//					baReturn[iCounter]=bReturn;
-//				}
-//			}
-//		}//end main:
-//		return baReturn;
-//	}
-//
-//	@Override
-//	public boolean proofFlagExists(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagExists(objEnumFlag.name());
-//	}
-//
-//	@Override
-//	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-//		return this.proofFlagSetBefore(objEnumFlag.name());
-//	}
-	
+
+	//############# FLAG HANDLIG
+	//... in abstrakter Elternklasse
 }

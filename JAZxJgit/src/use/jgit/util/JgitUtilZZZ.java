@@ -287,7 +287,46 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		}//end main:
 		return sReturn;
 	}
+	//#########################################################
 	
+	public static String computeRepositoryLocalFilePath(String sRepositoryLocalBase, String sProject, String sFilePath) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sFilePath)) {
+				ExceptionZZZ ez = new ExceptionZZZ("sFilePath", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			
+			//Falls der Filepath relativ ist, müssen die Verzeichnisangaben da sein.
+			if(FileEasyZZZ.isPathRelative(sFilePath)){
+				if(StringZZZ.isEmpty(sRepositoryLocalBase)) {
+					ExceptionZZZ ez = new ExceptionZZZ("sRepositoryLocalBase", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				if(StringZZZ.isEmpty(sProject)) {
+					ExceptionZZZ ez = new ExceptionZZZ("sProject", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				String sDirectory = FileEasyZZZ.joinFilePathName(sRepositoryLocalBase, sProject);
+				sReturn = FileEasyZZZ.joinFilePathName(sDirectory, sFilePath);
+			}else {
+				//Falls Base und Projekt vorhanden ist, hole den relativen Pfad aus dem Dateipfad
+				if(!StringZZZ.isEmpty(sRepositoryLocalBase) && !StringZZZ.isEmpty(sProject)) {
+					String sDirectory = FileEasyZZZ.joinFilePathName(sRepositoryLocalBase, sProject);
+					String sFileName = FileEasyZZZ.getNameFromFilepath(sFilePath);
+					sReturn = FileEasyZZZ.joinFilePathName(sDirectory, sFileName);
+				}else {				
+					sReturn = sFilePath;
+				}
+			}		
+		}//end main:
+		return sReturn;
+	}
+	
+	
+	//#########################################################
 	
 	/** Ueberpruefe, ob unter dem Alias des remote Repositories auch eine URL gefunden wird.
 	 *  Falls, nein, setzte es ggfs. bei bOverwrite = true;

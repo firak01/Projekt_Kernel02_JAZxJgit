@@ -916,7 +916,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        
 		        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
 			    System.out.println(("FETCH DONE"));
@@ -1067,7 +1067,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
 		        	        
 		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
+		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 
 		        

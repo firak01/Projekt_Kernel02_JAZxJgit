@@ -11,12 +11,26 @@ import use.jgit.config.IConfigStarterJGIT;
 public interface IJgitResolver {
 	
 	public boolean conflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean conflictit(String sFilepath, String sComment) throws ExceptionZZZ;	
-	public boolean conflictit(String sFilepath) throws ExceptionZZZ;
+	public boolean conflictit(String sFilepathTotal, String sComment) throws ExceptionZZZ;	
+	public boolean conflictit(String sFilepathTotal) throws ExceptionZZZ;
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
 	public boolean conflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean conflictCommitit(String sFilepath, String sComment) throws ExceptionZZZ;	
-	public boolean conflictCommitit(String sFilepath) throws ExceptionZZZ;
+	public boolean conflictCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
+	public boolean conflictCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	
+	TODOGOON20260506;
+	//Wurde die Strategie "OURS" umgesetzt, dann wurde der Konflikt zwar aufgelöst, 
+	//aber die Änderung liegt nur lokal. Der benötigte zusätzliche PUSH wird dann wohl häufig vergessen.
+	
+	//PROBLEM: JGitResolver erbt nur von AbstractJgitStarterCommit
+	//         Darin soll aber nur für das lokale Commit alles sein.
+	//         Es muss also eine Abstrakte Klasse geben, AbstractJgitStarterCommitAndPush
+	//         darin dann alles für den push in ein remote Repository
+	//ABER:    Das wird ja dann wohl wieder das passende Protokoll benötigen SSH oder HTTPS.
+	public boolean conflictCommitAndPushit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean conflictCommitAndPushit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
+	public boolean conflictCommitAndPushit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	
 }
