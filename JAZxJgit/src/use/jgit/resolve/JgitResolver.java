@@ -1,6 +1,17 @@
 package use.jgit.resolve;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Set;
+
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.StatusCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
@@ -12,16 +23,25 @@ import basic.zBasic.util.file.FileTextParserZZZ;
 import basic.zBasic.util.file.FileTextReaderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zKernel.file.ini.IKernelZFormulaIni_VariableZZZ;
+import use.jgit.AbstractJgitStarter;
+import use.jgit.AbstractJgitStarterCommit;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigResolverJGIT;
+import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.tool.resolve.GitConflictResolverUtil;
+import use.jgit.util.JgitUtilZZZ;
 
 
 
-public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitResolver, IJgitResolverEnabled{
+//public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitResolver, IJgitResolverEnabled{
+
+//Zwar muss nun auch ein Commit gemacht werden, aber das ist zuviel
+//public class JgitResolver<T> extends AbstractJgitStarter<T> implements IJgitResolver, IJgitResolverEnabled{
+
+//Also nutze daraus alles was für den Commit wichtig ist.
+public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJgitResolver, IJgitResolverEnabled{
 	private static final long serialVersionUID = 521157607363069534L;
-
 	
 	//### aus IJgitResolver
 	
@@ -107,17 +127,310 @@ public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJg
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
-			
-			//###########################################################
-			//Anschliessend muss aber ein Commit gemacht werden... Damit Eclipse das Aufloesen des Konflikts auch merkt.
-			//TODOGOON20260503
-			//IDEE: Wenn THEIRS gewinnt, dann bleibt alles lokal
-			//      Wenn OURS gewinnt, dann muss das noch gepusht werden.
-
+		}//end main:
+		return bReturn;
+	}	
+	//###########################################################
+	//Normalerweise reicht ein einfacher commit nicht. Anschliessend muss aber ein Commit gemacht werden... 
+	//Damit Eclipse das Aufloesen des Konflikts auch merkt.
+	@Override
+	public boolean conflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			//try {
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sFilePath = objConfig.readFilePath();
+				if(StringZZZ.isEmpty(sFilePath)) {
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sComment = objConfig.readComment();
+				
+				boolean bSuccessConflict = this.conflictCommitit(sFilePath, sComment);
+				if(bSuccessConflict) {
+					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePath + "')");					
+					bReturn = true;
+				}else {
+					System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED ('" + sFilePath + "')");					
+					bReturn = false;
+				}
+				
+				
+				
 			
 		}//end main:
 		return bReturn;
 	}
+	
+	@Override
+	public boolean conflictCommitit(String sFilePath) throws ExceptionZZZ {
+		return this.conflictCommitit(sFilePath, null);
+	}
+	
+	@Override
+	public boolean conflictCommitit(String sFilePath, String sComment) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+		try {
+			if(StringZZZ.isEmpty(sFilePath)) {
+				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			File objFile = new File(sFilePath);
+			boolean bFileExists = FileEasyZZZ.exists(objFile);
+			if(!bFileExists) {
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
+			if(!bIsFile) {
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePath + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			FileTextReaderZZZ objReader = new FileTextReaderZZZ(objFile);
+			String sContent = objReader.read();
+			
+			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+			boolean bUseMergeStrategyOur=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+			boolean bUseMergeStrategyTheir=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+			String sResolved = null;
+			if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.THEIRS);
+			}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
+			}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				//Fehler, was nun nehmen?
+				ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}else {
+				//Default
+				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine Strategy per Flag gesetzt. Verwende Flagwert von 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als Default.");
+				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
+			}
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
+			bReturn = objWriter.write(sResolved);
+	
+			//TODOGOON20260505 Nun muss der gewuenschte Commit gemacht werden.
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den commit
+			Git git = this.getGitObject();
+			boolean bSuccessCommit = this.commitit(git, sComment);
+			if(bSuccessCommit) {
+				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
+				this.printStatus(git);
+				  bReturn = true;
+			}else {
+				System.out.println("STATUS AFTER COMMIT: FAILED");
+				this.printStatus(git);	
+				bReturn = false;
+			}
+		
+		    git.close();
+			
+			
+			//TODOGOON20260503
+			//IDEE: Wenn THEIRS gewinnt, dann bleibt alles lokal
+			//      Wenn OURS gewinnt, dann muss das noch gepusht werden.
+
+		}catch(IllegalStateException ie) {
+			ExceptionZZZ ez = new ExceptionZZZ(ie);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
+		}
+		}//end main:
+		return bReturn;
+	}
+
+	
+	//### aus IJgitStarterCommit
+	//##############################################################################
+	@Override
+	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try{
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit();
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+			
+			String sComment = objConfig.readComment();
+		
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den commit
+			Git git = this.getGitObject();
+			boolean bSuccessCommit = this.commitit(git, sComment);
+			if(bSuccessCommit) {
+				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
+				this.printStatus(git);
+				  bReturn = true;
+			}else {
+				System.out.println("STATUS AFTER COMMIT: FAILED");
+				this.printStatus(git);	
+				bReturn = false;
+			}
+		
+		    git.close();
+		}catch(IllegalStateException ie) {
+			ExceptionZZZ ez = new ExceptionZZZ(ie);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
+		}
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean commitit(Git git) throws ExceptionZZZ {
+		return this.commitit(git, null);
+	}
+	
+	@Override
+	public boolean commitit(Git git, String sCommentIn) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//Finde geaenderte und neue Dateien fuer den Commit			
+				System.out.println("STATUS BEFORE COMMIT");		
+				this.printStatus(git);
+		        //##################################################################
+		        
+				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
+				this.addFileTrackedChanged(git);
+				
+				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+		        this.addFileUntracked(git);
+				
+		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
+		        String sComment = JgitUtilZZZ.createCommentCommit(sCommentIn);
+		        
+				CommitCommand gitCommandCommit = git.commit();
+				gitCommandCommit.setMessage(sComment);
+				gitCommandCommit.call();
+		        
+		        System.out.println("STATUS AFTER COMMIT");
+		        this.printStatus(git);
+		        
+		        bReturn = true;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
+		
+
+	@Override
+	public void addFileTrackedChanged() throws ExceptionZZZ {		
+		Git git = this.getGitObject();
+		this.addFileTrackedChanged(git);       
+	}
+	
+	@Override
+	public void addFileTrackedChanged(Git git) throws ExceptionZZZ {		
+		try {
+			StatusCommand gitCommandStatus = git.status();
+			Status status = gitCommandStatus.call();
+	
+			Set<String> uncommittedChanges = status.getUncommittedChanges();
+			Set<String> untracked          = status.getUntracked();
+			ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
+			
+			AddCommand gitCommandAdd = git.add();		
+	        for (String uncommitted : uncommittedChanges) {
+	        	if(!untracked.contains(uncommitted)) {
+	        		listasUncommitedChanges.add(uncommitted);
+	        	}
+	        }
+	        
+	        // run the add-call 
+	        for(String uncommitted : listasUncommitedChanges) {
+	        	System.out.println("uncommitted to add: '" + uncommitted + "'");
+	        	try {
+	        		gitCommandAdd.addFilepattern(uncommitted);
+	        		gitCommandAdd.call();
+	        	}catch(java.lang.IllegalStateException isex) {
+	        		System.out.println(isex.getMessage());
+	        		
+	        		ExceptionZZZ ez = new ExceptionZZZ(isex);
+	        		throw ez;
+	        	}
+	        }
+		}catch (NoWorkTreeException nwte) {
+			System.out.println(nwte.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
+    		throw ez;
+		}catch( GitAPIException gae) {
+			System.out.println(gae.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(gae);
+    		throw ez;
+		}
+       
+	}
+	
+	@Override
+	public void addFileUntracked() throws ExceptionZZZ {	
+		Git git = this.getGitObject();
+		this.addFileUntracked(git);
+	}
+	
+	@Override
+	public void addFileUntracked(Git git) throws ExceptionZZZ {
+	
+		try {
+			Status status = git.status().call();
+	
+			Set<String> setUntracked = status.getUntracked();
+			ArrayList<String> listasUntracked = new ArrayList<String>();
+	        for (String  sUntracked : setUntracked ) {
+	        	listasUntracked.add(sUntracked);
+	        }
+	        
+	        for(String sUntracked : listasUntracked) {
+	        	git.add().addFilepattern(sUntracked).call();
+	        }
+		}catch (NoWorkTreeException nwte) {
+			System.out.println(nwte.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
+    		throw ez;
+		}catch( GitAPIException gae) {
+			System.out.println(gae.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(gae);
+    		throw ez;
+		}
+	
+	}
+
+
+	
+
 
 	
 	//###############################################
@@ -237,6 +550,4 @@ public class JgitResolver<T> extends AbstractObjectWithFlagZZZ<T> implements IJg
 	public boolean proofFlagCustomSetBefore(IJgitResolverEnabled.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagCustomSetBefore(objEnumFlag.name());
 	}
-
-	
 }

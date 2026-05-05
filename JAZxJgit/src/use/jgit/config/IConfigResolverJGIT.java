@@ -11,7 +11,7 @@ public interface IConfigResolverJGIT extends IConfigJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4RESOLVER_DEFAULT="conflict|rl:roject:filepath:comment:"; 
+	final static String sPATTERN4RESOLVER_DEFAULT="conflict|conflictCommit|rl:project:filepath:comment:"; 
 	                                                //Aktionen;
 													//conflict = löse in einer angegebenen die angezeigten Konflikte automatisch
 	                                                //           Konflikte werden in einer Datei mit <<<< oder >>>> angezeigt, etc.
@@ -26,7 +26,8 @@ public interface IConfigResolverJGIT extends IConfigJGIT{
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
 	
-	public String readActionConflict() throws ExceptionZZZ;	
+	public String readActionConflict() throws ExceptionZZZ;
+	public String readActionConflictCommit() throws ExceptionZZZ;	
 	
 	public String readFilePath() throws ExceptionZZZ;
 	public String getFilePathDefault() throws ExceptionZZZ;

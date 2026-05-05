@@ -172,6 +172,10 @@ public class JgitResolverMain implements IConstantZZZ{
 			sAction = objConfig.readActionConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionConflictCommit();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
+			
 			if(listasAction.isEmpty()) {
 				ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -252,7 +256,9 @@ public class JgitResolverMain implements IConstantZZZ{
 				case "conflict":
 					bReturn = objResolver.conflictit(objConfig);
 					break;
-					
+				case "conflict":
+					bReturn = objResolver.conflictitCommit(objConfig);
+					break;
 				default:
 					ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;

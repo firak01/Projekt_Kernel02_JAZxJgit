@@ -6,15 +6,15 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.config.IConfigStarterJGIT;
 
-public interface IJgitStarter {
+public interface IJgitStarter extends IJgitStarterCommit {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	
 	//+++ Per Argument übergebene Werte
-	public String getRepositoryProject() throws ExceptionZZZ;
-	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
+	//public String getRepositoryProject() throws ExceptionZZZ;
+	//public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
 	
-	public String getRepositoryBaseLocal() throws ExceptionZZZ;
-	public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ;
+	//public String getRepositoryBaseLocal() throws ExceptionZZZ;
+	//public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ;
 
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
 	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
@@ -38,8 +38,8 @@ public interface IJgitStarter {
 	public String getRepositoryTotalRemote() throws ExceptionZZZ;
 	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ;
 	
-	public String getRepositoryTotalLocal() throws ExceptionZZZ;
-	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
+//	public String getRepositoryTotalLocal() throws ExceptionZZZ;
+//	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
 	
 	
 	public String computeRepositoryBaseRemote() throws ExceptionZZZ;
@@ -53,19 +53,19 @@ public interface IJgitStarter {
 	
 	
 	//+++ Arbeit mit dem GitObject, etc.
-	public Git getGitObject() throws ExceptionZZZ;
-	public void setGitObject(Git git) throws ExceptionZZZ;
-		
-	public void addFileTrackedChanged() throws ExceptionZZZ;
-	public void addFileTrackedChanged(Git git) throws ExceptionZZZ;
-	public void addFileUntracked() throws ExceptionZZZ;
-	public void addFileUntracked(Git git) throws ExceptionZZZ;
+//	public Git getGitObject() throws ExceptionZZZ;
+//	public void setGitObject(Git git) throws ExceptionZZZ;
+//		
+//	public void addFileTrackedChanged() throws ExceptionZZZ;
+//	public void addFileTrackedChanged(Git git) throws ExceptionZZZ;
+//	public void addFileUntracked() throws ExceptionZZZ;
+//	public void addFileUntracked(Git git) throws ExceptionZZZ;
 	
-	public boolean configureGit() throws ExceptionZZZ;	
+//	public boolean configureGit() throws ExceptionZZZ;	
 	
-	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;	
-	public boolean commitit(Git git) throws ExceptionZZZ;
-	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
+//	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;	
+//	public boolean commitit(Git git) throws ExceptionZZZ;
+//	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	
 	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 	

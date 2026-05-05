@@ -33,9 +33,6 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  */
 public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStarterJGIT{
 	
-	
-
-	
 	public ConfigStarterJGIT() throws ExceptionZZZ{
 		super();
 	}
@@ -65,7 +62,15 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
+		
 	
+	//### aus IConfigJGIT
+	@Override
+	public String getCommentDefault() throws ExceptionZZZ {
+		return "";
+	}
+		
+	//### aus IConfigStarterGIT
 	@Override
 	public String readActionPull() throws ExceptionZZZ {
 		String sReturn = null;

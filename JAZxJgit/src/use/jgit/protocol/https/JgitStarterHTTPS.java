@@ -13,17 +13,21 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.AbstractJgitStarter;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
+import use.jgit.tool.push.GitPostPushAnalyse;
+import use.jgit.tool.push.ResultPostPushAnalysis;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
@@ -494,8 +498,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			}
 			this.setPersonalAccessToken(sPatIn);
 			
-			
-			
+						
 			//+++++++++++++++++++++++++++++++
 			//Konfiguriere JGit für HTTPS
 			boolean bSuccess = this.configureGit();
@@ -639,34 +642,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 								
 				//++++++++++++++++++++++++++++++++
 				//Führe den Push durch
-				
-				//a) Zugriff sicherstellen
-		        //   Das passiert durch Credential und PAT
-		        
-		        //b) Mache den push	
 				bReturn = this.pushit(git);
-				if(bReturn) {
-		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
-		        	this.printStatus(git);
-		        }else {
-		        	System.out.println("STATUS AFTER PUSH: FAILED");
-		        	this.printStatus(git);
-		        }
-				//s. ChatGPT vom 20260313
-		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-		        	        
-		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryTotalLocal();
-		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-		        
-		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
-			    System.out.println(("FETCH DONE"));
-				
-			    bReturn = true;
 			}
 								  	
 		    git.close();
@@ -676,9 +652,9 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		}catch(IllegalStateException ie) {
 			ExceptionZZZ ez = new ExceptionZZZ(ie);
 			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
+//		}catch(GitAPIException gae) {
+//			ExceptionZZZ ez = new ExceptionZZZ(gae);
+//			throw ez;
 		}
 		}//end main:
 		return bReturn;
@@ -739,8 +715,16 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 				//                  //Variante B) ohne sPAT in URL
 				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 		
-				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				pushCommand.setRemote("https://firak01:" + sPAT + "@" + sUrlPartFromRepo);
+//				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);				
+//				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sRepoRemote);
+//				String sUrlRemote = "https://" + sAccountFromRepo + ":" + sPAT + "@" + sUrlPartFromRepo;
+
+				
+				String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sRepoRemote);
+				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sRepoRemote);
+				String sProjectFromRepo = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sRepoRemote);
+				String sUrlRemote = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +  sAccountFromRepo + ":" + sPAT + "@" + sRepositoryRemoteHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccountFromRepo + UrlLogicZZZ.sURL_SEPARATOR_PATH + sProjectFromRepo + ".git";
+				pushCommand.setRemote(sUrlRemote);
 				
 				
 				//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
@@ -755,9 +739,26 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		  
 				//push to remote:
 				pushCommand.setCredentialsProvider(credentialsProvider);
-				pushCommand.call();
 				
-				bReturn = true;
+				// ############################################################
+				// Push ausführen und Result entgegennehmen
+				Iterable<PushResult> pushResults = pushCommand.call();
+
+				//Falls Push nicht erfolgreich ist, hier die Ursachen auflisten		
+				System.out.println("##### PUSH ERGEBNIS #######");
+				boolean bAnyConflict = JgitUtilZZZ.logPushResults(pushResults);
+				bReturn = !bAnyConflict;
+							
+				System.out.println("##### PUSH ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+				for(PushResult pushResult : pushResults) {
+					ResultPostPushAnalysis objAnalyseResult = 
+							GitPostPushAnalyse.analyzePushResult(pushResult);
+
+					objAnalyseResult.printReport();
+				}
+				// ############################################################
+				
+				
 			//###############################################################		
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);

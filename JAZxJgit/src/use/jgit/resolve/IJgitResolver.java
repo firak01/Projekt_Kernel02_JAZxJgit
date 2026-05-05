@@ -13,4 +13,10 @@ public interface IJgitResolver {
 	public boolean conflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
 	public boolean conflictit(String sFilepath, String sComment) throws ExceptionZZZ;	
 	public boolean conflictit(String sFilepath) throws ExceptionZZZ;
+	
+	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
+	//Es muss auch noch ein Commit gemacht werden.
+	public boolean conflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean conflictCommitit(String sFilepath, String sComment) throws ExceptionZZZ;	
+	public boolean conflictCommitit(String sFilepath) throws ExceptionZZZ;
 }

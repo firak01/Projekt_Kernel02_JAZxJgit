@@ -940,5 +940,4 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		}//end main:
 		return bReturn;
 	}
-	
 }

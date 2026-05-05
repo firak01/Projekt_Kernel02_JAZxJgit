@@ -58,7 +58,15 @@ public class ConfigResolverJGIT extends AbstractConfigJGIT implements IConfigRes
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
-
+		
+	
+	//### aus IConfigJGIT
+	@Override
+	public String getCommentDefault() throws ExceptionZZZ {
+		return "Konflikt manuel aufgelöst.";
+	}
+		
+	//### aus IConfigStarterGIT
 	@Override
 	public String readActionConflict() throws ExceptionZZZ {
 		String sReturn = null;
@@ -68,6 +76,19 @@ public class ConfigResolverJGIT extends AbstractConfigJGIT implements IConfigRes
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("conflict");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionConflictCommit() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("conflictCommit");			
 		}//end main:		
 		return sReturn;
 	}	
