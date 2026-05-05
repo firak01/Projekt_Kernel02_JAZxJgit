@@ -143,6 +143,9 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
+				TODOGOON20260505; //Wenn der Filepath nicht absulut ist... baseRepository und Projekt holen und voranstellen
+				                  //Am besten eine utility Methode bauen  ... createFilePathLocalUsed(baseRepo, Project, Filepath)
+				                  //dann ist das an den verschiedenen Stellen flexibel.
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
