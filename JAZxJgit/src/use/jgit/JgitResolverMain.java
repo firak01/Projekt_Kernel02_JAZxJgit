@@ -254,11 +254,11 @@ public class JgitResolverMain implements IConstantZZZ{
 			for(String sActionTemp : listasAction) {				
 				switch(sActionTemp) {
 				case "conflict":
-					bReturn = objResolver.conflictit(objConfig);
+					bReturn = objResolver.conflictit(objConfig);					
 					break;
 				case "conflictCommit":
 					bReturn = objResolver.conflictCommitit(objConfig);
-					break;
+					break;										
 				default:
 					ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;

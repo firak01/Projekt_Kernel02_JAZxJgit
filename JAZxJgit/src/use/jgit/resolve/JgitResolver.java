@@ -113,7 +113,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			boolean bUseMergeStrategyTheir=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 			String sResolved = null;
 			if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
-				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.THEIRS);
+				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.THEIRS);				
 			}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
 				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
 			}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
@@ -127,6 +127,29 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
+			
+			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
+			if(bReturn=true) {
+				if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+					String sLog="Erfolgreiche Konfliktauflösung.\n"
+							  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+							  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
+					System.out.println(sLog);				
+				}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+					String sLog="Erfolgreiche Konfliktauflösung.\n"
+							  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+							  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
+					System.out.println(sLog);
+				}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+					//Fehler, was nun nehmen?
+					ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}else {
+					//Default
+					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine Strategy per Flag gesetzt. Verwende Flagwert von 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als Default.");
+					sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
+				}
+			}
 		}//end main:
 		return bReturn;
 	}	
@@ -143,9 +166,6 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
-				//TODOGOON20260505; //Wenn der Filepath nicht absulut ist... baseRepository und Projekt holen und voranstellen
-				                  //Am besten eine utility Methode bauen  ... createFilePathLocalUsed(baseRepo, Project, Filepath)
-				                  //dann ist das an den verschiedenen Stellen flexibel.
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -157,6 +177,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				String sRepositoryProject = objConfig.readRepositoryProjectName(); //darf theoretisch leer sein
 				this.setRepositoryProject(sRepositoryProject);
 				
+				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
 				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
 				String sComment = objConfig.readComment();
 				
@@ -181,9 +202,6 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					bReturn = false;
 				}
 				
-				
-				
-			
 		}//end main:
 		return bReturn;
 	}
@@ -248,7 +266,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
-				  bReturn = true;
+				bReturn = true;
 			}else {
 				System.out.println("STATUS AFTER COMMIT: FAILED");
 				this.printStatus(git);	
@@ -258,9 +276,29 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		    git.close();
 			
 			
-			//TODOGOON20260503
-			//IDEE: Wenn THEIRS gewinnt, dann bleibt alles lokal
-			//      Wenn OURS gewinnt, dann muss das noch gepusht werden.
+		//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN, absichtlich hier nicht den PUSH durchführen, 
+		//                                            das wären für den Resolver zuviele weitere Parameter/Methoden
+		if(bReturn=true) {
+			if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				String sLog="Erfolgreiche Konfliktauflösung.\n"
+						  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+						  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt.";
+				System.out.println(sLog);				
+			}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+				String sLog="Erfolgreiche Konfliktauflösung.\n"
+						  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+						  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Erst noch einen PUSH machen.";
+				System.out.println(sLog);
+			}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				//Fehler, was nun nehmen?
+				ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}else {
+				//Default
+				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine Strategy per Flag gesetzt. Verwende Flagwert von 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als Default.");
+				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
+			}
+		}
 
 		}catch(IllegalStateException ie) {
 			ExceptionZZZ ez = new ExceptionZZZ(ie);

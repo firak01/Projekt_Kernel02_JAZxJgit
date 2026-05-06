@@ -289,6 +289,13 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	}
 	//#########################################################
 	
+	/** Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
+	 * @param sRepositoryLocalBase
+	 * @param sProject
+	 * @param sFilePath
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
 	public static String computeRepositoryLocalFilePath(String sRepositoryLocalBase, String sProject, String sFilePath) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
