@@ -218,7 +218,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			//##############################################################
 			//Starte die passende Klasse mit der passenden Methode
 			JgitResolver objResolver = new JgitResolver();
-				
+							
 			//Ggfs. uebergebene Flags setzen
 			hmFlag = objConfig.getHashMapFlagPassed();
 			if(hmFlag!=null) {
@@ -269,10 +269,7 @@ public class JgitResolverMain implements IConstantZZZ{
 					throw ez;						
 				}
 			}
-				
-			
-			
-			
+													
 		} catch (IllegalStateException e) {
 			e.printStackTrace();		
 		} catch (ExceptionZZZ e) {

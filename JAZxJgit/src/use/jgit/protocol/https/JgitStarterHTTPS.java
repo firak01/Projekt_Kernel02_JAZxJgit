@@ -474,6 +474,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			}
 			
 			String sComment = objConfig.readComment();
+			this.setCommentCommit(sComment);
 			
 			//+++++++++++++++++++++++								
 			this.setConnectionType(sConnectionTypeIn);
@@ -512,7 +513,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git, sComment);
+			boolean bSuccessCommit = this.commitit(git);
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
@@ -594,7 +595,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			}
 			
 			String sComment = objConfig.readComment();
-
+			this.setCommentCommit(sComment);
 			
 			//+++++++++++++++++++++++								
 			this.setConnectionType(sConnectionTypeIn);
@@ -632,7 +633,7 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git, sComment);
+			boolean bSuccessCommit = this.commitit(git);
 			if(!bSuccessCommit) {
 				System.out.println("commit NICHT erfolgreich");
 				bReturn = false;

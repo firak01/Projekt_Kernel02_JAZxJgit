@@ -420,7 +420,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				
 				String sComment = objConfig.readComment();
-	
+				this.setCommentCommit(sComment);
 				
 				//+++++++++++++++++++++++								
 				this.setConnectionType(sConnectionTypeIn);
@@ -448,7 +448,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git, sComment);
+				boolean bSuccessCommit = this.commitit(git);
 		        if(bSuccessCommit) {
 		        	System.out.println("STATUS AFTER COMMIT: SUCCESSFULL");
 		        	this.printStatus(git);
@@ -532,6 +532,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 	
 				String sComment = objConfig.readComment();
+				this.setCommentCommit(sComment);
 				
 				//+++++++++++++++++++++++								
 				this.setConnectionType(sConnectionTypeIn);
@@ -561,7 +562,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git, sComment);
+				boolean bSuccessCommit = this.commitit(git);
 				if(bSuccessCommit) {
 					System.out.println("commit erfolgreich");
 				}else {

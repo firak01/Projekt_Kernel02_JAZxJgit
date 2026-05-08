@@ -53,7 +53,46 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	protected volatile String sRepositoryLocalBase=null;  //Basis Verzeichnis
 	protected volatile String sRepositoryLocalTotal=null;  //Geamt Verzeichnis
 
+	//Merke: Das sind ergänzende Kommentare. Der Rechnername, etc. wird immer übergeben.
+	public static String sCOMMENT_COMMIT_DEFAULT=" "; //Wenn nix angegeben wurde
+	protected volatile String sCommentCommitDefault=null; //Ggfs. in überschreibender Klasse ein besonderer Wert.
+	protected volatile String sCommentCommit=null; //Der per ArgumentString übergebene Kommentar sollte hier rein.
+	
 	//### aus IJgitStarterCommit	
+	@Override 
+	public String getCommentCommitDefault() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sCommentCommitDefault)) {
+			return sCOMMENT_COMMIT_DEFAULT;
+		}else {
+			return this.sCommentCommitDefault;
+		}
+	}
+	
+	@Override 
+	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ {
+		this.sCommentCommitDefault = sCommentCommitDefault;
+	}
+	
+	@Override 
+	public String getCommentCommit() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sCommentCommit)) {
+			return this.getCommentCommitDefault();
+		}else {
+			String sCommentCommitDefault=this.getCommentCommitDefault();
+			if(!StringZZZ.isEmptyTrimmed(sCommentCommitDefault)) {
+				return this.sCommentCommit + " " + this.getCommentCommitDefault();
+			}else {
+				return this.sCommentCommit;
+			}
+		}
+	}
+	
+	@Override 
+	public void setCommentCommit(String sCommentCommit) throws ExceptionZZZ {
+		this.sCommentCommit = sCommentCommit;
+	}
+	
+	//++++++++++++++++++++
 	@Override
 	public String getRepositoryProject() throws ExceptionZZZ {
 		return this.sRepositoryProject;
@@ -121,8 +160,10 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		        this.addFileUntracked(git);
 				
 		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
-		        String sComment = JgitUtilZZZ.createCommentCommit(sCommentIn);
-		        
+		        String sCommentByProperty = this.getCommentCommit();
+		        String sComment = StringZZZ.coalesce(sCommentIn, sCommentByProperty);
+		        sComment = JgitUtilZZZ.createCommentCommit(sComment);
+		        		        
 				CommitCommand gitCommandCommit = git.commit();
 				gitCommandCommit.setMessage(sComment);
 				gitCommandCommit.call();
@@ -225,10 +266,6 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	
 	}
 
-	
-//	@Override
-//	public abstract boolean fetchit(Git git) throws ExceptionZZZ;
-//	
 	//#######################################
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
@@ -294,78 +331,6 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		}//end main:
 		return bReturn;
 	}
-//	
-//	@Override
-//	public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
-//		boolean bReturn = false;
-//		main:{
-//			if(objConfig==null) {
-//				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-//			
-//			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
-//			boolean bRemoteAliasAvailable = !StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
-////			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-////				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-////				throw ez;
-////			}
-//			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);
-//			
-//			
-//			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
-//			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
-//				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-//			this.setRepositoryBaseLocal(sRepositoryLocalIn);
-//			
-//			
-//			String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
-//			if(StringZZZ.isEmpty(sRepositoryProjectIn) & !bRemoteAliasAvailable){
-//				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-//			this.setRepositoryProject(sRepositoryProjectIn);
-//			
-//			
-//			String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sRepositoryLocalIn, sRepositoryProjectIn);
-//			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryLocalTotal);
-//			if(!objDirectoryRepositoryLocalTotal.exists()){
-//				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterCommit.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-//			this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
-//			
-//			String sRepositoryRemoteByAliasIn = null;
-//			if(bRemoteAliasAvailable) {
-//				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
-//				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-//				sRepositoryRemoteByAliasIn = repo.getConfig()
-//						       .getString("remote",sRepositoryRemoteAlias,"url");
-//				if(StringZZZ.isEmpty(sRepositoryRemoteByAliasIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarterCommit.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//				
-//				System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAliasIn +"'");
-//				
-//				
-//			}
-//			this.setRepositoryTotalRemote(sRepositoryRemoteByAliasIn);
-//			
-//			bReturn = true;
-//		}//end main:
-//		return bReturn;
-//	}
-//	
-//	
-//	@Override
-//	public abstract boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
-//
-//	@Override
-//	public abstract boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
-//
 	
 	//##################################################
 	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
@@ -390,10 +355,52 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	
 	//############# STATIC METHODEN
 
+	//###############################################
+	//### FLAG HANDLING
+	//###############################################
 	
+	//### aus IJgitEnabledZZZ
+	@Override
+	public boolean getFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
+		return this.getFlag(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean setFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlag(objEnumFlag.name(), bFlagValue);
+	}
+
+	@Override
+	public boolean[] setFlag(IJgitEnabledZZZ.FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		boolean[] baReturn=null;
+		main:{
+			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
+				baReturn = new boolean[objaEnumFlag.length];
+				int iCounter=-1;
+				for(IJgitEnabledZZZ.FLAGZ objEnumFlag:objaEnumFlag) {
+					iCounter++;
+					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
+					baReturn[iCounter]=bReturn;
+				}
+			}
+		}//end main:
+		return baReturn;
+	}
+
+	@Override
+	public boolean proofFlagExists(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagExists(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagSetBefore(objEnumFlag.name());
+	}
 	
 	//###################################
 	//### FLAGLOCAL Handling
+	
+
 	@Override
 	public boolean getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagLocal(objEnumFlag.name());
@@ -434,9 +441,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 
 	//###################################
 	//### FLAG CUSTOM Handling
-	//###################################			
-	
-	//### aus IJgitEnabledZZZ
+		
 	@Override
 	public boolean getFlagCustom(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagCustom(objEnumFlag.name());
@@ -473,47 +478,5 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	public boolean proofFlagCustomSetBefore(IJgitEnabledZZZ.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagCustomSetBefore(objEnumFlag.name());
 	}
-	
-	//###################################
-	//### FLAG Handling
 		
-	
-	//### aus IJgitEnabledZZZ
-	@Override
-	public boolean getFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-		return this.getFlag(objEnumFlag.name());
-	}
-
-	@Override
-	public boolean setFlag(IJgitEnabledZZZ.FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-		return this.setFlag(objEnumFlag.name(), bFlagValue);
-	}
-
-	@Override
-	public boolean[] setFlag(IJgitEnabledZZZ.FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
-		boolean[] baReturn=null;
-		main:{
-			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
-				baReturn = new boolean[objaEnumFlag.length];
-				int iCounter=-1;
-				for(IJgitEnabledZZZ.FLAGZ objEnumFlag:objaEnumFlag) {
-					iCounter++;
-					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
-					baReturn[iCounter]=bReturn;
-				}
-			}
-		}//end main:
-		return baReturn;
-	}
-
-	@Override
-	public boolean proofFlagExists(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-		return this.proofFlagExists(objEnumFlag.name());
-	}
-
-	@Override
-	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZ objEnumFlag) throws ExceptionZZZ {
-		return this.proofFlagSetBefore(objEnumFlag.name());
-	}
-	
 }

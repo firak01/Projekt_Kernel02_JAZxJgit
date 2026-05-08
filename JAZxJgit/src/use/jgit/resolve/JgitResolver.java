@@ -43,7 +43,45 @@ import use.jgit.util.JgitUtilZZZ;
 public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJgitResolver, IJgitResolverEnabled{
 	private static final long serialVersionUID = 521157607363069534L;
 	
+	//### Konstruktor
+	public JgitResolver() {	
+		super();			
+	}
+	
 	//### aus IJgitResolver
+	@Override 
+	public String getCommentCommitDefault() throws ExceptionZZZ{
+		String sReturn="";
+		main:{
+			String sCommentCommitDefault = this.sCommentCommitDefault; 
+			if(StringZZZ.isEmptyTrimmed(sCommentCommitDefault)) {
+				//Es soll halt erkennbar sein, dass ein Konflikt aufgelöst worden ist.
+				//und welche Strategie gewonnen hat.
+				boolean bUseMergeStrategOURS=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				boolean bUseMergeStrategTHEIRS=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				
+				String sStrategy = null;
+				if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
+					sStrategy = IJgitResolverEnabled.ConflictStrategy.THEIRS.name();				
+				}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
+					sStrategy = IJgitResolverEnabled.ConflictStrategy.OURS.name();
+				}else if (bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
+					//Fehler, was nun nehmen?
+					ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}else {
+					//Default
+					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine Strategy per Flag gesetzt. Verwende Flagwert von 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als Default.");
+					sStrategy = IJgitResolverEnabled.ConflictStrategy.OURS.name();
+				}
+				
+				sReturn = "Conflict autoresolved. Strategy: " + sStrategy;			
+			}else {
+				sReturn = this.sCommentCommitDefault;
+			}
+		}//end main:
+		return sReturn;
+	}
 	
 	//##################################################
 	//###### CONFLICT ######################################
@@ -64,6 +102,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				}
 				
 				String sComment = objConfig.readComment();
+				this.setCommentCommit(sComment);
 				
 				boolean bSuccessConflict = this.conflictit(sFilePath, sComment);
 				if(bSuccessConflict) {
@@ -109,14 +148,14 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			String sContent = objReader.read();
 			
 			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-			boolean bUseMergeStrategyOur=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-			boolean bUseMergeStrategyTheir=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+			boolean bUseMergeStrategOURS=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+			boolean bUseMergeStrategTHEIRS=this.getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 			String sResolved = null;
-			if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+			if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.THEIRS);				
-			}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+			}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
 				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.ConflictStrategy.OURS);
-			}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+			}else if (bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 				//Fehler, was nun nehmen?
 				ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;				
@@ -130,17 +169,17 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			
 			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
 			if(bReturn=true) {
-				if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 					String sLog="Erfolgreiche Konfliktauflösung.\n"
 							  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 							  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
 					System.out.println(sLog);				
-				}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+				}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
 					String sLog="Erfolgreiche Konfliktauflösung.\n"
 							  + "Verwendete Stategie:\t " + IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 							  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 					System.out.println(sLog);
-				}else if (bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+				}else if (bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 					//Fehler, was nun nehmen?
 					ExceptionZZZ ez = new ExceptionZZZ("Widerspruechliche Stategien. Sowohl Flag für 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS' als auch Flag fuer 'IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEURS' sind gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
@@ -180,6 +219,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
 				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
 				String sComment = objConfig.readComment();
+				this.setCommentCommit(sComment);
 				
 				
 				//Konfiguriere JGit für HTTPS							
@@ -262,7 +302,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			//Nun muss der gewuenschte Commit gemacht werden.
 
 			//Finde geaenderte und neue Dateien fuer den commit
-			boolean bSuccessCommit = this.commitit(git, sComment);
+			boolean bSuccessCommit = this.commitit(git);
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
@@ -335,11 +375,12 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			}
 			
 			String sComment = objConfig.readComment();
+			this.setCommentCommit(sComment);
 		
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git, sComment);
+			boolean bSuccessCommit = this.commitit(git);
 			if(bSuccessCommit) {
 				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
@@ -360,144 +401,13 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		}
 		}//end main:
 		return bReturn;
-	}
-	
-	@Override
-	public boolean commitit(Git git) throws ExceptionZZZ {
-		return this.commitit(git, null);
-	}
-	
-	@Override
-	public boolean commitit(Git git, String sCommentIn) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-			try {
-				//Finde geaenderte und neue Dateien fuer den Commit			
-				System.out.println("STATUS BEFORE COMMIT");		
-				this.printStatus(git);
-		        //##################################################################
-		        
-				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-				this.addFileTrackedChanged(git);
-				
-				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-		        this.addFileUntracked(git);
-				
-		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
-		        String sComment = JgitUtilZZZ.createCommentCommit(sCommentIn);
-		        
-				CommitCommand gitCommandCommit = git.commit();
-				gitCommandCommit.setMessage(sComment);
-				gitCommandCommit.call();
-		        
-		        System.out.println("STATUS AFTER COMMIT");
-		        this.printStatus(git);
-		        
-		        bReturn = true;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
-		}//end main:
-		return bReturn;
-	}
-		
-
-	@Override
-	public void addFileTrackedChanged() throws ExceptionZZZ {		
-		Git git = this.getGitObject();
-		this.addFileTrackedChanged(git);       
-	}
-	
-	@Override
-	public void addFileTrackedChanged(Git git) throws ExceptionZZZ {		
-		try {
-			StatusCommand gitCommandStatus = git.status();
-			Status status = gitCommandStatus.call();
-	
-			Set<String> uncommittedChanges = status.getUncommittedChanges();
-			Set<String> untracked          = status.getUntracked();
-			ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
-			
-			AddCommand gitCommandAdd = git.add();		
-	        for (String uncommitted : uncommittedChanges) {
-	        	if(!untracked.contains(uncommitted)) {
-	        		listasUncommitedChanges.add(uncommitted);
-	        	}
-	        }
-	        
-	        // run the add-call 
-	        for(String uncommitted : listasUncommitedChanges) {
-	        	System.out.println("uncommitted to add: '" + uncommitted + "'");
-	        	try {
-	        		gitCommandAdd.addFilepattern(uncommitted);
-	        		gitCommandAdd.call();
-	        	}catch(java.lang.IllegalStateException isex) {
-	        		System.out.println(isex.getMessage());
-	        		
-	        		ExceptionZZZ ez = new ExceptionZZZ(isex);
-	        		throw ez;
-	        	}
-	        }
-		}catch (NoWorkTreeException nwte) {
-			System.out.println(nwte.getMessage());
-    		
-    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
-    		throw ez;
-		}catch( GitAPIException gae) {
-			System.out.println(gae.getMessage());
-    		
-    		ExceptionZZZ ez = new ExceptionZZZ(gae);
-    		throw ez;
-		}
-       
-	}
-	
-	@Override
-	public void addFileUntracked() throws ExceptionZZZ {	
-		Git git = this.getGitObject();
-		this.addFileUntracked(git);
-	}
-	
-	@Override
-	public void addFileUntracked(Git git) throws ExceptionZZZ {
-	
-		try {
-			Status status = git.status().call();
-	
-			Set<String> setUntracked = status.getUntracked();
-			ArrayList<String> listasUntracked = new ArrayList<String>();
-	        for (String  sUntracked : setUntracked ) {
-	        	listasUntracked.add(sUntracked);
-	        }
-	        
-	        for(String sUntracked : listasUntracked) {
-	        	git.add().addFilepattern(sUntracked).call();
-	        }
-		}catch (NoWorkTreeException nwte) {
-			System.out.println(nwte.getMessage());
-    		
-    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
-    		throw ez;
-		}catch( GitAPIException gae) {
-			System.out.println(gae.getMessage());
-    		
-    		ExceptionZZZ ez = new ExceptionZZZ(gae);
-    		throw ez;
-		}
-	
-	}
-
-
-	
-
-
+	}	
 	
 	//###############################################
 	//### FLAG HANDLING
 	//###############################################
 			
-	//aus IJgitResolverEnabled
+	//### aus IJgitResolverEnabled	
 	@Override
 	public boolean getFlag(IJgitResolverEnabled.FLAGZ objEnum_IJgitResolverEnabled) throws ExceptionZZZ {
 		return this.getFlag(objEnum_IJgitResolverEnabled.name());
@@ -535,7 +445,9 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 	
-	//++++++++++++++++++++++++++++++++++++++++++++++
+	//###################################
+	//### FLAGLOCAL Handling
+		
 	@Override
 	public boolean getFlagLocal(IJgitResolverEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagLocal(objEnumFlag.name());		
@@ -573,7 +485,9 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		return this.proofFlagLocalSetBefore(objEnumFlag.name());
 	}
 
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//###################################
+	//### FLAGCUSTOM Handling
+		
 	@Override
 	public boolean getFlagCustom(IJgitResolverEnabled.FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagCustom(objEnumFlag.name());		

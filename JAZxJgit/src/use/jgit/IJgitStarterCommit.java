@@ -34,4 +34,11 @@ public interface IJgitStarterCommit {
 	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;	
 	public boolean commitit(Git git) throws ExceptionZZZ;
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
+	
+	//+++ Defaultkommentar, wenn keiner übergeben wurde. Ggfs. mit Besonderheit, z.B. beim Auflösen von Konflikten
+	public String getCommentCommit() throws ExceptionZZZ;
+	public void setCommentCommit(String sCommentCommit) throws ExceptionZZZ;
+	
+	public String getCommentCommitDefault() throws ExceptionZZZ;
+	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ;
 }
