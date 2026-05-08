@@ -360,7 +360,14 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			bReturn = JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git);			
+			//bisherige Variante... als eine direkte Lösung ohne MergeResult...
+			//nach JgitUtil verschieben... Protokoll sollte egal sein...
+			bReturn = JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git);
+			
+			TODOGOON20260508;//Arbeite auf dieser Ebene mit MergeResult
+			//s. JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+			
+						
 		}//end main:
 		return bReturn;
 	}
