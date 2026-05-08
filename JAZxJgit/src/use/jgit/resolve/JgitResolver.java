@@ -75,7 +75,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					sStrategy = IJgitResolverEnabled.ConflictStrategy.OURS.name();
 				}
 				
-				sReturn = "Conflict autoresolved. Strategy: " + sStrategy;			
+				sReturn = "(Conflict autoresolved. Strategy: '" + sStrategy + "')";			
 			}else {
 				sReturn = this.sCommentCommitDefault;
 			}
