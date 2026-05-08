@@ -258,8 +258,8 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			
 			
 			//Zum Testen gezielt steuern
-			bIgnoreConflicts = false;
-			bAutosolveConflicts = false;
+			//bIgnoreConflicts = false;
+			//bAutosolveConflicts = false;
 			if (!bIgnoreConflicts & !bAutosolveConflicts) {
 				//Normaler Pull, Konflikte ausgeben, nicht auflösen
 				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);

@@ -388,8 +388,8 @@ public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 				boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
 				
 				//Zum Testen gezielt steuern
-				bIgnoreConflicts = false;
-				bAutoResolveConflicts = false;
+				//bIgnoreConflicts = false;
+				//bAutoResolveConflicts = false;
 				if (!bIgnoreConflicts & !bAutoResolveConflicts) {
 					//Normaler Pull, Konflikte ausgeben, nicht auflösen
 					//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
