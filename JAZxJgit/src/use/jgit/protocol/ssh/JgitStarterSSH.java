@@ -50,6 +50,12 @@ import use.jgit.util.JgitUtilZZZ;
 public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitStarterSSH{
 	private static final long serialVersionUID = 521157607363069534L;
 
+	//### Konstruktor
+	public JgitStarterSSH() {	
+		super();			
+	}
+
+	
 	//### aus IJgitStarter
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
@@ -359,15 +365,28 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	@Override
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
 		boolean bReturn = false;
-		main:{
-			//bisherige Variante... als eine direkte Lösung ohne MergeResult...
-			//nach JgitUtil verschieben... Protokoll sollte egal sein...
-			bReturn = JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git);
+		main:{			
+			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote);
+			if(objMergeResult==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
 			
-			TODOGOON20260508;//Arbeite auf dieser Ebene mit MergeResult
-			//s. JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
+			bReturn = objMergeStatus.isSuccessful();
+			if(bReturn) break main;
 			
-						
+			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
+			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			bReturn = !bAnyConflict;
+			
+			
+			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			objAnalyseResult.printReport();
+			
 		}//end main:
 		return bReturn;
 	}

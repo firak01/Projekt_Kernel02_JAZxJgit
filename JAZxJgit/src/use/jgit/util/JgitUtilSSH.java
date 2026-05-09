@@ -3,16 +3,23 @@ package use.jgit.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.merge.MergeStrategy;
+import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -476,6 +483,339 @@ public class JgitUtilSSH implements IConstantZZZ{
 			} 
 		}//end main
 		return bReturn;
+	}
+	
+	/** Für den HTTPS Weg:
+	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt
+		nur die konfliktbehafteten Dateien zurücksetzt
+		danach den Pull automatisch erneut versucht
+		
+		s. ChatGPT 20260323
+	 * @param git
+	 * @throws GitAPIException
+	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
+	 * @throws ExceptionZZZ 
+	 */
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+	        try {
+	
+	        	if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
+	        	//!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+		        //             ohne eine Exception durchlaufen kann
+		        //Vorprüfung per eigener, gekapselter Routine
+		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+		        if (!check.isClean()) {
+		            check.printReport();
+		            break main; // Merge abbrechen
+		        }
+		        
+		        //+++++++++++++++++++++++++
+		        //wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+				System.out.println("SSH-Loesung: Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+								
+				// aber mal explizit als pullCommand
+				PullCommand pullCommand = git.pull();
+				
+				//In der Utility - Klasse das so machen wie in HTTPS und die Url berechnen:
+				
+				//Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
+				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
+				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
+				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				//pullCommand.setRemote(sUrlRepoRemote); //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
+				                                         //      Statt dessen den "Aliasnamen" übergeben.
+				System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
+				
+				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.
+				//Müssen wir aus der Url den Aliasnamen errechnen.
+				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
+				
+				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
+				System.out.println("Verwendete RepositoryAlias für Remote: " + sRemoteRepositoryAlias);
+				pullCommand.setRemote(sRemoteRepositoryAlias);
+
+				// pull from remote, hier mit Auswertung des Ergebnisses	
+				PullResult pullResult = pullCommand.call();
+				
+				if (pullResult.isSuccessful()) {
+				    System.out.println("Pull erfolgreich");
+				} else {
+				    System.out.println("Pull fehlgeschlagen");
+				}
+
+				objReturn = pullResult.getMergeResult();
+				if(objReturn!=null) {
+					System.out.println("MergeResult: " + objReturn.getMergeStatus());
+				}else {
+					System.out.println("MergeResult: Kein Status zurueckgegeben.");
+				}
+				
+				//20260428 wofuer braucht es den fetchResult
+				FetchResult fetchResult = pullResult.getFetchResult();
+				if(fetchResult!=null) {
+					System.out.println("FetchResult: " + fetchResult.getMessages());
+				}else {
+					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
+				}																				
+				
+				//Hier HTTPS Lösung:
+//				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
+//				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+//				if(fetchResult==null) break main;
+//					
+//				//+++ Auswerten eines Fetch
+//				String sFetchResultMessages = fetchResult.getMessages();
+//				if(sFetchResultMessages!=null) {				
+//					System.out.println("Fetch-Result: " + sFetchResultMessages);
+//				}
+				
+//				//++++++++++++++++++++++++++++++++
+//				//den richtigen Branch ansteuern
+				String branch = "master"; // oder dynamisch
+				String sFetchRefs = "refs/heads/" + branch;
+				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+				System.out.println("Merge Ref = " + objRef.getName());
+				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+				
+				/*Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				 */
+				
+				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+				System.out.println("Starte Merge:");
+				try {
+					String localRef = "refs/remotes/origin/" + branch;
+					String remoteRef = "refs/heads/" + branch;
+					
+					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
+					System.out.println("Verwende objRef. Nicht Verwender remoteMaster= '" + remoteMaster.getName() + "'");
+										
+					MergeCommand mergeCommand = git.merge();
+					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
+					//Also so versuchen.
+					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+					//Lösungsansatz: direkt den richtigen Branch verwenden
+					//also statt... mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+					//mergeCommand.include(remoteMaster);
+					//mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+					
+					//ABER mit 2 verschiedenen .includes(...) gibt es eine Fehlermeldung wie:
+					//Verwende remoteMaster= '56cabdc4169eeb600177b05b8540f5bde4ca3533'
+					//Verwende remoteMaster= 'AnyObjectId[56cabdc4169eeb600177b05b8540f5bde4ca3533]'
+					//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+					
+					//Die Lösung ist dann nur 1x das .include(...) aufzurufen.
+					//Wenn du nur eine nackte ObjectId übergibst:
+					//mergeCommand.include(objectId);
+					//kennt JGit keinen Branchnamen mehr. Dann fehlen Informationen wie:
+					//welcher Remote?
+					//welcher Tracking-Branch?
+					//welche Reflog-Namen?
+					//
+					//Darum ist die Ref-Variante sauberer.
+					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+					
+					
+					//Folgender DEBUG Code geht nur mit neueren JGIT Versionen:
+					//System.out.println("Merge includes:");
+					//for(Ref r : mergeCommand.getRefsToMerge()) {
+					//    System.out.println(r.getName());
+					//}
+					
+					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
+					 
+					objReturn = mergeCommand.call();
+					
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					MergeStatus status = objReturn.getMergeStatus();
+					System.out.println("Merge-Status:" + status.toString());
+					if(status.equals(MergeStatus.CONFLICTING)) {
+					    System.out.println("Konflikte erkannt.");
+
+					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+					    if(conflicts != null) {
+					        for(String path : conflicts.keySet()) {
+
+					            System.out.println("Behalte lokale Datei: " + path);
+
+					            // Lokale Version wiederherstellen (= OURS)
+					            git.checkout()
+					               .addPath(path)
+					               .call();
+					        }
+					    }
+
+					    // Konfliktzustand beenden:
+					    git.add().addFilepattern(".").call();
+
+					    git.commit()
+					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .call();
+					    
+					    
+					    // Konfliktzustand beenden:
+					    git.add().addFilepattern(".").call();
+					    
+					    git.commit()
+					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .call();
+					}
+					
+					if(status.equals(MergeStatus.FAILED)) {
+					    System.out.println("Failed erkannt.");
+
+					    Map<String, MergeFailureReason> failingPaths = objReturn.getFailingPaths();
+					    if(failingPaths != null) {
+					        for(Map.Entry<String, MergeFailureReason> entry : failingPaths.entrySet()) {
+
+					            String path = entry.getKey();
+					            MergeFailureReason reason = entry.getValue();
+
+					            System.out.println(path + " -> " + reason);
+
+					            if(reason == MergeFailureReason.DIRTY_INDEX
+					               || reason == MergeFailureReason.DIRTY_WORKTREE) {
+
+					                System.out.println("Behalte lokale Datei: " + path);
+
+					                //wirkt aber nicht zuverlässig bei failed:
+					                //git.checkout().addPath(path).call();
+					                
+					                //darum:
+					                //reicht aber nicht git.reset().addPath(path).call();
+					                
+					                //darum:
+					                git.checkout().setStartPoint("HEAD").addPath(path).call();
+					                //git.checkout().setStartPoint("master").addPath(path).call();
+					                
+					                //Merge result Objekt (ist nur ein Snapshot) neu holen 
+					                System.out.println("Starte Merge2:");
+					                MergeCommand mergeCommand2 = git.merge();
+					                mergeCommand2.include(objRef);
+					                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
+									objReturn = mergeCommand2.call();
+									
+									MergeStatus status2 = objReturn.getMergeStatus();
+									System.out.println("Merge-Status2:" + status2.toString());
+									
+									//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
+					                //Aber nun gibt es den Merge-Status.CONFLICTING
+					                if(status2.equals(MergeStatus.CONFLICTING)) {
+									    System.out.println("Konflikte2 erkannt.");
+
+									    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+									    if(conflicts != null) {
+									        for(String path2 : conflicts.keySet()) {
+
+									            System.out.println("Behalte lokale Datei: " + path2);
+
+									            // Lokale Version wiederherstellen (= OURS)
+									            git.checkout()
+									               .addPath(path2)
+									               .call();
+									        }
+									    }
+
+									    // Konfliktzustand beenden:
+									    git.add().addFilepattern(".").call();
+
+									    git.commit()
+									       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
+									       .call();
+									    									    									   
+									}//end konflikte2
+					                
+					                
+					            }
+					        }
+					    }
+					}//end status failed  
+					  
+
+					
+																					
+					//###############################################################
+		        } catch (CheckoutConflictException cce) {
+		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
+		            Collection<String> conflictingPaths = cce.getConflictingPaths();
+		
+		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
+		                // Kein konkreter Pfad bekannt → weiterwerfen
+		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
+		    			throw ez;
+		            }
+	
+		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
+		            for (String path : conflictingPaths) {
+		                git.checkout()
+		                   .addPath(path)
+		                   .call();
+		                System.out.println("* " + path);			        	
+		            }
+		
+		            //Pull erneut versuchen
+		            System.out.println("Konflikte: Pull erneut versuchen.");
+		            git.pull().call();
+		        }
+						
+				//###############################################################	
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;	
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return objReturn;
 	}
 
 	//Z.B.: SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git

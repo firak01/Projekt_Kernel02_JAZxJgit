@@ -10,7 +10,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 		DUMMYFLAGZLOCAL (1 << 0), 
 		MERGE_IGNORE_CHECKOUT_CONFLICTS     (1 << 1), // beim PULL / MERGE werden Konflikte unterdrückt. Es wird gemäß der Strategie ausgewählt was gewinnt
 		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
-		USE_STRATEGY__MERGE_CONFLICT_THEIRS (1 << 3), 
+		USE_STRATEGY_MERGE_CONFLICT_THEIRS (1 << 3), 
 		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4), //NOCH NICHT REALISIERT
 		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5); //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
 		

@@ -165,6 +165,8 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		        sComment = JgitUtilZZZ.createCommentCommit(sComment);
 		        		        
 				CommitCommand gitCommandCommit = git.commit();
+				
+				System.out.println("COMMIT MESSAGE: '" + sComment + "'");
 				gitCommandCommit.setMessage(sComment);
 				gitCommandCommit.call();
 		        

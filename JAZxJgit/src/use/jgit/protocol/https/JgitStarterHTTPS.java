@@ -39,9 +39,15 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	public String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PAT-Werts durch sein Regelwerk, hier kann also keine statische Variable final definiert sein!!!
 	
+	//### Konstruktor
+	public JgitStarterHTTPS() {	
+		super();			
+	}
+
+	
 	//### aus IJgitStarterHTTPS
 	@Override
-public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
+	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
 		this.sPAT = sPat;
 	}
 

@@ -3,6 +3,7 @@ package use.jgit.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jgit.api.FetchCommand;
@@ -11,6 +12,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -419,11 +421,40 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
 					 
 					objReturn = mergeCommand.call();
-					//System.out.println("Merge-Status:" + mergeResult.getMergeStatus());
-																					
+					
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					MergeStatus status = objReturn.getMergeStatus();
+					System.out.println("Merge-Status:" + status.toString());
+					if(status.equals(MergeStatus.CONFLICTING)) {
+					    System.out.println("Konflikte erkannt.");
+
+					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+					    if(conflicts != null) {
+					        for(String path : conflicts.keySet()) {
+
+					            System.out.println("Behalte lokale Datei: " + path);
+
+					            // Lokale Version wiederherstellen (= OURS)
+					            git.checkout()
+					               .addPath(path)
+					               .call();
+					        }
+					    }
+
+					    // Konfliktzustand beenden:
+					    git.add().addFilepattern(".").call();
+
+					    git.commit()
+					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .call();
+					}
+	
+					
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {
-		
+		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
+		        	
 		            Collection<String> conflictingPaths = cce.getConflictingPaths();
 		
 		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
@@ -433,13 +464,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            }
 	
 		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
 		            for (String path : conflictingPaths) {
 		                git.checkout()
 		                   .addPath(path)
 		                   .call();
+		                System.out.println("* " + path);			        	
 		            }
 		
 		            //Pull erneut versuchen
+		            System.out.println("Konflikte: Pull erneut versuchen.");
 		            git.pull().call();
 		        }
 								
