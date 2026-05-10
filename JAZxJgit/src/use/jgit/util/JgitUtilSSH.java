@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
@@ -485,21 +486,25 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return bReturn;
 	}
 	
-	/** Für den HTTPS Weg:
-	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	/** Für den SSH Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
 	 * 
 	 *  Eine robuste Utility-Methode, die:
 	
 		pull() ausführt
-		CheckoutConflictException gezielt abfängt
-		nur die konfliktbehafteten Dateien zurücksetzt
-		danach den Pull automatisch erneut versucht
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
 		
-		s. ChatGPT 20260323
+		
+		s. ChatGPT 20260323, 20260508ff
 	 * @param git
-	 * @throws GitAPIException
-	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
-	 * @throws ExceptionZZZ 
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
 	 */
 	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
 		MergeResult objReturn = null;
@@ -624,7 +629,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				System.out.println("Starte Merge:");
 				try {
 					String localRef = "refs/remotes/origin/" + branch;
-					String remoteRef = "refs/heads/" + branch;
+					String remoteRef = "refs/heads/" + branch;       //Merke: Ist gleich sFetchRefs weiter oben
 					
 					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
 					System.out.println("Verwende objRef. Nicht Verwender remoteMaster= '" + remoteMaster.getName() + "'");
@@ -722,11 +727,12 @@ public class JgitUtilSSH implements IConstantZZZ{
 					                //git.checkout().addPath(path).call();
 					                
 					                //darum:
-					                //reicht aber nicht git.reset().addPath(path).call();
+					                //reicht aber nicht 
+					                //git.reset().addPath(path).call();
 					                
 					                //darum:
 					                git.checkout().setStartPoint("HEAD").addPath(path).call();
-					                //git.checkout().setStartPoint("master").addPath(path).call();
+					                
 					                
 					                //Merge result Objekt (ist nur ein Snapshot) neu holen 
 					                System.out.println("Starte Merge2:");
@@ -748,22 +754,38 @@ public class JgitUtilSSH implements IConstantZZZ{
 									    if(conflicts != null) {
 									        for(String path2 : conflicts.keySet()) {
 
-									            System.out.println("Behalte lokale Datei: " + path2);
+									            System.out.println("Behalte lokale Datei2: " + path2);
 
 									            // Lokale Version wiederherstellen (= OURS)
+									            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
+									            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
+									            //
+									            //Darum ist ein normaler Checkout nicht erlaubt.
+									            //Es braucht noch die explizite Angabe OURS oder THEIRS
+									            
+									            
 									            git.checkout()
+									               .setStage(CheckoutCommand.Stage.OURS)
 									               .addPath(path2)
 									               .call();
 									        }
 									    }
 
-									    // Konfliktzustand beenden:
+									    // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
 									    git.add().addFilepattern(".").call();
 
 									    git.commit()
 									       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
 									       .call();
-									    									    									   
+									    			
+									    
+									    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+									    //Also noch ein 3. Mal:
+									    MergeCommand mergeCommand3 = git.merge();
+						                mergeCommand3.include(objRef);
+						                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
+										objReturn = mergeCommand3.call();
+									    
 									}//end konflikte2
 					                
 					                
@@ -798,6 +820,26 @@ public class JgitUtilSSH implements IConstantZZZ{
 		            //Pull erneut versuchen
 		            System.out.println("Konflikte: Pull erneut versuchen.");
 		            git.pull().call();
+		            objReturn = pullResult.getMergeResult();
+		           
+		            //Das wäre der Ansatz ohne diese Exception
+		            /*
+		            // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
+				    git.add().addFilepattern(".").call();
+
+				    git.commit()
+				       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
+				       .call();
+				    			
+				    
+				    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+				    //Also noch ein 3. Mal:
+				    MergeCommand mergeCommand = git.merge();
+	                mergeCommand.include(objRef);
+	                mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
+					objReturn = mergeCommand.call();
+				    */
+		            
 		        }
 						
 				//###############################################################	
