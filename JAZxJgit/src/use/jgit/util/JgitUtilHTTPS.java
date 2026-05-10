@@ -31,6 +31,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
@@ -268,7 +269,248 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+	        try {
+	
+				/*
+				Frage:
+				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
+				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
+				
+				Antwort:
+				Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
+				VARIANTE 1. setRemote(...) erwartet keine URL
+	
+				In JGit ist:
+				git.pull().setRemote("origin")
+	
+				👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
+	
+				Also z. B.:
+				[remote "origin"]
+					url = https://github.com/user/repo.git
+	
+				➡️ setRemote("origin") = Referenz auf diesen Eintrag
+				➡️ Direkte URL ist hier nicht vorgesehen
+	
+				VARIANTE 2. URL direkt übergeben? → Nur über fetch()
+	
+				Wenn du eine URL direkt verwenden willst, musst du den Pull zerlegen:
+				👉 pull = fetch + merge
+	
+				Beispiel (HTTPS mit URL + Token)
+				FetchResult fetchResult = git.fetch()
+				.setRemote("https://<token>@github.com/user/repo.git")
+				.call();
+	
+				git.merge()
+				.include(fetchResult.getAdvertisedRef("refs/heads/main"))
+				.call();
+				 */
+				
+	        									
+				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
+				//Darum versuchen dies ohne sPAT in URL zu realisieren
+				//                  //Variante A) mit sPAT in URL
+				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+				//
+				//                  //Variante B) ohne sPAT in URL
+				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	        
+				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
+				
+				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
+							
+				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
+				System.out.println("Url fuer Fetch: '" + sUrl + "'");
+				
+				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
+				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				if(fetchResult==null) break main;
+					
+				//+++ Auswerten eines Fetch
+				String sFetchResultMessages = fetchResult.getMessages();
+				if(sFetchResultMessages!=null) {				
+					System.out.println("Fetch-Result: " + sFetchResultMessages);
+				}
+					
+				
+				//++++++++++++++++++++++++++++++++
+				//den richtigen Branch ansteuern
+				String branch = "master"; // oder dynamisch
+				String sFetchRefs = "refs/heads/" + branch;
+				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+				System.out.println("Merge Ref = " + objRef.getName());
+				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+				
+				/*Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				 */
+				
+					
+				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+				System.out.println("Starte Merge:");
+				try {
+					String localRef = "refs/remotes/origin/" + branch;
+					String remoteRef = "refs/heads/" + branch;
+					
+					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
+					System.out.println("Verwende objRef. Nicht Verwender remoteMaster= '" + remoteMaster.getName() + "'");
+										
+					MergeCommand mergeCommand = git.merge();
+					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
+					//Also so versuchen.
+					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+					//Lösungsansatz: direkt den richtigen Branch verwenden
+					//also statt... mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+					//mergeCommand.include(remoteMaster);
+					//mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+					
+					//ABER mit 2 verschiedenen .includes(...) gibt es eine Fehlermeldung wie:
+					//Verwende remoteMaster= '56cabdc4169eeb600177b05b8540f5bde4ca3533'
+					//Verwende remoteMaster= 'AnyObjectId[56cabdc4169eeb600177b05b8540f5bde4ca3533]'
+					//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+					
+					//Die Lösung ist dann nur 1x das .include(...) aufzurufen.
+					//Wenn du nur eine nackte ObjectId übergibst:
+					//mergeCommand.include(objectId);
+					//kennt JGit keinen Branchnamen mehr. Dann fehlen Informationen wie:
+					//welcher Remote?
+					//welcher Tracking-Branch?
+					//welche Reflog-Namen?
+					//
+					//Darum ist die Ref-Variante sauberer.
+					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+					
+					
+					//Folgender DEBUG Code geht nur mit neueren JGIT Versionen:
+					//System.out.println("Merge includes:");
+					//for(Ref r : mergeCommand.getRefsToMerge()) {
+					//    System.out.println(r.getName());
+					//}
+					
+					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
+					 
+					objReturn = mergeCommand.call();
+					
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					MergeStatus status = objReturn.getMergeStatus();
+					System.out.println("Merge-Status:" + status.toString());
+					if(status.equals(MergeStatus.CONFLICTING)) {
+					    System.out.println("Konflikte erkannt.");
+
+					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+					    if(conflicts != null) {
+					        for(String path : conflicts.keySet()) {
+
+					            System.out.println("Behalte lokale Datei: " + path);
+
+					            // Lokale Version wiederherstellen (= OURS)
+					            git.checkout()
+					               .addPath(path)
+					               .call();
+					        }
+					    }
+
+					    // Konfliktzustand beenden:
+					    git.add().addFilepattern(".").call();
+
+					    git.commit()
+					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .call();
+					}
+	
+					
+					//###############################################################
+		        } catch (CheckoutConflictException cce) {
+		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
+		        	
+		            Collection<String> conflictingPaths = cce.getConflictingPaths();
+		
+		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
+		                // Kein konkreter Pfad bekannt → weiterwerfen
+		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
+		    			throw ez;
+		            }
+	
+		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
+		            for (String path : conflictingPaths) {
+		                git.checkout()
+		                   .addPath(path)
+		                   .call();
+		                System.out.println("* " + path);			        	
+		            }
+		
+		            //Pull erneut versuchen
+		            System.out.println("Konflikte: Pull erneut versuchen.");
+		            git.pull().call();
+		        }
+								
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}       
+	    }//end main:
+	    return objReturn;
+	}
+	
+	/** Für den HTTPS Weg:
+	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt
+		nur die konfliktbehafteten Dateien zurücksetzt
+		danach den Pull automatisch erneut versucht
+		
+		s. ChatGPT 20260323
+	 * @param git
+	 * @throws GitAPIException
+	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
+	 * @throws ExceptionZZZ 
+	 */
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS_BACKUP_GGFS_LOESCHEN(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {
@@ -520,8 +762,56 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            check.printReport();
 		            break main; // Merge abbrechen
 		        }
-		       
+		        
+		        
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		    	/*
+				Frage:
+				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
+				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
+				
+				Antwort:
+				Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
+				VARIANTE 1. setRemote(...) erwartet keine URL
+	
+				In JGit ist:
+				git.pull().setRemote("origin")
+	
+				👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
+	
+				Also z. B.:
+				[remote "origin"]
+					url = https://github.com/user/repo.git
+	
+				➡️ setRemote("origin") = Referenz auf diesen Eintrag
+				➡️ Direkte URL ist hier nicht vorgesehen
+	
+				VARIANTE 2. URL direkt übergeben? → Nur über fetch()
+	
+				Wenn du eine URL direkt verwenden willst, musst du den Pull zerlegen:
+				👉 pull = fetch + merge
+	
+				Beispiel (HTTPS mit URL + Token)
+				FetchResult fetchResult = git.fetch()
+				.setRemote("https://<token>@github.com/user/repo.git")
+				.call();
+	
+				git.merge()
+				.include(fetchResult.getAdvertisedRef("refs/heads/main"))
+				.call();
+				 */
+				
+	        									
+				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
+				//Darum versuchen dies ohne sPAT in URL zu realisieren
+				//                  //Variante A) mit sPAT in URL
+				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+				//
+				//                  //Variante B) ohne sPAT in URL
+				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	        
+		        
+		        
 		        if (remoteUrl == null || remoteUrl.trim().isEmpty()) {
 		            throw new IllegalArgumentException("remoteUrl must not be empty");
 		        }
