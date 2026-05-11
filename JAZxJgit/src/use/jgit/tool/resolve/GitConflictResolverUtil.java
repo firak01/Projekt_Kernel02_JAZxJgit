@@ -1,9 +1,9 @@
 package use.jgit.tool.resolve;
 
-import use.jgit.resolve.IJgitResolverEnabled.ConflictStrategy;
+import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 
 public class GitConflictResolverUtil {
-    public static String resolveConflicts(String content, ConflictStrategy strategy) {
+    public static String resolveConflicts(String content, STRATEGYMERGECONFLICT strategy) {
         StringBuilder result = new StringBuilder();
 
         String[] lines = content.split("\\r?\\n");
@@ -34,7 +34,7 @@ public class GitConflictResolverUtil {
 
             if (inConflict && line.startsWith(">>>>>>>")) {
                 // Konfliktblock endet → entscheiden
-                if (strategy == ConflictStrategy.OURS) {
+                if (strategy == STRATEGYMERGECONFLICT.OURS) {
                     result.append(oursBuffer);
                 } else {
                     result.append(theirsBuffer);

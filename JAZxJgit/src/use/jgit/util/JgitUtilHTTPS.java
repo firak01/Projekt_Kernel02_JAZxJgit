@@ -269,7 +269,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {

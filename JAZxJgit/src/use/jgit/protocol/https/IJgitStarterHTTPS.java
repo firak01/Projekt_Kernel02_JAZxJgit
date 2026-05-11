@@ -23,8 +23,8 @@ public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarte
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
 	
 	//c) pull, die Konfliktdateien werden gezielt zurückgesetzt
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ;
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;
 	
-	//d) pull mit dem Automatuschen auflösen von Mergekonflikten, ggfs. mit Strategie, die auch per Flag gesteuert wird
-	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ;	               
+	//d) pull mit dem Automatischen auflösen von Mergekonflikten, ggfs. mit Strategie, die auch per Flag gesteuert wird
+	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;	               
 }

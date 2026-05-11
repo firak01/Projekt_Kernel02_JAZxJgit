@@ -24,7 +24,9 @@ import use.jgit.AbstractJgitStarter;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
@@ -308,7 +310,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote,IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ {
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote,IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, objEnumstrategy);
@@ -337,7 +339,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	}
 	
 	@Override
-	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.ConflictStrategy objEnumstrategy) throws ExceptionZZZ {
+	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{					
 			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
@@ -394,6 +396,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
 				boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
 				
+				
+				
 				//Zum Testen gezielt steuern
 				//bIgnoreConflicts = false;
 				//bAutoResolveConflicts = false;
@@ -405,6 +409,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
 									
 				} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
+					
+					//Statt so etwas zu machen, das Flag übergeben:
+					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+					
+					
 TODOGOON20260510;//Werte Flag THEIRS oder OURS als Strategie aus und übergib das passende Enum
 /* Dann kann innerhalb von pullitIgnore.... auf das übergebene Enum reagiert werden.
  CheckoutCommand.Stage stage =
@@ -417,6 +428,12 @@ TODOGOON20260510;//Werte Flag THEIRS oder OURS als Strategie aus und übergib da
 					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal);
 									
 				} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
+					
+					//Statt so etwas zu machen, das Flag übergeben:
+					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+					
 TODOGOON20260510;//Werte Flag THEIRS oder OURS als Strategie aus und übergib das passende Enum				
 					//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
 					String sBranch = "master";

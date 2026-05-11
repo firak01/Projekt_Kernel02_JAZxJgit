@@ -37,6 +37,9 @@ import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
+import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
+import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
@@ -262,6 +265,13 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
 			boolean bAutosolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
 			
+			//Statt so etwas zu machen, das Flag übergeben:
+			//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+			//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+			STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+			
+			
+			
 			
 			//Zum Testen gezielt steuern
 			//bIgnoreConflicts = false;
@@ -283,7 +293,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				
 				                
 				String sBranch = "master";
-				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
+				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
 				
 								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
 				                //   in der erst versucht wird zu und danach 
@@ -294,7 +304,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				
 				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
 				String sBranch = "master";
-				//HTTPS VERSION bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+				//HTTPS VERSION bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch, objEnumMergeStrategy);
 			
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -363,10 +373,10 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote);
+			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote, objEnumStrategyMergeConflict);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
