@@ -497,7 +497,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * 
 	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
 	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullSSH_by_FetchMerge verwenden.
+	 *        Darum eher pullSSH_by_FetchMerge_ verwenden.
 	 * 
 	 * @param git
 	 * @param credentialsProvider
@@ -687,7 +687,13 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        // 2. MERGE (gezielt!)
 		        // =========================
 		        //aus .git\config Datei:
-		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+		        //      fetch = +refs/heads/*:refs/remotes/origin/*		
+		        //
+		        //Merke:
+		        ////per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+                //Ref objRef = git.getRepository().exactRef(sFetchRefs);
+		        
 		        String branch = "master";
 		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
 		       
@@ -803,6 +809,356 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @throws ExceptionZZZ
 	 */
 	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
+		//return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn);
+		
+		return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null);
+	}
+	
+	/** Für den SSH Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
+		
+		
+		s. ChatGPT 20260323, 20260508ff
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
+		//return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn);
+		
+		return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn);
+	}
+	
+	
+	/** Für den SSH Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
+		
+	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
+	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
+	 *        Darum eher pullIgnoreCheckoutConflictsSSH_by_FetchMerge_ verwenden.
+		
+		s. ChatGPT 20260323, 20260508ff
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+	        try {
+	        	 String sBranch = "master";
+			     if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+			       
+	        	
+	        	//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
+	        	objReturn = pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch);
+	        	
+	        	
+	        	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+				if(objReturn!=null) {
+					System.out.println("MergeResult: " + objReturn.getMergeStatus());
+				}else {
+					System.out.println("MergeResult: Null.");
+					break main;
+				}
+				
+			
+				
+////				//++++++++++++++++++++++++++++++++
+////				//den richtigen Branch ansteuern
+//				String branch = "master"; // oder dynamisch
+//				String sFetchRefs = "refs/heads/" + branch;
+//				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+//				System.out.println("Merge Ref = " + objRef.getName());
+//				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+//				
+//				/*Minierklaerung:
+//				siehe .git\config Datei, entsprechende Zeile.
+//				 
+//				Das ist ein sogenannter RefSpec (Reference Specification).
+//				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+//				
+//				Aufbau allgemein:
+//				[+]<Quelle>:<Ziel>
+//				
+//				Also:
+//				Quelle (Remote-Seite)
+//				refs/heads/ = alle Branches im Remote-Repository
+//				 * = Wildcard → alle Branch-Namen
+//	
+//				➡️ Bedeutet:
+//				Hole alle Branches vom Remote
+//				
+//				
+//				Ziel (lokal)
+//				refs/remotes/origin/ = Remote-Tracking-Branches
+//				* = gleicher Name wie Quelle
+//	
+//				➡️ Bedeutet:
+//				Speichere sie lokal als origin/branchname
+//				
+//				------------
+//				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+//				Mit + sagst du:
+//				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+//				 */
+//									
+				
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					MergeStatus status = objReturn.getMergeStatus();
+					System.out.println("Merge-Status:" + status.toString());
+					if(status.equals(MergeStatus.CONFLICTING)) {
+					    System.out.println("Konflikte erkannt.");
+
+					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+					    if(conflicts != null) {
+					        for(String path : conflicts.keySet()) {
+
+					            System.out.println("Behalte lokale Datei: " + path);
+
+					            // Lokale Version wiederherstellen (= OURS)
+					            //ohne setStage... Fehler: org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
+					            git.checkout()
+					               .setStage(CheckoutCommand.Stage.OURS)
+					               .addPath(path)
+					               .call();
+					        }
+					        
+					        
+					    }
+
+					    // Konfliktzustand beenden:
+					    git.add().addFilepattern(".").call();
+
+					    git.commit()
+					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .call();
+					    
+					    
+					    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+					    //Also noch ein weiteres Mal:
+					    String sFetchRefs = "refs/heads/" + sBranch;
+						//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+		                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+		                Ref objRef = git.getRepository().exactRef(sFetchRefs);
+		                
+//				        ObjectId remoteBranchObjectId = git.getRepository().resolve(localTrackingRef);				
+//				        if (remoteBranchObjectId == null) {
+//				            throw new IllegalStateException("Remote branch not found after resolving conflicts, before new Merge-Run: " + localTrackingRef);
+//				        }
+				        
+					    MergeCommand mergeCommand2 = git.merge();
+		                mergeCommand2.include(objRef);
+		                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
+						objReturn = mergeCommand2.call();
+					}//end STATUS "CONFLICTING"
+					
+					if(status.equals(MergeStatus.FAILED)) {
+					    System.out.println("Failed erkannt.");
+
+					    Map<String, MergeFailureReason> failingPaths = objReturn.getFailingPaths();
+					    if(failingPaths != null) {
+					        for(Map.Entry<String, MergeFailureReason> entry : failingPaths.entrySet()) {
+
+					            String path = entry.getKey();
+					            MergeFailureReason reason = entry.getValue();
+
+					            System.out.println(path + " -> " + reason);
+
+					            if(reason == MergeFailureReason.DIRTY_INDEX
+					               || reason == MergeFailureReason.DIRTY_WORKTREE) {
+
+					                System.out.println("Behalte lokale Datei: " + path);
+
+					                //wirkt aber nicht zuverlässig bei failed:
+					                //git.checkout().addPath(path).call();
+					                
+					                //darum:
+					                //reicht aber nicht 
+					                //git.reset().addPath(path).call();
+					                
+					                //darum:
+					                git.checkout().setStartPoint("HEAD").addPath(path).call();
+					                
+					                //Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
+					                String sFetchRefs = "refs/heads/" + sBranch;
+									//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+					                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+					                Ref objRef = git.getRepository().exactRef(sFetchRefs);
+					                
+					                //Merge result Objekt (ist nur ein Snapshot) neu holen 
+					                System.out.println("Starte Merge2:");
+					                MergeCommand mergeCommand2 = git.merge();
+					                mergeCommand2.include(objRef);
+					                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
+									objReturn = mergeCommand2.call();
+									
+									MergeStatus status2 = objReturn.getMergeStatus();
+									System.out.println("Merge-Status2:" + status2.toString());
+									
+									//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
+					                //Aber nun gibt es den Merge-Status.CONFLICTING
+					                if(status2.equals(MergeStatus.CONFLICTING)) {
+									    System.out.println("Konflikte2 erkannt.");
+
+									    Map<String, int[][]> conflicts = objReturn.getConflicts();
+
+									    if(conflicts != null) {
+									        for(String path2 : conflicts.keySet()) {
+
+									            System.out.println("Behalte lokale Datei2: " + path2);
+
+									            // Lokale Version wiederherstellen (= OURS)
+									            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
+									            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
+									            //
+									            //Darum ist ein normaler Checkout nicht erlaubt.
+									            //Es braucht noch die explizite Angabe OURS oder THEIRS
+									            
+									            
+									            git.checkout()
+									               .setStage(CheckoutCommand.Stage.OURS)
+									               .addPath(path2)
+									               .call();
+									        }
+									    }
+
+									    // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
+									    git.add().addFilepattern(".").call();
+
+									    git.commit()
+									       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
+									       .call();
+									    			
+									    
+									    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+									    //Also noch ein weiteres Mal:								       
+									    MergeCommand mergeCommand3 = git.merge();
+						                mergeCommand3.include(objRef);
+						                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
+										objReturn = mergeCommand3.call();
+									    
+									}//end konflikte2   
+					            }
+					        } //if(reason == MergeFailureReason.DIRTY_INDEX || reason == MergeFailureReason.DIRTY_WORKTREE) {
+					    }//failingPaths!=null
+					}//end status FAILED 
+					  
+
+					
+																					
+					//###############################################################
+		        } catch (CheckoutConflictException cce) {
+		        	System.out.println("Konflikte: CheckoutConflictException...");
+		        	
+//		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
+//		            Collection<String> conflictingPaths = cce.getConflictingPaths();
+//		
+//		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
+//		                // Kein konkreter Pfad bekannt → weiterwerfen
+//		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
+//		    			throw ez;
+//		            }
+//	
+//		            //Konfliktdateien gezielt zurücksetzen
+//		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
+//		            for (String path : conflictingPaths) {
+//		                git.checkout()
+//		                   .addPath(path)
+//		                   .call();
+//		                System.out.println("* " + path);			        	
+//		            }
+//		
+//		            //Pull erneut versuchen
+//		            System.out.println("Konflikte: Pull erneut versuchen.");
+//		            git.pull().call();
+//		            objReturn = pullResult.getMergeResult();
+//		           
+//		            //Das wäre der Ansatz ohne diese Exception
+//		            /*
+//		            // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
+//				    git.add().addFilepattern(".").call();
+//
+//				    git.commit()
+//				       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
+//				       .call();
+//				    			
+//				    
+//				    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+//				    //Also noch ein 3. Mal:
+//				    MergeCommand mergeCommand = git.merge();
+//	                mergeCommand.include(objRef);
+//	                mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
+//					objReturn = mergeCommand.call();
+//				    */
+		            
+		       
+						
+				//###############################################################	
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;	
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return objReturn;
+	}
+	
+	/** Für den SSH Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
+		
+	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
+	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
+	 *        Darum eher pullIgnoreCheckoutConflictsSSH_by_FetchMerge_ verwenden.
+		
+		s. ChatGPT 20260323, 20260508ff
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {
@@ -856,7 +1212,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				    System.out.println("Pull fehlgeschlagen");
 				}
 
-				objReturn = pullResult.getMergeResult();
+				objReturn = pullResult.getMergeResult();	   
 				if(objReturn!=null) {
 					System.out.println("MergeResult: " + objReturn.getMergeStatus());
 				}else {
@@ -984,23 +1340,26 @@ public class JgitUtilSSH implements IConstantZZZ{
 					               .addPath(path)
 					               .call();
 					        }
-					    }
+					        
+					        System.out.println("Alle Konflikte automatisch mit OURS aufgelöst");
+					        
+					        // Konfliktzustand beenden:
+						    git.add().addFilepattern(".").call();
 
-					    // Konfliktzustand beenden:
-					    git.add().addFilepattern(".").call();
-
-					    git.commit()
-					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
-					       .call();
-					    
-					    
-					    // Konfliktzustand beenden:
-					    git.add().addFilepattern(".").call();
-					    
-					    git.commit()
-					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
-					       .call();
-					}
+						    System.out.println("Alle Konflikte automatisch mit OURS aufgelöst.");
+						    
+						    git.commit()
+						       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+						       .call();
+						    
+						    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+						    //Also noch ein 2. Mal:
+						    MergeCommand mergeCommand2 = git.merge();
+			                mergeCommand2.include(objRef);
+			                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
+							objReturn = mergeCommand2.call();   
+					    }					   
+					}//end STATUS CONFLICTING
 					
 					if(status.equals(MergeStatus.FAILED)) {
 					    System.out.println("Failed erkannt.");
@@ -1065,34 +1424,32 @@ public class JgitUtilSSH implements IConstantZZZ{
 									               .addPath(path2)
 									               .call();
 									        }
-									    }
+									        
+									        
+									        // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
+										    git.add().addFilepattern(".").call();
 
-									    // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
-									    git.add().addFilepattern(".").call();
-
-									    git.commit()
-									       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
-									       .call();
-									    			
-									    
-									    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
-									    //Also noch ein 3. Mal:
-									    MergeCommand mergeCommand3 = git.merge();
-						                mergeCommand3.include(objRef);
-						                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
-										objReturn = mergeCommand3.call();
-									    
-									}//end konflikte2
-					                
-					                
+										    System.out.println("Alle Konflikte automatisch mit OURS aufgelöst.");
+											   										    
+										    git.commit()
+										       .setMessage("Konflikte2 automatisch mit OURS aufgelöst")
+										       .call();
+										    			
+										    
+										    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+										    //Also noch ein 3. Mal:
+										    MergeCommand mergeCommand3 = git.merge();
+							                mergeCommand3.include(objRef);
+							                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
+											objReturn = mergeCommand3.call();
+										    
+									    }									   
+									}//end konflikte2					                					               
 					            }
 					        }
 					    }
 					}//end status failed  
-					  
-
-					
-																					
+					  															
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {
 		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
