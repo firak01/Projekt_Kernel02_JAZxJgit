@@ -287,6 +287,9 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		}//end main:
 		return sReturn;
 	}
+	
+	
+	
 	//#########################################################
 	
 	/** Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen

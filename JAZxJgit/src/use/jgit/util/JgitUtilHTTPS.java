@@ -1214,6 +1214,23 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return objReturn;
 	}
 	
+	/** Berechne dir RemoteUrl - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlHTTPS(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlBaseIn);
+			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+			sReturn = sUrlRepoRemote;
+		}//end main:
+		return sReturn;		
+	}
+	
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryUrlHTTPS(String sUrlBaseHTTPSin, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
