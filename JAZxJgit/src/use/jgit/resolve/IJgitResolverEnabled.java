@@ -7,19 +7,20 @@ import basic.zBasic.ExceptionZZZ;
 public interface IJgitResolverEnabled {
 	
 	public enum STRATEGYMERGECONFLICT implements IEnumSetMappedStrategyMergeConflictZZZ{
-		OURS("isours","ZZZ: Strategy - Lokale Datei bleibt erhalten",""),
-		THEIRS("istheirs","ZZZ: Strategy - Remote Datei bleibt erhalten",""),		
-		NEWEST("isnewest","ZZZ: Strategy - neueste Datei bleibt erhalten","noch nicht implementiert");
+		OURS("isours","ZZZ: Strategy - Lokale Datei bleibt erhalten","Behalte lokale Datei",""),
+		THEIRS("istheirs","ZZZ: Strategy - Remote Datei bleibt erhalten","Behalte remote Datei",""),		
+		NEWEST("isnewest","ZZZ: Strategy - neueste Datei bleibt erhalten","","noch nicht implementiert");
 
-		private String sAbbreviation,sStrategyMessage,sDescription;
+		private String sAbbreviation,sStrategyMessage,sDescriptionShort,sDescription;
 	
 		//#############################################
 		//#### Konstruktoren
 		//Merke: Enums haben keinen public Konstruktor, können also nicht intiantiiert werden, z.B. durch Java-Reflektion.
 		//In der Util-Klasse habe ich aber einen Workaround gefunden.
-		STRATEGYMERGECONFLICT(String sAbbreviation, String sStatusMessage, String sDescription) {		
+		STRATEGYMERGECONFLICT(String sAbbreviation, String sStatusMessage, String sDescriptionShort, String sDescription) {		
 		    this.sAbbreviation = sAbbreviation;
 		    this.sStrategyMessage = sStatusMessage;
+		    this.sDescriptionShort = sDescriptionShort;
 		    this.sDescription = sDescription;
 		}
 				
@@ -107,6 +108,11 @@ public interface IJgitResolverEnabled {
 			return getIndex()+1; 
 		}
 	
+		@Override
+		public String getDescriptionShort() {
+			return this.sDescriptionShort;
+		}
+		
 		@Override
 		public String getDescription() {
 			return this.sDescription;

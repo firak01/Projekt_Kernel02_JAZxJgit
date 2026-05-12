@@ -2,6 +2,8 @@ package use.jgit.resolve;
 
 import java.util.EnumSet;
 
+import org.eclipse.jgit.api.CheckoutCommand;
+
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractEnum.IEnumSetFactoryZZZ;
@@ -45,6 +47,23 @@ public class EnumSetMappedStrategyMergeConflictUtilZZZ extends EnumSetUtilZZZ{
 			//NEWEST noch nicht implementiert
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination .", iERROR_PARAMETER_VALUE, EnumSetMappedStrategyMergeConflictUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+		}//end main:
+		return objReturn;
+	}
+	
+	public static CheckoutCommand.Stage getJgitStageAccordingStrategy(IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ{
+		CheckoutCommand.Stage objReturn = null;
+		main:{
+			if(objEnumStrategy==null) break main;
+			
+			if(objEnumStrategy == IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS) {
+				objReturn = CheckoutCommand.Stage.THEIRS;
+			}else if(objEnumStrategy == IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS) {
+				objReturn = CheckoutCommand.Stage.OURS;
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Nicht behandelte Strategie: '" + objEnumStrategy.getName() + "'", iERROR_PARAMETER_VALUE, EnumSetMappedStrategyMergeConflictUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 		}//end main:

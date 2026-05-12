@@ -6,6 +6,10 @@ public interface IEnumSetMappedStrategyMergeConflictZZZ extends IEnumSetMappedZZ
 	public static String sENUMNAME="STRATEGYMERGECONFLICT";
 	
 	//weitere Erweiterungen, speziell für STRATEGYMERGECONFLICT
-	public String getStrategyMessage();		
+	public String getStrategyMessage();
+	String getDescriptionShort();
+	
 	//public int getStatusGroupId();
+
+	
 }

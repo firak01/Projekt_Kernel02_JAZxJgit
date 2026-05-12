@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
@@ -31,6 +32,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
@@ -269,7 +271,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {
@@ -376,7 +378,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 				 */
 				
-					
+				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+									
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("Starte Merge:");
 				try {
@@ -433,10 +437,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    if(conflicts != null) {
 					        for(String path : conflicts.keySet()) {
 
-					            System.out.println("Behalte lokale Datei: " + path);
+					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
 
-					            // Lokale Version wiederherstellen (= OURS)
+					            // Lokale Version wiederherstellen (z.B. OURS)
 					            git.checkout()
+					            	.setStage(objStage) //z.B. OURS
 					               .addPath(path)
 					               .call();
 					        }
@@ -446,7 +451,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    git.add().addFilepattern(".").call();
 
 					    git.commit()
-					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .setMessage("Konflikte automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
 					       .call();
 					}
 	
@@ -467,6 +472,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
 		            for (String path : conflictingPaths) {
 		                git.checkout()
+		                	.setStage(objStage)
 		                   .addPath(path)
 		                   .call();
 		                System.out.println("* " + path);			        	
@@ -675,7 +681,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    if(conflicts != null) {
 					        for(String path : conflicts.keySet()) {
 
-					            System.out.println("Behalte lokale Datei: " + path);
+					        	System.out.println("Datei: " + path);
 
 					            // Lokale Version wiederherstellen (= OURS)
 					            git.checkout()
@@ -1005,7 +1011,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return objReturn;
     }
 	
-	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
+	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {
@@ -1072,7 +1078,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		                }
 		            } catch (CheckoutConflictException cce) {
 		
-		                System.out.println("CheckoutConflict erkannt – versuche automatische Bereinigung...");
+		            	//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+						
+		            	
+		                System.out.println("CheckoutConflict erkannt – versuche automatische Bereinigung... Strategy: " +objEnumStrategy.getName());
 		
 		                Collection<String> paths = cce.getConflictingPaths();
 		
@@ -1084,10 +1094,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		                // Konfliktdateien zurücksetzen
 		                // =========================
 		                for (String path : paths) {
-		                    System.out.println("Bereinige Datei: " + path);
+		                    System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
 		
 		                    git.checkout()
 		                       .addPath(path)
+		                       .setStage(objStage) //z.B OURS
 		                       .setForce(true)   // wichtig!
 		                       .call();
 		                }
