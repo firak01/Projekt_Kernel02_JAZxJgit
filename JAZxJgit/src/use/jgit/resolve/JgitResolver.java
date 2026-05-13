@@ -1,35 +1,21 @@
 package use.jgit.resolve;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Set;
 
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.transport.CredentialsProvider;
 
-import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.FileTextParserZZZ;
 import basic.zBasic.util.file.FileTextReaderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
-import basic.zKernel.file.ini.IKernelZFormulaIni_VariableZZZ;
-import use.jgit.AbstractJgitStarter;
 import use.jgit.AbstractJgitStarterCommit;
-import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigResolverJGIT;
 import use.jgit.config.IConfigStarterJGIT;
-import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.resolve.GitConflictResolverUtil;
 import use.jgit.util.JgitUtilZZZ;
 

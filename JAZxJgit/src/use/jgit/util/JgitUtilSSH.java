@@ -34,6 +34,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
@@ -949,145 +950,86 @@ public class JgitUtilSSH implements IConstantZZZ{
 				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
 				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 				
+				TODOGOON20260513;//Mache eine Schleife um diese Fehler zu beheben, statt eine verschachtelte if Struktur...
+				
 				//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
 				MergeStatus status = objReturn.getMergeStatus();
 				System.out.println("Merge-Status:" + status.toString());
 				if(status.equals(MergeStatus.CONFLICTING)) {
 				    System.out.println("Konflikte erkannt.");
-
-				    Map<String, int[][]> conflicts = objReturn.getConflicts();
-
-				    if(conflicts != null) {
-				        for(String path : conflicts.keySet()) {
-
-				            System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
-
-				            // Lokale Version wiederherstellen (= OURS)
-				            //ohne setStage... Fehler: org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
-				            git.checkout()
-				               .setStage(objStage) //z.B. CheckoutCommand.Stage.OURS
-				               .addPath(path)
-				               .call();
-				        }
+				    
+				    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+				    boolean bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);
+				    if(bAnyResolved) {
+					    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+					    //Also noch ein weiteres Mal:
+					    String sFetchRefs = "refs/heads/" + sBranch;
+						//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+		                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+		                Ref objRef = git.getRepository().exactRef(sFetchRefs);
+		                
+	//				        ObjectId remoteBranchObjectId = git.getRepository().resolve(localTrackingRef);				
+	//				        if (remoteBranchObjectId == null) {
+	//				            throw new IllegalStateException("Remote branch not found after resolving conflicts, before new Merge-Run: " + localTrackingRef);
+	//				        }
 				        
-				        
+					    MergeCommand mergeCommand2 = git.merge();
+		                mergeCommand2.include(objRef);
+		                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
+						objReturn = mergeCommand2.call();
 				    }
-
-				    // Konfliktzustand beenden:
-				    git.add().addFilepattern(".").call();
-
-				    git.commit()
-				       .setMessage("Konflikte automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
-				       .call();
-				    
-				    
-				    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
-				    //Also noch ein weiteres Mal:
-				    String sFetchRefs = "refs/heads/" + sBranch;
-					//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-	                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
-	                Ref objRef = git.getRepository().exactRef(sFetchRefs);
-	                
-//				        ObjectId remoteBranchObjectId = git.getRepository().resolve(localTrackingRef);				
-//				        if (remoteBranchObjectId == null) {
-//				            throw new IllegalStateException("Remote branch not found after resolving conflicts, before new Merge-Run: " + localTrackingRef);
-//				        }
-			        
-				    MergeCommand mergeCommand2 = git.merge();
-	                mergeCommand2.include(objRef);
-	                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
-					objReturn = mergeCommand2.call();
 				}//end STATUS "CONFLICTING"
 				
 				if(status.equals(MergeStatus.FAILED)) {
 				    System.out.println("Failed erkannt.");
 
-				    Map<String, MergeFailureReason> failingPaths = objReturn.getFailingPaths();
-				    if(failingPaths != null) {
-				        for(Map.Entry<String, MergeFailureReason> entry : failingPaths.entrySet()) {
-
-				            String path = entry.getKey();
-				            MergeFailureReason reason = entry.getValue();
-
-				            System.out.println(path + " -> " + reason);
-
-				            if(reason == MergeFailureReason.DIRTY_INDEX
-				               || reason == MergeFailureReason.DIRTY_WORKTREE) {
-
-				            	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
-
-				                //wirkt aber nicht zuverlässig bei failed:
-				                //git.checkout().addPath(path).call();
-				                
-				                //darum:
-				                //reicht aber nicht 
-				                //git.reset().addPath(path).call();
-				                
-				                //darum:
-				                git.checkout().setStartPoint("HEAD").addPath(path).call();
-				                
-				                //Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
-				                String sFetchRefs = "refs/heads/" + sBranch;
+				    boolean bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objReturn);
+				    if(bAnyResolved) {
+				    	//Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+				    	//Also noch ein weiteres Mal:	
+				    	//Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+					    //Also noch ein weiteres Mal:
+					    String sFetchRefs = "refs/heads/" + sBranch;
+						//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+		                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+		                Ref objRef = git.getRepository().exactRef(sFetchRefs);
+		                
+	//				        ObjectId remoteBranchObjectId = git.getRepository().resolve(localTrackingRef);				
+	//				        if (remoteBranchObjectId == null) {
+	//				            throw new IllegalStateException("Remote branch not found after resolving conflicts, before new Merge-Run: " + localTrackingRef);
+	//				        }
+				        
+				    	MergeCommand mergeCommand3 = git.merge();
+		                mergeCommand3.include(objRef);
+		                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
+						objReturn = mergeCommand3.call();
+					    
+						MergeStatus status2 = objReturn.getMergeStatus();
+						System.out.println("Merge-Status2:" + status2.toString());
+						if(status2.equals(MergeStatus.CONFLICTING)) {
+						    System.out.println("Konflikte2 erkannt.");
+						    
+						    boolean bAnyResolved2 = JgitResolverUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);
+						    if(bAnyResolved2) {
+							    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
+							    //Also noch ein weiteres Mal:
+							    String sFetchRefs2 = "refs/heads/" + sBranch;
 								//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
 				                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
-				                Ref objRef = git.getRepository().exactRef(sFetchRefs);
+				                Ref objRef2 = git.getRepository().exactRef(sFetchRefs2);
 				                
-				                //Merge result Objekt (ist nur ein Snapshot) neu holen 
-				                System.out.println("Starte Merge2:");
-				                MergeCommand mergeCommand2 = git.merge();
-				                mergeCommand2.include(objRef);
-				                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
-								objReturn = mergeCommand2.call();
-								
-								MergeStatus status2 = objReturn.getMergeStatus();
-								System.out.println("Merge-Status2:" + status2.toString());
-								
-								//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
-				                //Aber nun gibt es den Merge-Status.CONFLICTING
-				                if(status2.equals(MergeStatus.CONFLICTING)) {
-								    System.out.println("Konflikte2 erkannt.");
-
-								    Map<String, int[][]> conflicts = objReturn.getConflicts();
-
-								    if(conflicts != null) {
-								        for(String path2 : conflicts.keySet()) {
-
-								        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path);
-
-								            // Lokale Version wiederherstellen (= OURS)
-								            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
-								            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
-								            //
-								            //Darum ist ein normaler Checkout nicht erlaubt.
-								            //Es braucht noch die explizite Angabe OURS oder THEIRS
-								            
-								            
-								            git.checkout()
-								               .setStage(objStage)//z.B. CheckoutCommand.Stage.OURS
-								               .addPath(path2)
-								               .call();
-								        }
-								    }
-
-								    // Konfliktzustand beenden durch "Markieren der Konfliktauflösung":
-								    git.add().addFilepattern(".").call();
-
-								    git.commit()
-								       .setMessage("Konflikte2 automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
-								       .call();
-								    			
-								    
-								    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" behaftet.
-								    //Also noch ein weiteres Mal:								       
-								    MergeCommand mergeCommand3 = git.merge();
-					                mergeCommand3.include(objRef);
-					                mergeCommand3.setStrategy(MergeStrategy.RECURSIVE);									 
-									objReturn = mergeCommand3.call();
-								    
-								}//end konflikte2   
-				            }
-				        } //if(reason == MergeFailureReason.DIRTY_INDEX || reason == MergeFailureReason.DIRTY_WORKTREE) {
-				    }//failingPaths!=null
+			//				        ObjectId remoteBranchObjectId = git.getRepository().resolve(localTrackingRef);				
+			//				        if (remoteBranchObjectId == null) {
+			//				            throw new IllegalStateException("Remote branch not found after resolving conflicts, before new Merge-Run: " + localTrackingRef);
+			//				        }
+						        
+							    MergeCommand mergeCommand4 = git.merge();
+				                mergeCommand4.include(objRef2);
+				                mergeCommand4.setStrategy(MergeStrategy.RECURSIVE);									 
+								objReturn = mergeCommand4.call();
+						    }
+						}
+				    }
 				}//end status FAILED 
 				  
 
