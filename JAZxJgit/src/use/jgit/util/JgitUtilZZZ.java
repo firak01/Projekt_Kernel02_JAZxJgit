@@ -10,9 +10,12 @@ import java.util.Set;
 
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -948,5 +951,112 @@ Repository existingRepo = new FileRepositoryBuilder()
 			bReturn = true;
 		}//end main:
 		return bReturn;
-	}		
+	}	
+	
+	//########################################
+	//### MERGE
+	public static boolean merge(Git git, String sBranch) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			 
+			MergeResult objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
+			bReturn = objMergeResult.getMergeStatus().isSuccessful();
+	        			
+		}//end main:
+		return bReturn;
+	}
+	
+	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+			 try { 				
+				/*Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				 */
+									
+				
+				 //####################################################################
+				 //Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
+				 //Merke: Per fetchResult
+				 //Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+	             //Vorschlag von chatGPT, direkt holen: 
+				 //Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+	                	 
+
+				//++++++++++++++++++++++++++++++++
+				//den richtigen Branch ansteuern
+				String sBranch = "master"; // oder dynamisch
+				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
+							 
+	            String sFetchRefs = "refs/heads/" + sBranch;
+	                
+				Ref objRef = git.getRepository().exactRef(sFetchRefs);
+//				System.out.println("Merge Ref = " + objRef.getName());
+//				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+
+				
+	            MergeCommand mergeCommand = git.merge();
+	            mergeCommand.include(objRef);
+	            mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
+				objReturn = mergeCommand.call();
+				
+	        }catch (IOException ioe) {
+					ExceptionZZZ ez = new ExceptionZZZ(ioe);
+					throw ez;
+			} catch (InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			} catch (GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}						
+		}//end main:
+		return objReturn;
+	}
+	
+	public static MergeResult mergeWithResult(File objFileDir, String sBranch) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+			 try {
+				Git git = Git.open(objFileDir); 
+				System.out.println("Git-Repository opened.");
+					
+			    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranch);
+	        
+	        }catch (IOException ioe) {
+					ExceptionZZZ ez = new ExceptionZZZ(ioe);
+					throw ez;
+	        }		
+		}//end main:
+		return objReturn;
+	}
+	
+	
 }

@@ -20,6 +20,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
+import use.jgit.util.JgitUtilZZZ;
 
 public class JgitResolverUtilZZZ implements IConstantZZZ{
 	public static boolean resolveConflicts(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
@@ -137,7 +138,7 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 	    return bReturn;
 	}
 	
-	public static boolean resolveFailed(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy) throws Exception {
+	public static boolean resolveFailed(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy, String sBranch) throws Exception {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -148,20 +149,12 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 				
 				
 				boolean bAnyFailingResolved = JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
-			    if(bAnyFailingResolved) {            
-			                //Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
-			                String sFetchRefs = "refs/heads/" + sBranch;
-							//per fetchResult: Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-			                //Vorschlag von chatGPT, direkt holen: Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
-			                Ref objRef = git.getRepository().exactRef(sFetchRefs);
-			                
-			                //Merge result Objekt (ist nur ein Snapshot) neu holen 
-			                System.out.println("Starte Merge2:");
-			                MergeCommand mergeCommand2 = git.merge();
-			                mergeCommand2.include(objRef);
-			                mergeCommand2.setStrategy(MergeStrategy.RECURSIVE);									 
-							objReturn = mergeCommand2.call();
-							
+			    if(bAnyFailingResolved) {     
+			    	
+			    			//Merge result Objekt (ist nur ein Snapshot) neu holen 
+	                		System.out.println("Starte Merge2:");
+	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResult(git, sBranch);
+	                		
 							MergeStatus status2 = objReturn.getMergeStatus();
 							System.out.println("Merge-Status2:" + status2.toString());
 							
@@ -173,9 +166,14 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 							    Map<String, int[][]> conflicts = objReturn.getConflicts();
 
 							    if(conflicts != null) {
+							    	
+							    	//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+									CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+									
+							    	
 							        for(String path2 : conflicts.keySet()) {
 
-							        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path);
+							        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path2);
 
 							            // Lokale Version wiederherstellen (= OURS)
 							            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
@@ -192,9 +190,9 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 							        }
 							    }
 			    
-			    }
+			                }
 			
-	    
+			    }
 	    
 		}catch(InvalidRemoteException ire) {
 			ExceptionZZZ ez = new ExceptionZZZ(ire);

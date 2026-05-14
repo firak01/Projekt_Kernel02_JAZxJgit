@@ -1,6 +1,7 @@
 package use.jgit.protocol.ssh;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
@@ -20,6 +21,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.BranchConfig;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
@@ -945,11 +947,24 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		boolean bReturn = false;
 		main:{
 			try {
+				System.out.println("### DEGUB START");
+		    	Repository repository = git.getRepository();
+		    	String branch = repository.getBranch();
+		    	BranchConfig config = new BranchConfig(repository.getConfig(), branch);
+
+		    	System.out.println(config.getRemote());
+		    	System.out.println(config.getMerge());
+		    	System.out.println("### DEBUG ENDE");
+				
+				
 				//Finde geaenderte und neue Dateien fuer den Commit			
 				System.out.println("STATUS BEFORE FETCH");		
 				this.printStatus(git);
 		        //##################################################################
 		        
+				
+				
+				
 				//s. ChatGPT vom 20260313
 		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
 		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
@@ -972,6 +987,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        bReturn = true;
 			}catch(GitAPIException gae) {
 				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			} catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
 			}
 		}//end main:
