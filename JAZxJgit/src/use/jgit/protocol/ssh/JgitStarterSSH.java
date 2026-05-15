@@ -2,6 +2,7 @@ package use.jgit.protocol.ssh;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
@@ -948,12 +949,19 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		main:{
 			try {
 				System.out.println("### DEGUB START");
-		    	Repository repository = git.getRepository();
-		    	String branch = repository.getBranch();
-		    	BranchConfig config = new BranchConfig(repository.getConfig(), branch);
-
-		    	System.out.println(config.getRemote());
-		    	System.out.println(config.getMerge());
+//		    	Repository repository = git.getRepository();
+//		    	String branch = repository.getBranch();
+//		    	BranchConfig config = new BranchConfig(repository.getConfig(), branch);
+//
+//		    	System.out.println(config.getRemote());
+//		    	System.out.println(config.getMerge());
+				
+				try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
 		    	System.out.println("### DEBUG ENDE");
 				
 				

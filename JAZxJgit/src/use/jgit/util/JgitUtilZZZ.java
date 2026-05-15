@@ -2,6 +2,7 @@ package use.jgit.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.Set;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.lib.BranchConfig;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -23,7 +25,10 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.URIish;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
@@ -340,6 +345,52 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	
 	
 	//#########################################################
+	
+	public static void debugForFetch(Git git) throws URISyntaxException, IOException {
+		
+		System.out.println("### DEBUG START");
+
+		Repository repository = git.getRepository();
+
+		String branch = repository.getBranch();
+
+		System.out.println("Aktueller Branch: " + branch);
+
+		// -------------------------------------------------
+		// BranchConfig
+		// -------------------------------------------------
+		BranchConfig branchConfig =
+		        new BranchConfig(repository.getConfig(), branch);
+
+		System.out.println("Branch Remote : " + branchConfig.getRemote());
+		System.out.println("Branch Merge  : " + branchConfig.getMerge());
+
+		// -------------------------------------------------
+		// RemoteConfig
+		// -------------------------------------------------
+		StoredConfig storedConfig = repository.getConfig();
+
+		RemoteConfig remoteConfig =
+		        new RemoteConfig(storedConfig, branchConfig.getRemote());
+
+		System.out.println("Remote Name   : " + remoteConfig.getName());
+
+		for (URIish uri : remoteConfig.getURIs()) {
+		    System.out.println("Remote URI    : " + uri);
+		}
+
+		for (RefSpec refSpec : remoteConfig.getFetchRefSpecs()) {
+		    System.out.println("Fetch RefSpec : " + refSpec);
+		}
+
+		for (RefSpec refSpec : remoteConfig.getPushRefSpecs()) {
+		    System.out.println("Push RefSpec  : " + refSpec);
+		}
+
+		System.out.println("### DEBUG ENDE");
+		
+		
+	}
 	
 	/** Ueberpruefe, ob unter dem Alias des remote Repositories auch eine URL gefunden wird.
 	 *  Falls, nein, setzte es ggfs. bei bOverwrite = true;
@@ -920,6 +971,37 @@ Repository existingRepo = new FileRepositoryBuilder()
 		boolean bReturn = false;
 		main:{
 			 try {
+				 /*Minierklaerung:
+					siehe .git\config Datei, entsprechende Zeile.
+					 
+					Das ist ein sogenannter RefSpec (Reference Specification).
+					Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+					
+					Aufbau allgemein:
+					[+]<Quelle>:<Ziel>
+					
+					Also:
+					Quelle (Remote-Seite)
+					refs/heads/ = alle Branches im Remote-Repository
+					 * = Wildcard → alle Branch-Namen
+		
+					➡️ Bedeutet:
+					Hole alle Branches vom Remote
+					
+					
+					Ziel (lokal)
+					refs/remotes/origin/ = Remote-Tracking-Branches
+					* = gleicher Name wie Quelle
+		
+					➡️ Bedeutet:
+					Speichere sie lokal als origin/branchname
+					
+					------------
+					Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+					Mit + sagst du:
+					„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+					 */
+				 
 				Git git4Fetch = Git.open(objFileDir); 
 				System.out.println("Git-Repository 4 Fetch repository opened.");
 					
@@ -928,6 +1010,20 @@ Repository existingRepo = new FileRepositoryBuilder()
 			    //Laut chat gpt nicht immer die URL notwendig, da die Remote Daten schon im .git/config stehen, wuerde auch ein Alias funktionieren
 			    //aber, die RemoteUrl - einmal ermittelt - geht auch.
 			    gitCommandFetch.setRemote(sRepositoryRemote); 
+			    
+			    //aber: vermutlich wird auf dem falschen Branch gearbeitet.
+			    gitCommandFetch.setRefSpecs(
+			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
+			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
+
+			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
+			    		//der zweite Teil ist remote... 
+			    		//das Wort orign taucht nur als Section auf
+			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
+			    		//                   Bei der Konfiguration
+			    		new RefSpec("+refs/heads/master:refs/remotes/master")	
+			    		
+			    	);
 			    gitCommandFetch.call();
 	        }catch(TransportException tex) {
 		        String msg = tex.getMessage();
