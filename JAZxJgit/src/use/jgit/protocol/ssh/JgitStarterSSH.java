@@ -379,7 +379,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote, objEnumStrategyMergeConflict);
+			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;

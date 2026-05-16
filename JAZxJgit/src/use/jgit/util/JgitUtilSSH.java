@@ -2,6 +2,7 @@ package use.jgit.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -236,27 +237,58 @@ public class JgitUtilSSH implements IConstantZZZ{
 	        CredentialsProvider credentialsProvider,
 	        String sRemoteRepositoryAlias,
 	        String sBranchIn
-	) throws ExceptionZZZ {
+	) throws ExceptionZZZ{
 		FetchResult objReturn = null;
 		main:{
 		    try {
 		    	System.out.println("### DEGUB START");
-		    	Repository repository = git.getRepository();
-		    	String branch = repository.getBranch();
-		    	BranchConfig config = new BranchConfig(repository.getConfig(), branch);
-
-		    	System.out.println(config.getRemote());
-		    	System.out.println(config.getMerge());
+		    	try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
 		    	System.out.println("### DEBUG ENDE");
 		    	
+		    	 /*Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				 */
+			 
 		    	
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================
-		        FetchCommand fetchCommand = git.fetch();
+		        FetchCommand gitCommandFetch = git.fetch();
 
 		        if (credentialsProvider != null) {
-		            fetchCommand.setCredentialsProvider(credentialsProvider);
+		            gitCommandFetch.setCredentialsProvider(credentialsProvider);
 		        }
 		        
 		        //aus .git\config Datei:
@@ -269,10 +301,26 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        
 		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
 		        //+ für "fast forward"
-		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+		        gitCommandFetch.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
 
-		        fetchCommand.setRemote(sRemoteRepositoryAlias);
-		        objReturn = fetchCommand.call();
+		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
+		        
+		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
+			    gitCommandFetch.setRefSpecs(
+			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
+			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
+
+			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
+			    		//der zweite Teil ist remote... 
+			    		//das Wort orign taucht nur als Section auf
+			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
+			    		//                   Bei der Konfiguration
+			    		new RefSpec("+refs/heads/master:refs/remotes/master")	
+			    		
+			    	);
+		        
+		        
+		        objReturn = gitCommandFetch.call();
 	
 		        
 		        
@@ -628,7 +676,28 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 *         Wenn ich das selber mache, habe ich mehr Einfluss und brauche nicht ein zusätzliches Merge,
 	 *         um Fehler abzufangen.
 	 *         
-	 *  
+	 /*
+				Frage:
+				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
+				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
+				
+				Antwort:
+				Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
+				VARIANTE 1. setRemote(...) erwartet keine URL
+	
+				In JGit ist:
+				git.pull().setRemote("origin")
+	
+				👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
+	
+				Also z. B.:
+				[remote "origin"]
+					url = https://github.com/user/repo.git
+	
+				➡️ setRemote("origin") = Referenz auf diesen Eintrag
+				➡️ Direkte URL ist hier nicht vorgesehen
+	
+				
 	 * @param git
 	 * @param credentialsProvider
 	 * @param remoteUrl
@@ -655,29 +724,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        
 		        
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		    	/*
-				Frage:
-				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
-				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
-				
-				Antwort:
-				Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
-				VARIANTE 1. setRemote(...) erwartet keine URL
-	
-				In JGit ist:
-				git.pull().setRemote("origin")
-	
-				👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
-	
-				Also z. B.:
-				[remote "origin"]
-					url = https://github.com/user/repo.git
-	
-				➡️ setRemote("origin") = Referenz auf diesen Eintrag
-				➡️ Direkte URL ist hier nicht vorgesehen
-	
-				*/
-		        
+		    	
 		        
 		        //Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am schluss.							
 				System.out.println("SSH-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");

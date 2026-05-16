@@ -407,7 +407,7 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	 * @param bOverwrite
 	 * @throws IOException
 	 */
-	public static void ensureRemoteExists(Repository repo, String sRepositoryRemoteAlias, String sRepositoryRemoteUrl, boolean bOverwrite) throws ExceptionZZZ {
+	public static void ensureRemoteExists(Repository repo, String sRepositoryRemoteAlias, String sRepositoryRemoteUrl, String sRepositoryRemoteBranchIn, boolean bOverwrite) throws ExceptionZZZ {
 		try {
 			StoredConfig config = repo.getConfig();
 	
@@ -423,11 +423,15 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	
 		        config.setString("remote", sRepositoryRemoteAlias, "url", sRepositoryRemoteUrl);
 	
+		        String sRepositoryRemoteBranch="master";
+		        if(!StringZZZ.isEmpty(sRepositoryRemoteBranchIn)) sRepositoryRemoteBranch = sRepositoryRemoteBranchIn;
+		        
+		        String sRepositoryLocalBranch = sRepositoryRemoteBranch;
 		        config.setStringList(
 		            "remote",
 		            sRepositoryRemoteAlias,
 		            "fetch",
-		            Collections.singletonList("+refs/heads/*:refs/remotes/" + sRepositoryRemoteAlias + "/*")
+		            Collections.singletonList("+refs/heads/"+sRepositoryLocalBranch + "/*" + ":refs/remotes/" + sRepositoryRemoteBranch + "/*")
 		        );
 	
 		        config.save();
@@ -965,13 +969,10 @@ Repository existingRepo = new FileRepositoryBuilder()
 	
 	//######################################################
 	//######### FETCH	
-	//Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
-	//Das ist unschoen, darum Fehler abfangen
-	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-			 try {
-				 /*Minierklaerung:
+	/**Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
+	   Das ist unschoen, darum Fehler abfangen
+	   
+	   Minierklaerung:
 					siehe .git\config Datei, entsprechende Zeile.
 					 
 					Das ist ein sogenannter RefSpec (Reference Specification).
@@ -1000,7 +1001,17 @@ Repository existingRepo = new FileRepositoryBuilder()
 					Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
 					Mit + sagst du:
 					„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-					 */
+					
+	 * @param objFileDir
+	 * @param sRepositoryRemote
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			 try {
+				 
 				 
 				Git git4Fetch = Git.open(objFileDir); 
 				System.out.println("Git-Repository 4 Fetch repository opened.");
@@ -1062,11 +1073,8 @@ Repository existingRepo = new FileRepositoryBuilder()
 		return bReturn;
 	}
 	
-	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-			 try { 				
-				/*Minierklaerung:
+	/**
+	 * Minierklaerung:
 				siehe .git\config Datei, entsprechende Zeile.
 				 
 				Das ist ein sogenannter RefSpec (Reference Specification).
@@ -1095,7 +1103,17 @@ Repository existingRepo = new FileRepositoryBuilder()
 				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
 				Mit + sagst du:
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-				 */
+				
+	 * @param git
+	 * @param sBranchIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+			 try { 				
+				
 									
 				
 				 //####################################################################
@@ -1105,14 +1123,16 @@ Repository existingRepo = new FileRepositoryBuilder()
 	             //Vorschlag von chatGPT, direkt holen: 
 				 //Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
 	                	 
+				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
 
 				//++++++++++++++++++++++++++++++++
 				//den richtigen Branch ansteuern
 				String sBranch = "master"; // oder dynamisch
 				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 							 
-	            String sFetchRefs = "refs/heads/" + sBranch;
-	                
+	           //das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
+				String sFetchRefs = "refs/remotes/" + sBranch;
+				
 				Ref objRef = git.getRepository().exactRef(sFetchRefs);
 //				System.out.println("Merge Ref = " + objRef.getName());
 //				System.out.println("ObjectId  = " + objRef.getObjectId().getName());

@@ -297,11 +297,14 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
 				//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
 				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
+				String sRepositoryRemoteBranch = "master"; //TODOGOON20260515; Stelle das zur Vergügung this.getRepositoryRemoteBranch();
 				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-					JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+					JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, sRepositoryRemoteBranch, true);
 				}
 				System.out.println("Remote Git-Repository init done and ensured alias und url exist in file .git/config. Alias: '" + sRepositoryRemoteAlias + "', Url: '" + sRepositoryRemoteUrl + "'");
+				
+				
 				bReturn = true;
 				//######################################
 //			}catch(GitAPIException gae) {
@@ -312,6 +315,52 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 		return bReturn;
 	}
 	
+	/* (non-Javadoc)
+	 * @see use.jgit.IJgitStarter#configureRepositoryLocal(use.jgit.config.IConfigStarterJGIT)
+	 * 
+	 * 
+	 * Fehlerhaft wäre
+				
+					[remote "origin"]
+						url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+						fetch = +refs/heads/*:refs/remotes/origin/*
+					[branch "master"]
+						remote = origin
+						merge = refs/heads/master
+	    Weil es remotes/origin nicht gibt.... vermutlich wurde hier fehlerhaft der Section-Alias als Branch verwendet.
+	    
+	    
+	   inierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+			
+	 */
 	@Override
 	public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
@@ -354,23 +403,33 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			}
 			this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
 			
-			String sRepositoryRemoteByAliasIn = null;
-			if(bRemoteAliasAvailable) {
+			String sRepositoryRemoteUrlByAliasIn = null; String sRepositoryRemoteFetchByAliasIn = null;
+			if(!bRemoteAliasAvailable) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden '" + sRepositoryRemoteAliasIn + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}else {
 				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
 				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-				sRepositoryRemoteByAliasIn = repo.getConfig()
+				sRepositoryRemoteUrlByAliasIn = repo.getConfig()
 						       .getString("remote",sRepositoryRemoteAlias,"url");
-				if(StringZZZ.isEmpty(sRepositoryRemoteByAliasIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				if(StringZZZ.isEmpty(sRepositoryRemoteUrlByAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
-				System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAliasIn +"'");
+				sRepositoryRemoteFetchByAliasIn = repo.getConfig()
+					       .getString("remote",sRepositoryRemoteAlias,"fetch");
+				if(StringZZZ.isEmpty(sRepositoryRemoteFetchByAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 				
+				System.out.println("Git-Repository verwendet folgende Remote URL (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteUrlByAliasIn +"'");
+				System.out.println("Git-Repository verwendet folgende Remote FETCH (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteFetchByAliasIn +"'");
+				
+				this.setRepositoryTotalRemote(sRepositoryRemoteUrlByAliasIn);
 			}
-			this.setRepositoryTotalRemote(sRepositoryRemoteByAliasIn);
-			
 			bReturn = true;
 		}//end main:
 		return bReturn;
