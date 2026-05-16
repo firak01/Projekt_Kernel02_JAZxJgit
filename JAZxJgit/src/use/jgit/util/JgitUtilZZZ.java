@@ -1130,7 +1130,8 @@ Repository existingRepo = new FileRepositoryBuilder()
 				String sBranch = "master"; // oder dynamisch
 				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 							 
-	           //das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
+				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
+				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
 				String sFetchRefs = "refs/remotes/" + sBranch;
 				
 				Ref objRef = git.getRepository().exactRef(sFetchRefs);
