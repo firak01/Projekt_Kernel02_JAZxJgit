@@ -95,6 +95,36 @@ public abstract class AbstractConfigJGIT extends AbstractKernelConfigZZZ impleme
 			return sReturn;
 		}
 		
+		//++++++++++++++++++++++++++++++++++++++++++++
+		@Override
+		public String getRepositoryBranchDefault() throws ExceptionZZZ {		
+			return IConfigJGIT.sBRANCH_DEFAULT;
+		}
+		
+		@Override
+		public String getRepositoryBranchAll() throws ExceptionZZZ {		
+			return IConfigJGIT.sBRANCH_ALL;
+		}
+		
+			
+		//++++++++++++++++++++++++++++++++++++++
+		@Override
+		public String readRepositoryBranch() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sBranch = objOpt.readValue("branch");
+				if(StringZZZ.isEmpty(sBranch)) {
+					sBranch = this.getRepositoryBranchAll();				
+				}
+				sReturn = sBranch;
+			}//end main:		
+			return sReturn;
+		}
+		
 		//++++++++++++++++++++++++++++++++++++++++++				
 		//### aus IConfigJGIT
 		@Override

@@ -31,8 +31,7 @@ public interface IConfigStarterJGIT extends IConfigJGIT{
 	final static String sPATTERN_DEFAULT= sPATTERN4GIT_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
-	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = "origin";
-	
+
 	public String readActionPull() throws ExceptionZZZ;
 	public String readActionCommit() throws ExceptionZZZ;
 	public String readActionFetch() throws ExceptionZZZ;

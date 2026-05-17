@@ -43,7 +43,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	
 	protected volatile String sConnectionType=null;
 
-	protected volatile String sRepositoryRemoteAlias=null;
+	protected volatile String sRepositoryRemoteAlias=null;//die Section in der ini z.B. [origin]
 	
 	protected volatile String sRepositoryRemoteHost=null;
 	protected volatile String sRepositoryRemoteAccount=null;
@@ -297,7 +297,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
 				//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
 				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
-				String sRepositoryRemoteBranch = "master"; //TODOGOON20260515; Stelle das zur Vergügung this.getRepositoryRemoteBranch();
+				String sRepositoryRemoteBranch = this.getRepositoryBranch();//"master"; //TODOGOON20260515; Stelle das zur Vergügung this.getRepositoryRemoteBranch();
 				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
 					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 					JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, sRepositoryRemoteBranch, true);
@@ -394,6 +394,9 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			}
 			this.setRepositoryProject(sRepositoryProjectIn);
 			
+			//Merke: Branch darf leer sein
+			String sRepositoryBranchIn = objConfig.readRepositoryBranch();
+			this.setRepositoryBranch(sRepositoryBranch);
 			
 			String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sRepositoryLocalIn, sRepositoryProjectIn);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryLocalTotal);

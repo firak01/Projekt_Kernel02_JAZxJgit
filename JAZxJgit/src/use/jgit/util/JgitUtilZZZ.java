@@ -38,6 +38,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.config.IConfigJGIT;
 
 public class JgitUtilZZZ implements IConstantZZZ {
 	
@@ -407,12 +408,14 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	 * @param bOverwrite
 	 * @throws IOException
 	 */
-	public static void ensureRemoteExists(Repository repo, String sRepositoryRemoteAlias, String sRepositoryRemoteUrl, String sRepositoryRemoteBranchIn, boolean bOverwrite) throws ExceptionZZZ {
+	public static void ensureRemoteExists(Repository repo, String sRepositoryRemoteAliasIn, String sRepositoryRemoteUrl, String sRepositoryRemoteBranchIn, boolean bOverwrite) throws ExceptionZZZ {
 		try {
 			StoredConfig config = repo.getConfig();
 	
+			String sRepositoryRemoteAlias = "origin";
+		    if(!StringZZZ.isEmpty(sRepositoryRemoteAliasIn)) sRepositoryRemoteAlias = sRepositoryRemoteAliasIn;
+		       
 		    String existingUrl = config.getString("remote", sRepositoryRemoteAlias, "url");
-	
 		    if (existingUrl == null || existingUrl.trim().isEmpty() || bOverwrite) {
 	
 		        if (bOverwrite && existingUrl != null && !existingUrl.equals(sRepositoryRemoteUrl)) {
@@ -421,21 +424,53 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		            System.out.println("  neu: " + sRepositoryRemoteUrl);
 		        }
 	
+		        
 		        config.setString("remote", sRepositoryRemoteAlias, "url", sRepositoryRemoteUrl);
 	
-		        String sRepositoryRemoteBranch="master";
-		        if(!StringZZZ.isEmpty(sRepositoryRemoteBranchIn)) sRepositoryRemoteBranch = sRepositoryRemoteBranchIn;
+		        //Variante ohne einen konkreten Branch berücksichtigen, darum darf der Übergebwert leer sein
+		        //und der leere Wert wird nicht automatisch mit "master"erstetz
+		        String sRepositoryRemoteBranch = sRepositoryRemoteBranchIn;
 		        
-		        String sRepositoryLocalBranch = sRepositoryRemoteBranch;
-		        config.setStringList(
-		            "remote",
-		            sRepositoryRemoteAlias,
-		            "fetch",
-		            Collections.singletonList("+refs/heads/"+sRepositoryLocalBranch + "/*" + ":refs/remotes/" + sRepositoryRemoteBranch + "/*")
-		        );
+		        boolean bBranchAll = false;
+		        if(StringZZZ.isEmptyTrimmed(sRepositoryRemoteBranch)) {
+		        	bBranchAll=true;
+		        }else if(sRepositoryRemoteBranch.equals(IConfigJGIT.sBRANCH_ALL)) {
+		        	bBranchAll=true;
+		        }
+		        
+		        if(bBranchAll){ 
+			        
+					//Variante für alle Branches
+					 config.setStringList(
+					    "remote",
+					    sRepositoryRemoteAlias,
+					    "fetch",
+					    Collections.singletonList(
+					        "+refs/heads/*:refs/remotes/"
+					        + sRepositoryRemoteAlias
+					        + "/*"
+					    )
+					);  
+		        }else {
+		        	
+		        	//Variante für einen konkreten Branch
+			        config.setStringList(
+			        	    "remote",
+			        	    sRepositoryRemoteAlias,
+			        	    "fetch",
+			        	    Collections.singletonList(
+			        	        "+refs/heads/"
+			        	        + sRepositoryRemoteBranch
+			        	        + ":refs/remotes/"
+			        	        + sRepositoryRemoteAlias
+			        	        + "/"
+			        	        + sRepositoryRemoteBranch
+			        	    )
+			        );
+		        }
 	
 		        config.save();
-		    }	  
+		    }//end if(...bOverwrite)
 		} catch(IOException ioe) {
 			ExceptionZZZ ez = new ExceptionZZZ("IOException: " +ioe.getMessage(), iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 			throw ez;
@@ -1114,22 +1149,19 @@ Repository existingRepo = new FileRepositoryBuilder()
 		main:{
 			 try { 				
 				
-									
-				
-				 //####################################################################
-				 //Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
-				 //Merke: Per fetchResult
-				 //Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-	             //Vorschlag von chatGPT, direkt holen: 
-				 //Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+				//####################################################################
+				//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
+				//Merke: Per fetchResult
+				//Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+	            //Vorschlag von chatGPT, direkt holen: 
+				//Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
 	                	 
-				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
-
 				//++++++++++++++++++++++++++++++++
 				//den richtigen Branch ansteuern
 				String sBranch = "master"; // oder dynamisch
 				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
-							 
+						
+				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
 				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
 				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
 				String sFetchRefs = "refs/remotes/" + sBranch;
@@ -1138,7 +1170,6 @@ Repository existingRepo = new FileRepositoryBuilder()
 //				System.out.println("Merge Ref = " + objRef.getName());
 //				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
 
-				
 	            MergeCommand mergeCommand = git.merge();
 	            mergeCommand.include(objRef);
 	            mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 

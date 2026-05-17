@@ -13,6 +13,9 @@ public interface IJgitStarterCommit {
 	public String getRepositoryProject() throws ExceptionZZZ;
 	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
 	
+	public String getRepositoryBranch() throws ExceptionZZZ;
+	public void setRepositoryBranch(String sRepositoryBranch) throws ExceptionZZZ;
+	
 	public String getRepositoryLocalBase() throws ExceptionZZZ;
 	public void setRepositoryLocalBase(String sRepositoryBaseLocal) throws ExceptionZZZ;
 

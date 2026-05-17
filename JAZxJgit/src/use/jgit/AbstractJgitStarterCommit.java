@@ -49,6 +49,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	protected volatile Git gitObject = null;
 	
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
+	protected volatile String sRepositoryBranch=null; //Der Name des Branch, wenn man es nicht auf alle Branches beziehen will.
 	
 	protected volatile String sRepositoryLocalBase=null;  //Basis Verzeichnis
 	protected volatile String sRepositoryLocalTotal=null;  //Geamt Verzeichnis
@@ -101,6 +102,16 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	@Override 
 	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ {
 		this.sRepositoryProject = sRepositoryProject;
+	}
+	
+	@Override
+	public String getRepositoryBranch() throws ExceptionZZZ {
+		return this.sRepositoryBranch;
+	}
+	
+	@Override 
+	public void setRepositoryBranch(String sRepositoryBranch) throws ExceptionZZZ {
+		this.sRepositoryBranch = sRepositoryBranch;
 	}
 	
 	@Override
