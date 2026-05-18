@@ -125,6 +125,9 @@ public abstract class AbstractConfigJGIT extends AbstractKernelConfigZZZ impleme
 			return sReturn;
 		}
 		
+		
+	
+		
 		//++++++++++++++++++++++++++++++++++++++++++				
 		//### aus IConfigJGIT
 		@Override
