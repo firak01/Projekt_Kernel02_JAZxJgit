@@ -310,10 +310,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote,IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, objEnumstrategy);
+			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
@@ -417,7 +417,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					
 
 					//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal,objEnumStrategyMergeConflict);
+					String sBranch = "master";
+					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal,sBranch, objEnumStrategyMergeConflict);
 									
 				} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
 					

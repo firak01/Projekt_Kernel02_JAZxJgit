@@ -254,6 +254,12 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return sReturn;
 	}
 	
+	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+		//Merke: Bei HTTPS ist der FetchMerge Ansatz der einzig mögliche. Es gibt keine direkte Pull-Lösung. 
+				
+		return JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy);
+	}
+	
 	
 	/** Für den HTTPS Weg:
 	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
@@ -266,18 +272,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		danach den Pull automatisch erneut versucht
 		
 		s. ChatGPT 20260323
-	 * @param git
-	 * @throws GitAPIException
-	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
-	 * @throws ExceptionZZZ 
-	 */
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-	        try {
-	
-				/*
-				Frage:
+		
+		Frage:
 				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
 				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
 				
@@ -310,9 +306,47 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				git.merge()
 				.include(fetchResult.getAdvertisedRef("refs/heads/main"))
 				.call();
-				 */
+		
+		
+		Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
 				
-	        									
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+		
+	 * @param git
+	 * @throws GitAPIException
+	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
+	 * @throws ExceptionZZZ 
+	 */
+	private static MergeResult pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+	        try {									
 				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
 				//Darum versuchen dies ohne sPAT in URL zu realisieren
 				//                  //Variante A) mit sPAT in URL
@@ -347,36 +381,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				System.out.println("Merge Ref = " + objRef.getName());
 				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
 				
-				/*Minierklaerung:
-				siehe .git\config Datei, entsprechende Zeile.
-				 
-				Das ist ein sogenannter RefSpec (Reference Specification).
-				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
 				
-				Aufbau allgemein:
-				[+]<Quelle>:<Ziel>
-				
-				Also:
-				Quelle (Remote-Seite)
-				refs/heads/ = alle Branches im Remote-Repository
-				 * = Wildcard → alle Branch-Namen
-	
-				➡️ Bedeutet:
-				Hole alle Branches vom Remote
-				
-				
-				Ziel (lokal)
-				refs/remotes/origin/ = Remote-Tracking-Branches
-				* = gleicher Name wie Quelle
-	
-				➡️ Bedeutet:
-				Speichere sie lokal als origin/branchname
-				
-				------------
-				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-				Mit + sagst du:
-				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-				 */
 				
 				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
 				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);

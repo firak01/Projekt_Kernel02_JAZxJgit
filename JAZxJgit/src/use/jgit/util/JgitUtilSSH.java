@@ -922,7 +922,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				break main;
 			}
 
-			//TODOGOON20260514: Momentan wird noch jedes mal die Stage geholt
+			//TODOGOON20260514: Momentan wird noch jedes Mal in den Aufrufen innerhalb der Schleife die Stage geholt
 			//                  Also hier holen und resolveConflicts als Methode mit Stage anbieten:
 			//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
 			CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
