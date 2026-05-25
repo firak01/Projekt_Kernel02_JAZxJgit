@@ -750,14 +750,14 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	
 	//++++++++++++++++++++++++++++++++++++++++
 	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
-		return pullHTTPS_(git, credentialsProvider, sPAT, remoteUrl, branch, true);
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, true);
 	}
 	
 	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
-		return pullHTTPS_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail);
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail);
     }
 	
-	private static MergeResult pullHTTPS_(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {
@@ -822,12 +822,12 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	        
 		        
-		        
-		        if (remoteUrl == null || remoteUrl.trim().isEmpty()) {
+		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
 		            throw new IllegalArgumentException("remoteUrl must not be empty");
 		        }
-		        if (branch == null || branch.trim().isEmpty()) {
-		            branch = "master"; // Default für Java 1.7 Projekte 😉
+		        if (sBranchIn == null || sBranchIn.trim().isEmpty()) {
+		            sBranchIn = "master"; // Default für Java 1.7 Projekte 😉
 		        }
 		
 		        //Pull bei HTTPS geht nicht direkt, sondern ueber Zerlegen des pull in fetch und merge.								
@@ -836,29 +836,39 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        
 		        Repository repo = git.getRepository();
 		
-		        String remoteRef = "refs/heads/" + branch;
-		        String localTrackingRef = "refs/remotes/origin/" + branch;
+		        //++++++++++++++
+		        //Das neu auszurechnen macht Sinn, wenn z.B. eine SSH Adresse übergeben wird. Dann muss das nach HTTPS umgewandelt werden.				
+		        //In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
+		        String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
+		        System.out.println("Url fuer Fetch: '" + sUrlRepoRemote + "'");
+		        
+		        
+//		        String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+//				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+//				//sollte identisch sein... this.getRepositoryRemoteAccount();
+						
+//				original url mit Token, wie beim push arbeiten				
+//				String sUrl = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;
 		
+		       
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
-		        // =========================
-				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(remoteUrl);
-				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(remoteUrl);
-				//sollte identisch sein... this.getRepositoryRemoteAccount();
-				
-				
-				//original url mit Token, wie beim push arbeiten				
-				String sUrl = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;
-				System.out.println("Url fuer Fetch: '" + sUrl + "'");
-		        
+		        // =========================		
 		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
 		        // =========================
 		        // 2. MERGE (gezielt!)
 		        // =========================
+		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
+			    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranchIn);			       
+		        
+		        TODOGOON20260525;//Erfüllt obiger Aufruf diese folgenden Zeilen?
+		        String remoteRef = "refs/heads/" + sBranchIn;
+		        String localTrackingRef = "refs/remotes/origin/" + sBranchIn;
+		
 		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
 		
 		        if (remoteBranchObjectId == null) {
@@ -1230,7 +1240,28 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return objReturn;
 	}
 	
-	/** Berechne dir RemoteUrl - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
+	/**
+	 * Berechne die Remote Url - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
+	 * ZUM EINSATZ BEIM FETCH
+	 */
+	public static String computeRepositoryUrlHTTPS_forFetch(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+			//sollte identisch sein... this.getRepositoryRemoteAccount();
+			
+			//original url mit Token, wie beim push arbeiten				
+			sReturn = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;			
+		}//end main
+		return sReturn;
+		
+		
+	}
+	
+	
+	
+	/** Berechne die RemoteUrl - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
@@ -1238,8 +1269,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	public static String computeRepositoryUrlHTTPS(String sUrlRepoRemoteIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlBaseIn);
+			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			
+			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlPartFromRepo);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
 			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;

@@ -456,7 +456,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @throws ExceptionZZZ
 	 */
 	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
-		return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, null);
+		return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, null, true);
 	
 	
 
@@ -562,10 +562,25 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @throws ExceptionZZZ
 	 */
 	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
-		//return JgitUtilSSH.pullSSH_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn);
+		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, true, true);
+	}
+	
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, true, bSuppressExceptionOnMergeFail);
+	}
+	
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bByFetchMerge, bSuppressExceptionOnMergeFail);
 		
+	}
+	
+	public static MergeResult pullSSH_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+		if(bByFetchMerge) {
+			return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bSuppressExceptionOnMergeFail);
+		}else {
+			return JgitUtilSSH.pullSSH_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn);
+		}
 		
-		return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn);
 	}
 	
 	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
@@ -706,7 +721,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static MergeResult pullSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
+	private static MergeResult pullSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{	      
 		        if (git == null) {
@@ -724,9 +739,14 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        
 		        
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		    	
+		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+		            throw new IllegalArgumentException("remoteUrl must not be empty");
+		        }
+		        if (sBranchIn == null || sBranchIn.trim().isEmpty()) {
+		            sBranchIn = "master"; // Default für Java 1.7 Projekte 😉
+		        }
 		        
-		        //Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am schluss.							
+		        //Zwar geht Pull auch direkt, aber: Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am Schluss.							
 				System.out.println("SSH-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");
 				
 		        
@@ -736,7 +756,8 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        //Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
 		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH(sUrlRepoRemoteIn);
-		        
+		        System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
+				
 		        //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
 		        //      Statt dessen den "Aliasnamen" übergeben.
 				//pullCommand.setRemote(sUrlRepoRemote);
@@ -744,8 +765,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.
 				//Müssen wir aus der Url den Aliasnamen errechnen.
 				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
-		        System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
-				
+		        
 				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
 				System.out.println("Verwendete RepositoryAlias für Remote: '" + sRemoteRepositoryAlias + "'");
 				
@@ -913,7 +933,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		       
         	
         	//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
-        	objReturn = pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch);
+        	objReturn = pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, true);
         	
         	
         	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL

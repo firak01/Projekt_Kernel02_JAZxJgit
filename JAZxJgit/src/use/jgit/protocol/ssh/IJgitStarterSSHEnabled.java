@@ -8,6 +8,6 @@ public interface IJgitStarterSSHEnabled  extends IJgitEnabledZZZ{
 	// #############################################################
 
 	public enum FLAGZLOCAL {
-		DUMMY //Hier kommen Flags hin, die speziell für HTTPS gedacht sind					
+		DUMMY,USE_PULL_DIRECT //Hier kommen Flags hin, die speziell für HTTPS gedacht sind					
 	}
 }

@@ -1,20 +1,16 @@
 package use.jgit.protocol.https;
 
 import java.io.File;
-import java.util.Set;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
@@ -86,9 +82,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		main:{
 			try {
 				//Konfiguriere JGit für HTTPS
-				
-				
-				
+
 				//+++ Zugriff sicherstellen
 				//wie? sPAT holen, ist das vorhanden?
 				//Credentials Provider wird erst nach dem Git-Objekt zur Vefügung stehen, s. unten.
@@ -417,6 +411,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					
 
 					//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
+					
+					//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
+					///1) hier THEIRS oder OURS übergeben als Strategie
+					
 					String sBranch = "master";
 					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal,sBranch, objEnumStrategyMergeConflict);
 									
