@@ -343,7 +343,17 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch);
+			MergeResult objMergeResult = null;
+			
+			//anders als bei HTTPS gibt es hier auch die Möglichkeite direkt zu pull
+			//Was aber eigentlich technisch umständlicher ist.
+			boolean bUsePullDirect = this.getFlag(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			if(bUsePullDirect) {
+				objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch, false, true);
+			}else {
+				objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch);
+			}
+			
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
