@@ -760,7 +760,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
-	        try {
+	        //try {
 		        if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
 		        }
@@ -865,22 +865,22 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
 			    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranchIn);			       
 		        
-		        TODOGOON20260525;//Erfüllt obiger Aufruf diese folgenden Zeilen?
-		        String remoteRef = "refs/heads/" + sBranchIn;
-		        String localTrackingRef = "refs/remotes/origin/" + sBranchIn;
-		
-		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
-		
-		        if (remoteBranchObjectId == null) {
-		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
-		        }
-		 
-		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
-		        MergeCommand mergeCommand = git.merge();
-		        mergeCommand.include(remoteBranchObjectId);
-		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
-		
-		        objReturn = mergeCommand.call();
+//		        TODOGOON20260525;//Erfüllt obiger Aufruf diese folgenden Zeilen?
+//		        String remoteRef = "refs/heads/" + sBranchIn;
+//		        String localTrackingRef = "refs/remotes/origin/" + sBranchIn;
+//		
+//		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
+//		
+//		        if (remoteBranchObjectId == null) {
+//		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
+//		        }
+//		 
+//		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
+//		        MergeCommand mergeCommand = git.merge();
+//		        mergeCommand.include(remoteBranchObjectId);
+//		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
+//		
+//		        objReturn = mergeCommand.call();
 		
 		        // =========================
 		        // 3. Ergebnis prüfen, im Problemfall wird MergeResult in der aufrufenden Methode noch weiter analysiert.
@@ -907,19 +907,20 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            }
 		        }
 
-	        }catch(IOException ioe) {
-	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
-	        	throw ez;
-			}catch(InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			}catch(TransportException te) {
-				ExceptionZZZ ez = new ExceptionZZZ(te);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}       
+//	        }catch(IOException ioe) {
+//	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//	        	throw ez;
+//			}catch(InvalidRemoteException ire) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ire);
+//				throw ez;
+//			}
+//	        catch(TransportException te) {
+//				ExceptionZZZ ez = new ExceptionZZZ(te);
+//				throw ez;
+//			}catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			}       
 		}//end main:
 		return objReturn;
     }
@@ -1252,11 +1253,22 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			//sollte identisch sein... this.getRepositoryRemoteAccount();
 			
 			//original url mit Token, wie beim push arbeiten				
-			sReturn = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;			
+			sReturn = "https"+ UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;			
 		}//end main
 		return sReturn;
 		
 		
+	}
+	
+	public static String computeRepositoryUrlHTTPS_forPush(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);
+			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+			String sProjectFromRepo = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+			sReturn = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +  sAccountFromRepo + ":" + sPAT + "@" + sRepositoryRemoteHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccountFromRepo + UrlLogicZZZ.sURL_SEPARATOR_PATH + sProjectFromRepo + ".git"; 
+		}//end main:
+		return sReturn;
 	}
 	
 	

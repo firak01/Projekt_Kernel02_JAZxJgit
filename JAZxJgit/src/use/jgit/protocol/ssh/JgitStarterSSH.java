@@ -640,7 +640,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        
+		        String sBranch = this.getRepositoryBranch();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
@@ -766,7 +768,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        
+		        String sBranch = this.getRepositoryBranch();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
@@ -987,7 +991,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        
+		        String sBranch = this.getRepositoryBranch();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
 				

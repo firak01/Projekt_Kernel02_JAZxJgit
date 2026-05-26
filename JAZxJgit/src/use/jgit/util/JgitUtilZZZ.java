@@ -1043,6 +1043,15 @@ Repository existingRepo = new FileRepositoryBuilder()
 	 * @throws ExceptionZZZ
 	 */
 	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote) throws ExceptionZZZ {
+		return JgitUtilZZZ.fetchIgnoreNothingToFetch_(objFileDir, sRepositoryRemote, null);
+	}	
+	
+	public static boolean fetchIgnoreNothingToFetch(File objFileDir, String sRepositoryRemote, String sBranch) throws ExceptionZZZ {
+		return JgitUtilZZZ.fetchIgnoreNothingToFetch_(objFileDir, sRepositoryRemote, sBranch);
+	}	
+	
+	
+	private static boolean fetchIgnoreNothingToFetch_(File objFileDir, String sRepositoryRemote, String sBranchIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			 try {
@@ -1057,6 +1066,10 @@ Repository existingRepo = new FileRepositoryBuilder()
 			    //aber, die RemoteUrl - einmal ermittelt - geht auch.
 			    gitCommandFetch.setRemote(sRepositoryRemote); 
 			    
+			    String sBranch="master";
+			    if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch=sBranchIn; 
+			    
+			    
 			    //aber: vermutlich wird auf dem falschen Branch gearbeitet.
 			    gitCommandFetch.setRefSpecs(
 			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
@@ -1067,7 +1080,8 @@ Repository existingRepo = new FileRepositoryBuilder()
 			    		//das Wort orign taucht nur als Section auf
 			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
 			    		//                   Bei der Konfiguration
-			    		new RefSpec("+refs/heads/master:refs/remotes/master")	
+			    		//new RefSpec("+refs/heads/master:refs/remotes/master")	
+			    		new RefSpec("+refs/heads/" + sBranch + ":refs/remotes/origin/" + sBranch)
 			    		
 			    	);
 			    gitCommandFetch.call();

@@ -370,68 +370,68 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				throw ez;
 			}
 			
-			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
-			boolean bRemoteAliasAvailable = !StringZZZ.isEmpty(sRepositoryRemoteAliasIn);
+			String sRepositoryRemoteAlias = objConfig.readRepositoryRemoteAlias();
+			boolean bRemoteAliasAvailable = !StringZZZ.isEmpty(sRepositoryRemoteAlias);
 //			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
 //				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 //				throw ez;
 //			}
-			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);
+			this.setRepositoryRemoteAlias(sRepositoryRemoteAlias);
 			
 			
-			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
-			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+			String sRepositoryLocal = objConfig.readRepositoryLocal();
+			if(StringZZZ.isEmpty(sRepositoryLocal)){
 				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryLocalBase(sRepositoryLocalIn);
+			this.setRepositoryLocalBase(sRepositoryLocal);
 			
 			
-			String sRepositoryProjectIn = objConfig.readRepositoryProjectName();
-			if(StringZZZ.isEmpty(sRepositoryProjectIn) & !bRemoteAliasAvailable){
+			String sRepositoryProject = objConfig.readRepositoryProjectName();
+			if(StringZZZ.isEmpty(sRepositoryProject) & !bRemoteAliasAvailable){
 				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryProject(sRepositoryProjectIn);
+			this.setRepositoryProject(sRepositoryProject);
 			
 			//Merke: Branch darf leer sein
-			String sRepositoryBranchIn = objConfig.readRepositoryBranch();
+			String sRepositoryBranch = objConfig.readRepositoryBranch();
 			this.setRepositoryBranch(sRepositoryBranch);
 			
-			String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sRepositoryLocalIn, sRepositoryProjectIn);
-			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryLocalTotal);
+			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
+			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
 			if(!objDirectoryRepositoryLocalTotal.exists()){
-				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
+			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
 			
-			String sRepositoryRemoteUrlByAliasIn = null; String sRepositoryRemoteFetchByAliasIn = null;
+			String sRepositoryRemoteUrlByAlias = null; String sRepositoryRemoteFetchByAlias = null;
 			if(!bRemoteAliasAvailable) {
-				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden '" + sRepositoryRemoteAliasIn + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden '" + sRepositoryRemoteAlias + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}else {
 				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
-				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-				sRepositoryRemoteUrlByAliasIn = repo.getConfig()
+				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+				sRepositoryRemoteUrlByAlias = repo.getConfig()
 						       .getString("remote",sRepositoryRemoteAlias,"url");
-				if(StringZZZ.isEmpty(sRepositoryRemoteUrlByAliasIn)){
+				if(StringZZZ.isEmpty(sRepositoryRemoteUrlByAlias)){
 					ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
-				sRepositoryRemoteFetchByAliasIn = repo.getConfig()
+				sRepositoryRemoteFetchByAlias = repo.getConfig()
 					       .getString("remote",sRepositoryRemoteAlias,"fetch");
-				if(StringZZZ.isEmpty(sRepositoryRemoteFetchByAliasIn)){
+				if(StringZZZ.isEmpty(sRepositoryRemoteFetchByAlias)){
 					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				
-				System.out.println("Git-Repository verwendet folgende Remote URL (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteUrlByAliasIn +"'");
-				System.out.println("Git-Repository verwendet folgende Remote FETCH (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteFetchByAliasIn +"'");
+				System.out.println("Git-Repository verwendet folgende Remote URL (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteUrlByAlias +"'");
+				System.out.println("Git-Repository verwendet folgende Remote FETCH (gemaess Alias '"+ sRepositoryRemoteFetchByAlias + "'): '" + sRepositoryRemoteFetchByAlias +"'");
 				
-				this.setRepositoryTotalRemote(sRepositoryRemoteUrlByAliasIn);
+				this.setRepositoryTotalRemote(sRepositoryRemoteUrlByAlias);
 			}
 			bReturn = true;
 		}//end main:

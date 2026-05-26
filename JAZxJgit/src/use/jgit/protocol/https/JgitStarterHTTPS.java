@@ -624,20 +624,20 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
 							
 			
-			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
-			if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
+			String sRepositoryRemote = this.computeRepositoryBaseRemote();
+			if(StringZZZ.isEmpty(sRepositoryRemote)){
 				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+			this.setRepositoryBaseRemote(sRepositoryRemote);
 			
 			//#################### Besonderheit HTTPS
-			String sPatIn = objConfig.readPersonalAccessToken();
-			if(StringZZZ.isEmpty(sPatIn)){
+			String sPat = objConfig.readPersonalAccessToken();
+			if(StringZZZ.isEmpty(sPat)){
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository, Personal Access Token (PAT)", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setPersonalAccessToken(sPatIn);
+			this.setPersonalAccessToken(sPat);
 			
 			
 			
@@ -709,7 +709,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//##################################################################################
 	//####### PUSH #####################################################################
 	@Override
-	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {		
@@ -742,10 +742,12 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 //				String sUrlRemote = "https://" + sAccountFromRepo + ":" + sPAT + "@" + sUrlPartFromRepo;
 
 				
-				String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sRepoRemote);
-				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sRepoRemote);
-				String sProjectFromRepo = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sRepoRemote);
-				String sUrlRemote = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +  sAccountFromRepo + ":" + sPAT + "@" + sRepositoryRemoteHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccountFromRepo + UrlLogicZZZ.sURL_SEPARATOR_PATH + sProjectFromRepo + ".git";
+				String sUrlRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forPush(sUrlRepoRemote, sPAT);
+				
+//				String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemote);
+//				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemote);
+//				String sProjectFromRepo = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemote);
+//				String sUrlRemote = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +  sAccountFromRepo + ":" + sPAT + "@" + sRepositoryRemoteHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccountFromRepo + UrlLogicZZZ.sURL_SEPARATOR_PATH + sProjectFromRepo + ".git";
 				pushCommand.setRemote(sUrlRemote);
 				
 				
@@ -940,7 +942,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		        //aber manchmal ist nichts zu fetchen, dann wuerde ein Fehler geworfen. Das ist unschoen, darum Fehler abfangen
 		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal);
+		        
+		        String sBranch = this.getRepositoryBranch();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemoteTotal, sBranch);
 			    System.out.println(("FETCH DONE"));
 			}catch(TransportException tex) {
 				ExceptionZZZ ez = new ExceptionZZZ(tex);
@@ -1094,7 +1098,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 
 		        
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+		        
+		        String sBranch = this.getRepositoryBranch();
+		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
 				
