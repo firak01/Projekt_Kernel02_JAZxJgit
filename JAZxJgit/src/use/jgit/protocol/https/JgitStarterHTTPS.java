@@ -379,63 +379,65 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	}
 	
 	//#############################################################
-		//### PULL ####################################################
-		@Override
-		public boolean pullit(Git git) throws ExceptionZZZ {
-			boolean bReturn = false;
-			main:{
-				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-				String sPAT = this.getPersonalAccessToken();
-				String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
-				boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
-				boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+	//### PULL ####################################################
+	@Override
+	public boolean pullit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+			String sPAT = this.getPersonalAccessToken();
+			String sRepositoryRemoteTotal = this.getRepositoryTotalRemote();
+			
+			String sBranch = "master";
+			String sBranchIn = this.getRepositoryBranch();
+			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
+			
+			
+			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
+			boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+			
+			
+			
+			//Zum Testen gezielt steuern
+			//bIgnoreConflicts = false;
+			//bAutoResolveConflicts = false;
+			if (!bIgnoreConflicts & !bAutoResolveConflicts) {
+				//Normaler Pull, Konflikte ausgeben, nicht auflösen
+				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);								
+				bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
+								
+			} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
 				
+				//Statt so etwas zu machen, das Flag übergeben:
+				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 				
-				
-				//Zum Testen gezielt steuern
-				//bIgnoreConflicts = false;
-				//bAutoResolveConflicts = false;
-				if (!bIgnoreConflicts & !bAutoResolveConflicts) {
-					//Normaler Pull, Konflikte ausgeben, nicht auflösen
-					//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);
-					
-					String sBranch = "master";
-					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch);
-									
-				} else if(bIgnoreConflicts & !bAutoResolveConflicts) {
-					
-					//Statt so etwas zu machen, das Flag übergeben:
-					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-					
 
-					//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-					
-					//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
-					///1) hier THEIRS oder OURS übergeben als Strategie
-					
-					String sBranch = "master";
-					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal,sBranch, objEnumStrategyMergeConflict);
-									
-				} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
-					
-					//Statt so etwas zu machen, das Flag übergeben:
-					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-					
-					//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
-					String sBranch = "master";
-					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
+				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
 				
-				}else {
-					ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-			}//end main:
-			return bReturn;
-		}
+				//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
+				///1) hier THEIRS oder OURS übergeben als Strategie
+						
+				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemoteTotal,sBranch, objEnumStrategyMergeConflict);
+								
+			} else if(!bIgnoreConflicts & bAutoResolveConflicts) {
+				
+				//Statt so etwas zu machen, das Flag übergeben:
+				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+				
+				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL		
+				bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
+			
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
 	
 	
 	

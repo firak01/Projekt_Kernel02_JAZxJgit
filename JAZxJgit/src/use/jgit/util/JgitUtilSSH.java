@@ -124,6 +124,12 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return sReturn;
 	}
 	
+	
+	public static String computeRepositoryUrlSSH_forFetch(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		return JgitUtilSSH.computeRepositoryUrlSSH(sUrlRepoRemoteIn);	
+	}
+	
+	
 	/** Berechne dir RemoteUrl - auch wenn eine https Url uebergeben worden ist - passend fuer SSH
 	 * @param sUrlRepoRemoteIn
 	 * @return
@@ -232,25 +238,16 @@ public class JgitUtilSSH implements IConstantZZZ{
 		 return objReturn;
 	}
 	
-	public static FetchResult fetchIgnoreNothingToFetch(
-	        Git git,	        
-	        CredentialsProvider credentialsProvider,
-	        String sRemoteRepositoryAlias,
-	        String sBranchIn
-	) throws ExceptionZZZ{
-		FetchResult objReturn = null;
-		main:{
-		    try {
-		    	System.out.println("### DEGUB START");
-		    	try {
-					JgitUtilZZZ.debugForFetch(git);
-				} catch (URISyntaxException e) {
-					ExceptionZZZ ez = new ExceptionZZZ(e);
-					throw ez;
-				}
-		    	System.out.println("### DEBUG ENDE");
-		    	
-		    	 /*Minierklaerung:
+	/**
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sRemoteRepositoryAlias
+	 * @param sBranchIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 * 
+	 * 
+	 		    Minierklaerung:
 				siehe .git\config Datei, entsprechende Zeile.
 				 
 				Das ist ein sogenannter RefSpec (Reference Specification).
@@ -279,14 +276,34 @@ public class JgitUtilSSH implements IConstantZZZ{
 				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
 				Mit + sagst du:
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-				 */
-			 
+				 
+	 */
+	public static FetchResult fetchIgnoreNothingToFetch(
+	        Git git,	        
+	        CredentialsProvider credentialsProvider,
+	        String sRemoteRepositoryAlias,
+	        String sBranchIn
+	) throws ExceptionZZZ{
+		FetchResult objReturn = null;
+		main:{
+		    try {
+		    	try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
+		    	
 		    	
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================
 		        FetchCommand gitCommandFetch = git.fetch();
-
+		        
+		        //SSH-Weg: Ohne URL!
+		        //dafuer mit Alias
+		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
+		        
 		        if (credentialsProvider != null) {
 		            gitCommandFetch.setCredentialsProvider(credentialsProvider);
 		        }
@@ -303,33 +320,26 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        //+ für "fast forward"
 		        gitCommandFetch.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
 
-		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
 		        
-		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
-			    gitCommandFetch.setRefSpecs(
-			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
-			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
-
-			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
-			    		//der zweite Teil ist remote... 
-			    		//das Wort orign taucht nur als Section auf
-			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
-			    		//                   Bei der Konfiguration
-			    		new RefSpec("+refs/heads/master:refs/remotes/master")	
-			    		
-			    	);
+		        
+//		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
+//			    gitCommandFetch.setRefSpecs(
+//			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
+//			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
+//
+//			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
+//			    		//der zweite Teil ist remote... 
+//			    		//das Wort orign taucht nur als Section auf
+//			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
+//			    		//                   Bei der Konfiguration
+//			    		new RefSpec("+refs/heads/" + sBranch + ":refs/remotes/origin/"+sBranch);	
+//			    		
+//			    	);
 		        
 		        
 		        objReturn = gitCommandFetch.call();
 	
-		        
-		        
-		        // Optional: Logging / Prüfung
-		        if (objReturn.getTrackingRefUpdates().isEmpty()) {
-		            System.out.println("Fetch erfolgreich, aber keine Änderungen vorhanden.");
-		        } else {
-		            System.out.println("Fetch erfolgreich, Änderungen empfangen.");
-		        }
+		     
 	
 		    } catch (TransportException te) {
 	
@@ -742,10 +752,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
 		            throw new IllegalArgumentException("remoteUrl must not be empty");
 		        }
-		        if (sBranchIn == null || sBranchIn.trim().isEmpty()) {
-		            sBranchIn = "master"; // Default für Java 1.7 Projekte 😉
-		        }
 		        
+		        String sBranch="master";
+		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
+		       		        
 		        //Zwar geht Pull auch direkt, aber: Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am Schluss.							
 				System.out.println("SSH-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");
 				
@@ -755,8 +765,8 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        //++++++++++++
 		        //Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
-		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH(sUrlRepoRemoteIn);
-		        System.out.println("Verwendete, neu ausgerechnete Url für Remote: " + sUrlRepoRemote);
+		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH_forFetch(sUrlRepoRemoteIn);
+		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
 				
 		        //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
 		        //      Statt dessen den "Aliasnamen" übergeben.
@@ -767,7 +777,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
 		        
 				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
-				System.out.println("Verwendete RepositoryAlias für Remote: '" + sRemoteRepositoryAlias + "'");
+				System.out.println("RepositoryAlias fuer Fetch (SSH Weg, neu gesucht per Url): '" + sRemoteRepositoryAlias + "'");
 				
 		        //++++++++++++
 		        

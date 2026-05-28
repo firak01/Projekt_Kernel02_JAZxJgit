@@ -2,6 +2,7 @@ package use.jgit.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -363,7 +364,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				System.out.println("Url fuer Fetch: '" + sUrl + "'");
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider, sBranch);
 				if(fetchResult==null) break main;
 					
 				//+++ Auswerten eines Fetch
@@ -582,13 +583,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
 				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
 				if(fetchResult==null) break main;
-					
-				//+++ Auswerten eines Fetch
-				String sFetchResultMessages = fetchResult.getMessages();
-				if(sFetchResultMessages!=null) {				
-					System.out.println("Fetch-Result: " + sFetchResultMessages);
-				}
-					
+		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 				
 				//++++++++++++++++++++++++++++++++
 				//den richtigen Branch ansteuern
@@ -760,7 +755,6 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
-	        //try {
 		        if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
 		        }
@@ -826,9 +820,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
 		            throw new IllegalArgumentException("remoteUrl must not be empty");
 		        }
-		        if (sBranchIn == null || sBranchIn.trim().isEmpty()) {
-		            sBranchIn = "master"; // Default für Java 1.7 Projekte 😉
-		        }
+		        
+		        String sBranch="master";
+		        if (!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 		
 		        //Pull bei HTTPS geht nicht direkt, sondern ueber Zerlegen des pull in fetch und merge.								
 				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
@@ -840,22 +834,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        //Das neu auszurechnen macht Sinn, wenn z.B. eine SSH Adresse übergeben wird. Dann muss das nach HTTPS umgewandelt werden.				
 		        //In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
 		        String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
-		        System.out.println("Url fuer Fetch: '" + sUrlRepoRemote + "'");
+		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
 		        
-		        
-//		        String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
-//				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
-//				//sollte identisch sein... this.getRepositoryRemoteAccount();
-						
-//				original url mit Token, wie beim push arbeiten				
-//				String sUrl = "https://"+sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;
-		
+		        //Aber: Anders als beim SSH Weg, wird hier kein "RemoteAlias" verwendet,
+		        //      sondern die URL direkt angegeben. Wir müssen also diesen "RemoteAlias" nicht suchen.
 		       
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================		
 		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider);
+				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider, sBranch);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
@@ -863,64 +851,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        // 2. MERGE (gezielt!)
 		        // =========================
 		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
-			    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranchIn);			       
-		        
-//		        TODOGOON20260525;//Erfüllt obiger Aufruf diese folgenden Zeilen?
-//		        String remoteRef = "refs/heads/" + sBranchIn;
-//		        String localTrackingRef = "refs/remotes/origin/" + sBranchIn;
-//		
-//		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
-//		
-//		        if (remoteBranchObjectId == null) {
-//		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
-//		        }
-//		 
-//		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
-//		        MergeCommand mergeCommand = git.merge();
-//		        mergeCommand.include(remoteBranchObjectId);
-//		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
-//		
-//		        objReturn = mergeCommand.call();
-		
-		        // =========================
-		        // 3. Ergebnis prüfen, im Problemfall wird MergeResult in der aufrufenden Methode noch weiter analysiert.
-		        // =========================
-		        if (!objReturn.getMergeStatus().isSuccessful()) {
-		
-		            switch (objReturn.getMergeStatus()) {
-		
-		                case CONFLICTING:
-		                    System.out.println("Merge conflicts detected!");		                    
-		                    break;
-		
-		                case FAILED:
-		                	System.out.println("Merge conflicts detected!");	
-		                    if(!bSuppressExceptionOnMergeFail) throw new IllegalStateException("Merge failed: " + objReturn.toString());
-		                    break;
-		
-		                case ALREADY_UP_TO_DATE:
-		                    System.out.println("Already up-to-date.");
-		                    break;
-		
-		                default:
-		                    System.out.println("Merge status: " + objReturn.getMergeStatus());
-		            }
-		        }
-
-//	        }catch(IOException ioe) {
-//	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
-//	        	throw ez;
-//			}catch(InvalidRemoteException ire) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ire);
-//				throw ez;
-//			}
-//	        catch(TransportException te) {
-//				ExceptionZZZ ez = new ExceptionZZZ(te);
-//				throw ez;
-//			}catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			}       
+			    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranch);			       
+		          
 		}//end main:
 		return objReturn;
     }
@@ -1175,12 +1107,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
 				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
 				if(fetchResult==null) break main;
-					
-				String sFetchResultMessages = fetchResult.getMessages();
-				if(sFetchResultMessages!=null) {				
-					System.out.println("Fetch-Result: " + sFetchResultMessages);
-				}
-					
+		        GitPostFetchAnalyse.logFetchResult(fetchResult);
+		        					
 				//++++++++++++++++++++++++++++++++
 				//Minierklaerung: DOKU BITTE STEHEN LASSEN				
 				/*
@@ -1350,6 +1278,14 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		FetchResult objReturn = null;
 		main:{
 		    try {
+		    	try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
+		    	
+		    	
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================
@@ -1378,15 +1314,6 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 
 		        objReturn = fetchCommand.call();
 	
-		        
-		        
-		        // Optional: Logging / Prüfung
-		        if (objReturn.getTrackingRefUpdates().isEmpty()) {
-		            System.out.println("Fetch erfolgreich, aber keine Änderungen vorhanden.");
-		        } else {
-		            System.out.println("Fetch erfolgreich, Änderungen empfangen.");
-		        }
-	
 		    } catch (TransportException te) {
 	
 		        String msg = te.getMessage();
@@ -1401,6 +1328,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        throw ez;
 		    }catch(GitAPIException gae) {
 				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+		    } catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
 			} 
 		}//end main:

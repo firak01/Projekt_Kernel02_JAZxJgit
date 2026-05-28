@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.lib.BranchConfig;
 import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -349,7 +350,7 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	
 	public static void debugForFetch(Git git) throws URISyntaxException, IOException {
 		
-		System.out.println("### DEBUG START");
+		System.out.println("### DEBUG FOR FETCH: START");
 
 		Repository repository = git.getRepository();
 
@@ -388,9 +389,85 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		    System.out.println("Push RefSpec  : " + refSpec);
 		}
 
-		System.out.println("### DEBUG ENDE");
+		System.out.println("### DEBUG FOR FETCH: ENDE");
 		
 		
+	}
+	
+	
+	public static void debugForMerge(Git git) throws Exception {
+
+		System.out.println("### DEBUG FOR MERGE: START");
+
+		Repository repository = git.getRepository();
+
+		// -------------------------------------------------
+		// Aktueller Branch
+		// -------------------------------------------------
+		String branch = repository.getBranch();
+
+		System.out.println("Current Branch        : " + branch);
+
+		// -------------------------------------------------
+		// BranchConfig
+		// -------------------------------------------------
+		BranchConfig branchConfig =
+		        new BranchConfig(repository.getConfig(), branch);
+
+		String sRemoteName = branchConfig.getRemote();
+		String sMergeBranch = branchConfig.getMerge();
+
+		System.out.println("Configured Remote     : " + sRemoteName);
+		System.out.println("Configured Merge Ref  : " + sMergeBranch);
+
+		// -------------------------------------------------
+		// HEAD
+		// -------------------------------------------------
+		ObjectId headId = repository.resolve("HEAD");
+
+		System.out.println("HEAD Commit           : " + headId.getName());
+
+		// -------------------------------------------------
+		// Remote Tracking Ref
+		// Beispiel:
+		// refs/remotes/origin/main
+		// -------------------------------------------------
+		String sTrackingRef =
+		        "refs/remotes/"
+		        + sRemoteName
+		        + "/"
+		        + Repository.shortenRefName(sMergeBranch);
+
+		System.out.println("Tracking Ref          : " + sTrackingRef);
+
+		Ref refTracking = repository.findRef(sTrackingRef);
+
+		if (refTracking != null) {
+
+		    System.out.println("Tracking Ref Found    : YES");
+		    System.out.println("Tracking ObjectId     : "
+		            + refTracking.getObjectId().getName());
+
+		} else {
+
+		    System.out.println("Tracking Ref Found    : NO");
+		}
+
+		// -------------------------------------------------
+		// Lokaler Branch Ref
+		// -------------------------------------------------
+		Ref refLocal = repository.findRef(branch);
+
+		if (refLocal != null) {
+
+		    System.out.println("Local Branch Ref      : "
+		            + refLocal.getName());
+
+		    System.out.println("Local Branch ObjectId : "
+		            + refLocal.getObjectId().getName());
+		}
+
+		System.out.println("### DEBUG FOR MERGE: END");
 	}
 	
 	/** Ueberpruefe, ob unter dem Alias des remote Repositories auch eine URL gefunden wird.
@@ -1122,8 +1199,13 @@ Repository existingRepo = new FileRepositoryBuilder()
 		return bReturn;
 	}
 	
-	/**
-	 * Minierklaerung:
+	/**	 			
+	 * @param git
+	 * @param sBranchIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 * 
+	 			Minierklaerung:
 				siehe .git\config Datei, entsprechende Zeile.
 				 
 				Das ist ein sogenannter RefSpec (Reference Specification).
@@ -1153,16 +1235,18 @@ Repository existingRepo = new FileRepositoryBuilder()
 				Mit + sagst du:
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 				
-	 * @param git
-	 * @param sBranchIn
-	 * @return
-	 * @throws ExceptionZZZ
 	 */
 	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 			 try { 				
-				
+				 try {
+						JgitUtilZZZ.debugForMerge(git);
+					} catch (Exception e) {
+						ExceptionZZZ ez = new ExceptionZZZ(e);
+						throw ez;
+					}
+				 
 				//####################################################################
 				//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
 				//Merke: Per fetchResult
@@ -1178,11 +1262,11 @@ Repository existingRepo = new FileRepositoryBuilder()
 				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
 				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
 				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
-				String sFetchRefs = "refs/remotes/" + sBranch;
+				String sFetchRefs = "refs/remotes/origin/" + sBranch;
 				
 				Ref objRef = git.getRepository().exactRef(sFetchRefs);
-//				System.out.println("Merge Ref = " + objRef.getName());
-//				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+				//System.out.println("Merge Ref = " + objRef.getName());
+				//System.out.println("ObjectId  = " + objRef.getObjectId().getName());
 
 	            MergeCommand mergeCommand = git.merge();
 	            mergeCommand.include(objRef);
