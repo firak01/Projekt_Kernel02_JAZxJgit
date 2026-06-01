@@ -778,9 +778,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        
 				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
 				System.out.println("RepositoryAlias fuer Fetch (SSH Weg, neu gesucht per Url): '" + sRemoteRepositoryAlias + "'");
-				
-		        //++++++++++++
-		        
+						        
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // ========================= 
