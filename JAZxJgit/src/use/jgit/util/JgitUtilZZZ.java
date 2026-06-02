@@ -1259,6 +1259,24 @@ Repository existingRepo = new FileRepositoryBuilder()
 				String sBranch = "master"; // oder dynamisch
 				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 						
+				//Problem: java.nio.file.InvalidPathException: Illegal char <*> 
+				/*refs/remotes/origin/*
+				  Das ist aber kein gültiger Git-Refname. Der Stern * ist in Ref-Namen nicht erlaubt. Intern versucht JGit daraus teilweise einen Path zu bilden, wodurch dann die Exception entsteht.
+				  
+				  Das * wird nur in RefSpecs verwendet, z.B.:
+					+refs/heads/*:refs/remotes/origin/*
+
+				  Das bedeutet:
+				   Alle Branches unter refs/heads/ nach refs/remotes/origin/ spiegeln.
+
+                  Das ist aber eine RefSpec-Syntax, kein echter Refname.
+				
+				
+				
+				*/
+				TODOGOON20260602;// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
+				
+				
 				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
 				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
 				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 

@@ -826,12 +826,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		
 		        //Pull bei HTTPS geht nicht direkt, sondern ueber Zerlegen des pull in fetch und merge.								
 				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
-				
-		        
-		        Repository repo = git.getRepository();
-		
+						
 		        //++++++++++++++
-		        //Das neu auszurechnen macht Sinn, wenn z.B. eine SSH Adresse übergeben wird. Dann muss das nach HTTPS umgewandelt werden.				
+		        //Die URL neu auszurechnen macht Sinn, wenn z.B. eine SSH Adresse übergeben wird. Dann muss das nach HTTPS umgewandelt werden.				
 		        //In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
 		        String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
 		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
