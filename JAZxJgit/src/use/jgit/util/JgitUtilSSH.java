@@ -1043,7 +1043,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	        	 String sBranch = "master";
 			     if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 			     
-			    //Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
+			    //Mache hier den Pull direkt durch PullCommand
 			    objReturn = pullSSH_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch);
 		        	
 			    //MERGERESULT PRÜFEN

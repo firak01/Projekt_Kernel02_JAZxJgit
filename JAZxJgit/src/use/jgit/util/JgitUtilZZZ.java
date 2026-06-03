@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -590,6 +592,64 @@ public class JgitUtilZZZ implements IConstantZZZ {
 
         return null; // nichts gefunden
     }
+    
+    
+    //##################################################
+    public static List<Ref> getRepositoryBranches(Git git) throws ExceptionZZZ {
+    	List<Ref> listReturn=null;
+    	main:{
+			try {
+				listReturn = git.branchList().call();
+			} catch (GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}    
+    	}//end main;
+    	return listReturn;
+    }
+    
+    /** Liefert z.B.
+     	refs/heads/main
+		refs/heads/develop
+		refs/heads/feature1
+		
+     * @param git
+     * @return
+     */
+    public static List<String> getRepositoryBranchesName(Git git) throws ExceptionZZZ {
+    	List<String> listReturn=new ArrayList<String>();
+    	main:{
+			List<Ref> branches = JgitUtilZZZ.getRepositoryBranches(git);
+			
+			for (Ref localRef : branches) {
+			    String branchName = localRef.getName();				   
+			    listReturn.add(branchName);
+			}   
+    	}//end main;
+    	return listReturn;
+    }
+    
+    /** Liefert z.B.
+ 	main
+	develop
+	feature1
+	
+     * @param git
+     * @return
+     */
+    public static List<String> getRepositoryBranchesShortName(Git git) throws ExceptionZZZ {
+    	List<String> listReturn=new ArrayList<String>();
+    	main:{			
+			List<Ref> branches = JgitUtilZZZ.getRepositoryBranches(git);
+			
+			for (Ref localRef : branches) {
+			    String branchNameShort = Repository.shortenRefName(localRef.getName());				   
+			    listReturn.add(branchNameShort);
+			}			
+    	}//end main;
+    	return listReturn;
+    }
+	//#############################################################
 	
 	/* https://git-scm.com/book/de/v2/Anhang-B:-Git-in-deine-Anwendungen-einbetten-JGit
 	// Create a new repository
@@ -1188,13 +1248,22 @@ Repository existingRepo = new FileRepositoryBuilder()
 	
 	//########################################
 	//### MERGE
-	public static boolean merge(Git git, String sBranch) throws ExceptionZZZ{
+	public static boolean merge(Git git, String sBranchIn) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
-			 
-			MergeResult objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
-			bReturn = objMergeResult.getMergeStatus().isSuccessful();
-	        			
+			String sBranch = "master"; // oder dynamisch
+			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
+			
+			MergeResult objMergeResult = null;
+			if(sBranch.equals("*")) {
+				objMergeResult = JgitUtilZZZ.mergeWithResultFirstBranch(git);
+			}else {	
+				objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
+			}
+			
+			if(objMergeResult!=null) {
+				bReturn = objMergeResult.getMergeStatus().isSuccessful();
+			}
 		}//end main:
 		return bReturn;
 	}
@@ -1238,69 +1307,127 @@ Repository existingRepo = new FileRepositoryBuilder()
 	 */
 	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
 		MergeResult objReturn = null;
-		main:{
-			 try { 				
-				 try {
-						JgitUtilZZZ.debugForMerge(git);
-					} catch (Exception e) {
-						ExceptionZZZ ez = new ExceptionZZZ(e);
-						throw ez;
-					}
-				 
-				//####################################################################
-				//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
-				//Merke: Per fetchResult
-				//Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-	            //Vorschlag von chatGPT, direkt holen: 
-				//Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
-	                	 
-				//++++++++++++++++++++++++++++++++
-				//den richtigen Branch ansteuern
-				String sBranch = "master"; // oder dynamisch
-				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
-						
-				//Problem: java.nio.file.InvalidPathException: Illegal char <*> 
-				/*refs/remotes/origin/*
-				  Das ist aber kein gültiger Git-Refname. Der Stern * ist in Ref-Namen nicht erlaubt. Intern versucht JGit daraus teilweise einen Path zu bilden, wodurch dann die Exception entsteht.
-				  
-				  Das * wird nur in RefSpecs verwendet, z.B.:
-					+refs/heads/*:refs/remotes/origin/*
-
-				  Das bedeutet:
-				   Alle Branches unter refs/heads/ nach refs/remotes/origin/ spiegeln.
-
-                  Das ist aber eine RefSpec-Syntax, kein echter Refname.
-				
-				
-				
-				*/
-				TODOGOON20260602;// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
-				
-				
-				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
-				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
-				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
-				String sFetchRefs = "refs/remotes/origin/" + sBranch;
-				
-				Ref objRef = git.getRepository().exactRef(sFetchRefs);
-				//System.out.println("Merge Ref = " + objRef.getName());
-				//System.out.println("ObjectId  = " + objRef.getObjectId().getName());
-
-	            MergeCommand mergeCommand = git.merge();
-	            mergeCommand.include(objRef);
-	            mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
-				objReturn = mergeCommand.call();
-				
-	        }catch (IOException ioe) {
-					ExceptionZZZ ez = new ExceptionZZZ(ioe);
+		main:{			
+			 try {
+					JgitUtilZZZ.debugForMerge(git);
+				} catch (Exception e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
 					throw ez;
-			} catch (InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			} catch (GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}						
+				}
+			 
+			//####################################################################
+			//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
+			//Merke: Per fetchResult
+			//Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+            //Vorschlag von chatGPT, direkt holen: 
+			//Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+                	 
+			//++++++++++++++++++++++++++++++++
+			//den richtigen Branch ansteuern
+			String sBranch = "master"; // oder dynamisch
+			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
+					
+			//!!! Hier sollen nur echte Branchnamen verwendet werden, also kein "*"
+//			if(sBranch.equals("*")) {
+//				ExceptionZZZ ez = new ExceptionZZZ("Not a valid branchname '*'", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+			
+			
+			//Problem: java.nio.file.InvalidPathException: Illegal char <*> 
+			/*refs/remotes/origin/*
+			  Das ist aber kein gültiger Git-Refname. Der Stern * ist in Ref-Namen nicht erlaubt. Intern versucht JGit daraus teilweise einen Path zu bilden, wodurch dann die Exception entsteht.
+			  
+			  Das * wird nur in RefSpecs verwendet, z.B.:
+				+refs/heads/*:refs/remotes/origin/*
+
+			  Das bedeutet:
+			   Alle Branches unter refs/heads/ nach refs/remotes/origin/ spiegeln.
+
+              Das ist aber eine RefSpec-Syntax, kein echter Refname.
+			
+			*/
+			
+			// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
+			// Aber wir geben nur den ersten zurück
+			if(sBranch.equals("*")) {
+//				List<String> listaBranch = JgitUtilZZZ.getRepositoryBranchesShortName(git);
+//				for(String sBranchTemp : listaBranch) {
+//					objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
+//					break;
+//				}
+				objReturn = JgitUtilZZZ.mergeWithResultFirstBranch(git);
+			}else {
+				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch);					
+			}					       			
+		}//end main:
+		return objReturn;
+	}
+	
+	/**	 			
+	 * @param git
+	 * @param sBranchIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 * 
+	 			Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				
+	 */
+	public static MergeResult mergeWithResultFirstBranch(Git git) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{			
+			 try {
+					JgitUtilZZZ.debugForMerge(git);
+				} catch (Exception e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
+			 
+			//####################################################################
+			//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
+			//Merke: Per fetchResult
+			//Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+            //Vorschlag von chatGPT, direkt holen: 
+			//Ref objRef = git.getRepository().exactRef("refs/remotes/origin/master");
+                	 
+			//++++++++++++++++++++++++++++++++
+			//den richtigen Branch ansteuern, hier also den ersten gefundenen.			 								
+			
+			// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
+			// Aber wir geben nur den ersten zurück
+			List<String> listaBranch = JgitUtilZZZ.getRepositoryBranchesShortName(git);
+			for(String sBranchTemp : listaBranch) {
+				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
+				break;
+			}							       		
 		}//end main:
 		return objReturn;
 	}
@@ -1321,6 +1448,67 @@ Repository existingRepo = new FileRepositoryBuilder()
 		}//end main:
 		return objReturn;
 	}
+	
+	/**
+	 * @param git
+	 * @param sBranch
+	 * @return
+	 * @throws ExceptionZZZ
+	 * 
+	 * 
+	 Problem: java.nio.file.InvalidPathException: Illegal char <*> 
+				  bei refs/remotes/origin/*
+				  Das ist aber kein gültiger Git-Refname. Der Stern * ist in Ref-Namen nicht erlaubt. Intern versucht JGit daraus teilweise einen Path zu bilden, wodurch dann die Exception entsteht.
+				  
+				  Das * wird nur in RefSpecs verwendet, z.B.:
+					+refs/heads/*:refs/remotes/origin/*
+
+				  Das bedeutet:
+				  Alle Branches unter refs/heads/ nach refs/remotes/origin/ spiegeln.
+
+                  Das ist aber eine RefSpec-Syntax, kein echter Refname.
+	 */
+	public static MergeResult mergeWithResultByBranchShortName(Git git, String sBranchIn) throws ExceptionZZZ {
+		MergeResult objReturn = null;
+		main:{
+			try {				
+				String sBranch = "master"; // oder dynamisch
+				if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
+								
+				//!!! Hier sollen nur echte Branchnamen verwendet werden, also kein "*"
+				if(sBranch.equals("*")) {
+					ExceptionZZZ ez = new ExceptionZZZ("Not a valid branchname '*'", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
+				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
+				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
+				String sFetchRefs = "refs/remotes/origin/" + sBranch;
+				
+				Ref objRef = git.getRepository().exactRef(sFetchRefs);
+				//System.out.println("Merge Ref = " + objRef.getName());
+				//System.out.println("ObjectId  = " + objRef.getObjectId().getName());
+		
+		        MergeCommand mergeCommand = git.merge();
+		        mergeCommand.include(objRef);
+		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
+				objReturn = mergeCommand.call();
+			 }catch (IOException ioe) {
+					ExceptionZZZ ez = new ExceptionZZZ(ioe);
+					throw ez;
+			} catch (InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			} catch (GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}		
+		}//end main:
+		return objReturn;
+	}
+	
 	
 	
 }
