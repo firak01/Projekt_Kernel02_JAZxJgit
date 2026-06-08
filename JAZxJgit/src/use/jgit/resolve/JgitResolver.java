@@ -78,6 +78,19 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
+				TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.
+				
+				
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
+				if(bLocalRepositoryConfigured) {
+					System.out.println("Lokales Repository erfolgreich konfiguriert");
+				}else {
+					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+				}
+				
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -106,13 +119,23 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 	}
 	
 	@Override
-	public boolean conflictit(String sFilePathTotal, String sComment) throws ExceptionZZZ {
+	public boolean conflictit(String sFilePathTotalIn, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			if(StringZZZ.isEmpty(sFilePathTotal)) {
+			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
 				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			String sFilePathTotal = null;
+			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathTotalIn);
+			if(bPathRelative) {
+				String sDirectoryRepo = this.getRepositoryLocalBase();
+				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepo, sFilePathTotalIn);
+			}else {
+				sFilePathTotal = sFilePathTotalIn;
+			}
+			
 			
 			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);

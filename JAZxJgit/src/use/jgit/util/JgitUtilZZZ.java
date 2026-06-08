@@ -1422,11 +1422,10 @@ Repository existingRepo = new FileRepositoryBuilder()
 			//den richtigen Branch ansteuern, hier also den ersten gefundenen.			 								
 			
 			// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
-			// Aber wir geben nur den ersten zurück
 			List<String> listaBranch = JgitUtilZZZ.getRepositoryBranchesShortName(git);
 			for(String sBranchTemp : listaBranch) {
 				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
-				break;
+				break; 	// Aber wir geben nur den ersten zurück
 			}							       		
 		}//end main:
 		return objReturn;
