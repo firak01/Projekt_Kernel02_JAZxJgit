@@ -14,6 +14,7 @@ import basic.zBasic.util.file.FileTextReaderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
 import use.jgit.AbstractJgitStarterCommit;
 import use.jgit.JgitStarterMain;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigResolverJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.tool.resolve.GitConflictResolverUtil;
@@ -83,7 +84,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
 				}else {

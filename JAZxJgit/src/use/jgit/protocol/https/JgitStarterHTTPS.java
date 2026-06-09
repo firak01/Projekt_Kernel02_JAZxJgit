@@ -63,6 +63,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);
 	}
 	
+	/* (non-Javadoc)
+	 * @see use.jgit.AbstractJgitStarter#getRepositoryTotalRemote()
+	 */
 	@Override
 	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
 		if( this.sRepositoryTotalRemote==null) {

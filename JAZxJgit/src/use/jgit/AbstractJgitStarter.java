@@ -30,6 +30,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
@@ -43,12 +44,10 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	
 	protected volatile String sConnectionType=null;
 
-	protected volatile String sRepositoryRemoteAlias=null;//die Section in der ini z.B. [origin]
 	
 	protected volatile String sRepositoryRemoteHost=null;
 	protected volatile String sRepositoryRemoteAccount=null;
 	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
-	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
 		
 
 	//### aus IJgitStarter
@@ -63,18 +62,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	}
 	
 	//++++++++++++++++++++++++++++
-	@Override
-	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
-		if(this.sRepositoryRemoteAlias==null) {
-			this.sRepositoryRemoteAlias = IJgitStarter.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
-		}
-		return this.sRepositoryRemoteAlias;
-	}
 
-	@Override
-	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ {
-		this.sRepositoryRemoteAlias = sRepositoryRemoteAlias;
-	}
 	
 	@Override
 	public String getRepositoryRemoteAccount() throws ExceptionZZZ {
@@ -140,15 +128,6 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	@Override
 	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ {
 		this.sRepositoryBaseRemote = sRepositoryBaseRemote;
-	}
-	
-	@Override
-	abstract public String getRepositoryTotalRemote() throws ExceptionZZZ;		
-		
-
-	@Override
-	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ {
-		this.sRepositoryTotalRemote = sRepositoryTotalRemote;
 	}
 	
 	@Override
@@ -362,7 +341,8 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			
 	 */
 	@Override
-	public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
+	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
+	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {

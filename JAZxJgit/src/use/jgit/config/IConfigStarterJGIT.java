@@ -51,9 +51,9 @@ public interface IConfigStarterJGIT extends IConfigJGIT{
 	public String readRepositoryRemoteHost() throws ExceptionZZZ;
 	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ;
 	
-	//Verwende das ueber diesen Alias definerte remote Repository
-	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
-	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
+//	//Verwende das ueber diesen Alias definerte remote Repository
+//	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
+//	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
 		
 	//Verwende den Accountnamen
 	public String readRepositoryRemoteAccount() throws ExceptionZZZ;

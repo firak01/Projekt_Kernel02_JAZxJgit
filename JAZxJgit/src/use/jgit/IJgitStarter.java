@@ -4,6 +4,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 
 public interface IJgitStarter extends IJgitStarterCommit {
@@ -16,8 +17,8 @@ public interface IJgitStarter extends IJgitStarterCommit {
 	//public String getRepositoryBaseLocal() throws ExceptionZZZ;
 	//public void setRepositoryBaseLocal(String sRepositoryBaseLocal) throws ExceptionZZZ;
 
-	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
-	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
+//	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
+//	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
 	
 	public String getRepositoryRemoteHost() throws ExceptionZZZ;
 	public void setRepositoryRemoteHost(String sRepositoryRemoteHost) throws ExceptionZZZ;
@@ -49,7 +50,8 @@ public interface IJgitStarter extends IJgitStarterCommit {
 	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
 	
 	//+++ Arbeiten mit dem Repository-Object, etc.
-	public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
+	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
+//	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ;
 	
 	
 	//+++ Arbeit mit dem GitObject, etc.

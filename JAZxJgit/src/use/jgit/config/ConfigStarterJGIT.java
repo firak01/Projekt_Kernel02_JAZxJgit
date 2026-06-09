@@ -198,30 +198,7 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 		}//end main:		
 		return bReturn;
 	}
-	
-	
-	//++++++++++++++++++++++++++++++++++++++++++++++++	
-	@Override
-	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("rra");
-			if(sReturn==null){
-				sReturn = this.getRepositoryRemoteAliasDefault();
-			}
-		}//end main:		
-		return sReturn;
-	}
-	@Override
-	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
-		return IConfigStarterJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
-	}
-	
-	
+		
 		
 		//++++++++++++++++++++++++++++++++++++++++++++++++
 	@Override

@@ -4,6 +4,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 
 public interface IJgitStarterCommit {
@@ -19,10 +20,16 @@ public interface IJgitStarterCommit {
 	public String getRepositoryLocalBase() throws ExceptionZZZ;
 	public void setRepositoryLocalBase(String sRepositoryBaseLocal) throws ExceptionZZZ;
 
+	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
+	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
+		
 	//+++ Errechnete Werte
 	public String getRepositoryLocalTotal() throws ExceptionZZZ;
 	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
 
+	public String getRepositoryTotalRemote() throws ExceptionZZZ;		
+	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ;
+	
 	//+++ Arbeit mit dem GitObject, etc.
 	public Git getGitObject() throws ExceptionZZZ;
 	public void setGitObject(Git git) throws ExceptionZZZ;
@@ -44,4 +51,9 @@ public interface IJgitStarterCommit {
 	
 	public String getCommentCommitDefault() throws ExceptionZZZ;
 	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ;
+	
+	//+++ Arbeiten mit dem Repository-Object, etc.
+	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
+	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ;
+		
 }

@@ -36,4 +36,8 @@ public interface IConfigJGIT extends IKernelConfigZZZ{
 	//... ein moeglicher Kommentar, z.B. für einen (notwendigen) Commit, auch nach dem Aufloesen des Merge-Konflikts
 	public String getCommentDefault() throws ExceptionZZZ;
 	public String readComment() throws ExceptionZZZ;
+	
+	//Verwende das ueber diesen Alias definerte remote Repository
+	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
+	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
 }
