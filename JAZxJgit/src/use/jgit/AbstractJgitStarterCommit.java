@@ -255,7 +255,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				
 				
 				System.out.println("Git-Repository verwendet folgende Remote URL (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteUrlByAlias +"'");
-				System.out.println("Git-Repository verwendet folgende Remote FETCH (gemaess Alias '"+ sRepositoryRemoteFetchByAlias + "'): '" + sRepositoryRemoteFetchByAlias +"'");
+				System.out.println("Git-Repository verwendet folgende Remote FETCH (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteFetchByAlias +"'");
 				
 				this.setRepositoryTotalRemote(sRepositoryRemoteUrlByAlias);
 			}

@@ -79,11 +79,9 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
-				TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.
-				
-				
 				//################################################
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
 				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
@@ -131,8 +129,8 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			String sFilePathTotal = null;
 			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathTotalIn);
 			if(bPathRelative) {
-				String sDirectoryRepo = this.getRepositoryLocalBase();
-				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepo, sFilePathTotalIn);
+				String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
+				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathTotalIn);
 			}else {
 				sFilePathTotal = sFilePathTotalIn;
 			}
@@ -185,14 +183,14 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
 				//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 					String sLog="Erfolgreiche Konfliktauflösung.\n"
-							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
-							  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
+							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+							  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
 					System.out.println(sLog);
 				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
 					String sLog="Erfolgreiche Konfliktauflösung.\n"
-							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
-							  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
+							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+							  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 					System.out.println(sLog);							
 				}else {
 					//Default
