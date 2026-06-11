@@ -145,7 +145,7 @@ public class JgitStarterMain implements IConstantZZZ{
 			System.out.println(System.getenv("sRRACZZZ"));
 			
 			
-			String sAction=null;
+			String sAction=null; String sComment=null;
 			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
 						
 			//Trotz Einbinden von  in pom.xml Fehlermeldung;
@@ -172,7 +172,13 @@ public class JgitStarterMain implements IConstantZZZ{
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			sAction = objConfig.readActionCommit();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			if(!StringZZZ.isEmpty(sAction)) {
+				listasAction.add(sAction);
+				
+				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+				sComment = objConfig.readComment();
+			}
+			
 			
 			sAction = objConfig.readActionFetch();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
@@ -181,7 +187,12 @@ public class JgitStarterMain implements IConstantZZZ{
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			sAction = objConfig.readActionCommitAndPush();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			if(!StringZZZ.isEmpty(sAction)) {
+				listasAction.add(sAction);
+				
+				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+				sComment = objConfig.readComment();
+			}
 			
 			if(listasAction.isEmpty()) {
 				ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -280,7 +291,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterSSH.pullit(objConfig);
 						break;
 					case "commit":
-						bReturn = objStarterSSH.commitit((IConfigStarterCommitJGIT) objConfig);						
+						bReturn = objStarterSSH.commitit((IConfigStarterCommitJGIT) objConfig, sComment);						
 						break;
 					case "fetch":
 						bReturn = objStarterSSH.fetchit(objConfig);
@@ -289,7 +300,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterSSH.pushit(objConfig);						
 						break;
 					case "commitAndPush":
-						bReturn = objStarterSSH.commitAndPushit(objConfig);						
+						bReturn = objStarterSSH.commitAndPushit(objConfig, sComment);						
 						break;
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -347,7 +358,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterHTTPS.pullit(objConfig);
 						break;						
 					case "commit":
-						bReturn = objStarterHTTPS.commitit((IConfigStarterCommitJGIT) objConfig);						
+						bReturn = objStarterHTTPS.commitit((IConfigStarterCommitJGIT) objConfig, sComment);						
 						break;	
 					case "fetch":
 						bReturn = objStarterHTTPS.fetchit(objConfig);
@@ -356,7 +367,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterHTTPS.pushit(objConfig);						
 						break;
 					case "commitAndPush":
-						bReturn = objStarterHTTPS.commitAndPushit(objConfig);						
+						bReturn = objStarterHTTPS.commitAndPushit(objConfig, sComment);						
 						break;
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());

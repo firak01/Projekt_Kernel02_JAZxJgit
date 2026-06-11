@@ -40,12 +40,14 @@ public interface IJgitStarterCommit {
 	public void addFileUntracked() throws ExceptionZZZ;
 	public void addFileUntracked(Git git) throws ExceptionZZZ;
 	
+	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
 	public boolean configureGit() throws ExceptionZZZ;	
 	
 	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
 	public boolean statusit(Git git) throws ExceptionZZZ;
 	
 	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;	
+	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sComment) throws ExceptionZZZ;
 	public boolean commitit(Git git) throws ExceptionZZZ;
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	

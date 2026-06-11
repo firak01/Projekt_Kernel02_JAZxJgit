@@ -423,6 +423,10 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	public abstract boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 
 	@Override
+	public abstract boolean commitAndPushit(IConfigStarterJGIT objConfig, String sComment) throws ExceptionZZZ;
+
+	
+	@Override
 	public abstract boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 
 	

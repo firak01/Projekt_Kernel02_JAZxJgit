@@ -31,7 +31,7 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStarterJGIT{
+public class ConfigStarterJGIT extends AbstractConfigStarterCommitJGIT implements IConfigStarterJGIT{
 	
 	public ConfigStarterJGIT() throws ExceptionZZZ{
 		super();
@@ -69,21 +69,47 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 	public String getCommentDefault() throws ExceptionZZZ {
 		return "";
 	}
-		
-	//### aus IConfigStarterGIT
-	@Override
-	public String readActionStatus() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("status");			
-		}//end main:		
-		return sReturn;
-	}
 	
+	//### aus IConfigStarterCommitJGIT
+//	@Override
+//	public String readActionStatus() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("status");			
+//		}//end main:		
+//		return sReturn;
+//	}
+//	@Override
+//	public String readActionCommit() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("commit");			
+//		}//end main:		
+//		return sReturn;
+//	}
+	
+//	@Override
+//	public String readActionFetch() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("fetch");			
+//		}//end main:		
+//		return sReturn;
+//	}
+	
+	//### aus IConfigStarterGIT
 	@Override
 	public String readActionPull() throws ExceptionZZZ {
 		String sReturn = null;
@@ -93,32 +119,6 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("pull");			
-		}//end main:		
-		return sReturn;
-	}
-
-	@Override
-	public String readActionCommit() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("commit");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String readActionFetch() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("fetch");			
 		}//end main:		
 		return sReturn;
 	}

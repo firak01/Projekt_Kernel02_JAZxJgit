@@ -333,20 +333,20 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				}
 				
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
-				if(bLocalRepositoryConfigured) {
-					System.out.println("Lokales Repository erfolgreich konfiguriert");
-				}else {
-					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-				}
-				
-				//braucht man das hier???
-				//Ja, zum initialisieren des Git-Objects
+//				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
+//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+//				if(bLocalRepositoryConfigured) {
+//					System.out.println("Lokales Repository erfolgreich konfiguriert");
+//				}else {
+//					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+//				}
+//				
+//				//braucht man das hier???
+//				//Ja, zum initialisieren des Git-Objects
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit
-				boolean bSuccess = this.configureGit();
+				boolean bSuccess = this.configureGit(objConfig);
 				if(bSuccess) {
 					System.out.println("Git erfolgreich konfiguriert");
 				}else {
@@ -378,6 +378,52 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	
 	//####################################################################
 	//###### COMMIT ######################################################
+	 
+	//### aus IJgitStarterCommit
+	@Override
+	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+		
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den commit
+			Git git = this.getGitObject();
+			bReturn = this.commitit(git);
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sComment) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+		
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Finde geaenderte und neue Dateien fuer den commit
+			Git git = this.getGitObject();
+			bReturn = this.commitit(git, sComment);
+		}//end main:
+		return bReturn;
+	}
+	
 	@Override
 	public boolean commitit(Git git) throws ExceptionZZZ {
 		return this.commitit(git, null);
@@ -514,10 +560,10 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		boolean bReturn = false;
 		main:{
 			try {
-				//TODOGOON20260611; Verwende ggfs. dies wieder...
-				/*
+				//TODOGOON20260611; Verwende ggfs. dies wieder...				
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
+				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.			
+				/*
 				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
@@ -525,8 +571,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
 					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
 				}
-				*/
-				
+				*/				
 				
 				//A) Lokal
 				//a) Lokales Basis Verzeichnis
@@ -556,7 +601,10 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 					throw ez;				
 				}
 				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
-				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				
+//				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
+				
 				
 				//++++++++++ Erst das lokale Git-Repository initialisieren
 				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
@@ -587,6 +635,70 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		}//end main:
 		return bReturn;
 	}
+	
+	//#######################################
+		@Override
+		public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
+			boolean bReturn = false;
+			main:{
+				try {			
+					//### Soll das lokale Repository konfiguriert haben.			
+					//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
+					boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+					if(bLocalRepositoryConfigured) {
+						System.out.println("Lokales Repository erfolgreich konfiguriert");
+					}else {
+						System.out.println("Lokales Repository NICHT einzeln erfolgreich konfiguriert");
+						//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+					}
+								
+					//++++++++++ Erst das lokale Git-Repository initialisieren
+					//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
+					String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();				
+					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalTotal)) {
+						String sProject = this.getRepositoryProject();					
+						ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis für das Projekt '" + sProject + "'nicht definiert.", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;				
+					}else {
+						System.out.println("Lokales Repository als Gesamtstring vorhanden: '" + sDirectoryRepositoryLocalTotal + "'");
+					}
+					
+					//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+					//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
+					
+					File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
+					if(!objFileDirTotal.exists()) {
+						ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;				
+					}
+					
+					InitCommand gitCommandInit = Git.init();
+					gitCommandInit.setDirectory(objFileDirTotal);
+					
+					Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+					this.setGitObject(git);
+					System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
+					//##############################################
+					//Weil das was mit dem Protocol zu tun hat, hier nicht machen
+//													
+//					//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+//					//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
+//					//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
+//					//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
+//					String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
+//					if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
+//						String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+//						JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+//					}
+					bReturn = true;
+					//######################################
+				}catch(GitAPIException gae) {
+					ExceptionZZZ ez = new ExceptionZZZ(gae);
+					throw ez;
+				}
+			}//end main:
+			return bReturn;
+		}
 	
 	//##################################################
 	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
