@@ -19,6 +19,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigResolverJGIT;
 import use.jgit.config.ConfigStarterJGIT;
+import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.resolve.JgitResolver;
@@ -169,6 +170,9 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 			//+++++++++++++++++++++++++++++++++
 			//actions
+			sAction = objConfig.readActionStatus();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
@@ -253,6 +257,9 @@ public class JgitResolverMain implements IConstantZZZ{
 			boolean bReturn = false;
 			for(String sActionTemp : listasAction) {				
 				switch(sActionTemp) {
+				case "status":
+					bReturn = objResolver.statusit(objConfig);
+					break;
 				case "conflict":
 					bReturn = objResolver.conflictit(objConfig);					
 					break;

@@ -18,6 +18,7 @@ import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigStarterJGIT;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -279,7 +280,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterSSH.pullit(objConfig);
 						break;
 					case "commit":
-						bReturn = objStarterSSH.commitit(objConfig);						
+						bReturn = objStarterSSH.commitit((IConfigStarterCommitJGIT) objConfig);						
 						break;
 					case "fetch":
 						bReturn = objStarterSSH.fetchit(objConfig);
@@ -346,7 +347,7 @@ public class JgitStarterMain implements IConstantZZZ{
 						bReturn = objStarterHTTPS.pullit(objConfig);
 						break;						
 					case "commit":
-						bReturn = objStarterHTTPS.commitit(objConfig);						
+						bReturn = objStarterHTTPS.commitit((IConfigStarterCommitJGIT) objConfig);						
 						break;	
 					case "fetch":
 						bReturn = objStarterHTTPS.fetchit(objConfig);

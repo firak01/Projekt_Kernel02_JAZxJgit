@@ -16,6 +16,7 @@ import use.jgit.AbstractJgitStarterCommit;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigResolverJGIT;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.tool.resolve.GitConflictResolverUtil;
 import use.jgit.util.JgitUtilZZZ;
@@ -329,45 +330,44 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		    git.close();
 			
 			
-		//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN, absichtlich hier nicht den PUSH durchführen, 
-		//                                            das wären für den Resolver zuviele weitere Parameter/Methoden
-		if(bReturn=true) {
-			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-			//if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
-				String sLog="Erfolgreiche Konfliktauflösung.\n"
-						  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
-						  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt.";
-				System.out.println(sLog);
-			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-			//}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
-				String sLog="Erfolgreiche Konfliktauflösung.\n"
-						  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
-						  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Erst noch einen PUSH machen.";
-				System.out.println(sLog);					
-			}else {
-				//Default
-				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN, absichtlich hier nicht den PUSH durchführen, 
+			//                                            das wären für den Resolver zuviele weitere Parameter/Methoden
+			if(bReturn=true) {
+				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
+				//if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
+					String sLog="Erfolgreiche Konfliktauflösung.\n"
+							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+							  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt.";
+					System.out.println(sLog);
+				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
+				//}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
+					String sLog="Erfolgreiche Konfliktauflösung.\n"
+							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+							  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Erst noch einen PUSH machen.";
+					System.out.println(sLog);					
+				}else {
+					//Default
+					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+			}
+	
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}
-		}
-
-		}catch(IllegalStateException ie) {
-			ExceptionZZZ ez = new ExceptionZZZ(ie);
-			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
-		}
 		}//end main:
 		return bReturn;
 	}
 
-	
-	//### aus IJgitStarterCommit
 	//##############################################################################
+	//### aus IJgitStarterCommit
 	@Override
-	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try{

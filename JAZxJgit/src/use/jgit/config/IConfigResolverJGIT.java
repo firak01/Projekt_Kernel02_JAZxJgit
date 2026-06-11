@@ -3,7 +3,7 @@ package use.jgit.config;
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 
-public interface IConfigResolverJGIT extends IConfigJGIT{
+public interface IConfigResolverJGIT extends IConfigStarterCommitJGIT{
 
 	//#####################################################################
 	//####### Konfiguration der Argumgentuebergabe von aussen an das Program (s. GetOptZZZ).
@@ -11,7 +11,7 @@ public interface IConfigResolverJGIT extends IConfigJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4RESOLVER_DEFAULT="conflict|conflictCommit|rl:project:filepath:comment."; 
+	final static String sPATTERN4RESOLVER_DEFAULT="status|conflict|conflictCommit|rl:project:filepath:comment."; 
 	                                                //Aktionen;
 													//conflict = löse in einer angegebenen die angezeigten Konflikte automatisch
 	                                                //           Konflikte werden in einer Datei mit <<<< oder >>>> angezeigt, etc.

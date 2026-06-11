@@ -31,90 +31,64 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigResolverJGIT extends AbstractConfigStarterCommitJGIT implements IConfigResolverJGIT{
-	private static final long serialVersionUID = 5176350334837106190L;
-
-	public ConfigResolverJGIT() throws ExceptionZZZ{
+public abstract class AbstractConfigStarterCommitJGIT extends AbstractConfigJGIT implements IConfigStarterCommitJGIT{
+	
+	public AbstractConfigStarterCommitJGIT() throws ExceptionZZZ{
 		super();
 	}
-	public ConfigResolverJGIT(String[] saArg) throws ExceptionZZZ {
+	public AbstractConfigStarterCommitJGIT(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 			
-	@Override
-	public String getPatternStringDefault() {
-		return IConfigResolverJGIT.sPATTERN_DEFAULT;
-	}
 	
-	@Override
-	public String[] getArgumentArrayDefault() {
-		String[] saArg = new String[8];
-		saArg[0] = "-conflict";
-		saArg[1] = "-filepath:";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
-		saArg[6] = "-z";
-		saArg[7] = this.getConfigFlagzJsonDefault();
-	
-		return saArg;
-	}
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 		
 	
 	//### aus IConfigJGIT
-	@Override
-	public String getCommentDefault() throws ExceptionZZZ {
-		return "Konflikt manuel aufgelöst.";
-	}
+	
 		
 	//### aus IConfigStarterGIT
 	@Override
-	public String readActionConflict() throws ExceptionZZZ {
+	public String readActionStatus() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("conflict");			
-		}//end main:		
-		return sReturn;
-	}	
-	
-	@Override
-	public String readActionConflictCommit() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("conflictCommit");			
-		}//end main:		
-		return sReturn;
-	}	
-	
-	
-	@Override
-	public String readFilePath() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sFilePath = objOpt.readValue("filepath");
-			if(StringZZZ.isEmpty(sFilePath)) {
-				sFilePath = this.getFilePathDefault();				
-			}
-			
-			sReturn = sFilePath;
+			sReturn = objOpt.readValue("status");			
 		}//end main:		
 		return sReturn;
 	}
 	
-	@Override 
-	public String getFilePathDefault() throws ExceptionZZZ{
-		return "";
+	
+	@Override
+	public String readActionCommit() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("commit");			
+		}//end main:		
+		return sReturn;
 	}
+	
+	@Override
+	public String readActionFetch() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("fetch");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
 }

@@ -31,6 +31,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
@@ -298,7 +299,85 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		this.sRepositoryRemoteAlias = sRepositoryRemoteAlias;
 	}
 	
-	//#######################################################
+	
+	//####################################################################
+	//###### STATUS ######################################################
+	
+	//### aus IJgitStarterCommit
+	@Override
+	public boolean statusit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//Finde geaenderte und neue Dateien fuer den Commit			
+				System.out.println("STATUS: ");		
+				this.printStatus(git);
+				
+				bReturn = true;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try{
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+				if(bLocalRepositoryConfigured) {
+					System.out.println("Lokales Repository erfolgreich konfiguriert");
+				}else {
+					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+				}
+				
+				//braucht man das hier???
+				//Ja, zum initialisieren des Git-Objects
+				//+++++++++++++++++++++++++++++++
+				//Konfiguriere JGit
+				boolean bSuccess = this.configureGit();
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+			
+				
+				//+++++++++++++++++++++++++++++++
+				//Finde geaenderte und neue Dateien fuer den commit
+				Git git = this.getGitObject();
+				boolean bSuccessStatus = this.statusit(git);
+				if(bSuccessStatus) {
+					System.out.println("STATUS REQUEST: SUCCESSFUL");				
+					bReturn = true;
+				}else {
+					System.out.println("STATUS REQUEST: FAILED");				
+					bReturn = false;
+				}
+			
+			    git.close();
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;		
+			}
+		}//end main:
+		return bReturn;
+	}
+	
+	//####################################################################
+	//###### COMMIT ######################################################
 	@Override
 	public boolean commitit(Git git) throws ExceptionZZZ {
 		return this.commitit(git, null);
@@ -435,6 +514,20 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		boolean bReturn = false;
 		main:{
 			try {
+				//TODOGOON20260611; Verwende ggfs. dies wieder...
+				/*
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+				if(bLocalRepositoryConfigured) {
+					System.out.println("Lokales Repository erfolgreich konfiguriert");
+				}else {
+					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+				}
+				*/
+				
+				
 				//A) Lokal
 				//a) Lokales Basis Verzeichnis
 				String sDirectoryRepositoryLocal = this.getRepositoryLocalBase();

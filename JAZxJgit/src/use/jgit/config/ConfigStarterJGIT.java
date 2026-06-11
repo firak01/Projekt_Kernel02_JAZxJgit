@@ -72,6 +72,19 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 		
 	//### aus IConfigStarterGIT
 	@Override
+	public String readActionStatus() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("status");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
 	public String readActionPull() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
@@ -269,6 +282,4 @@ public class ConfigStarterJGIT extends AbstractConfigJGIT implements IConfigStar
 		}//end main:		
 		return sReturn;
 	}
-	
-	
 }

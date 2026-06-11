@@ -5,6 +5,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.config.IConfigJGIT;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 
 public interface IJgitStarterCommit {
@@ -41,7 +42,10 @@ public interface IJgitStarterCommit {
 	
 	public boolean configureGit() throws ExceptionZZZ;	
 	
-	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;	
+	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
+	public boolean statusit(Git git) throws ExceptionZZZ;
+	
+	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;	
 	public boolean commitit(Git git) throws ExceptionZZZ;
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	

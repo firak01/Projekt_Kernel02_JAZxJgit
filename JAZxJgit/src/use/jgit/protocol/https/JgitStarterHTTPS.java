@@ -17,8 +17,10 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.AbstractJgitStarter;
+import use.jgit.AbstractJgitStarterCommit;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
@@ -444,11 +446,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 	
 	
+	
+	
 			
 	//####################################################################
 	//###### COMMIT ######################################################
 	@Override
-	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {	
+	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 		try {

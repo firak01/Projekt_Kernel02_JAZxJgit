@@ -11,7 +11,7 @@ public interface IConfigStarterJGIT extends IConfigJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_DEFAULT="pull|commit|fetch|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
+	final static String sPATTERN4GIT_DEFAULT="status|pull|commit|fetch|push|commitAndPush|ssh|https|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
 													  //Aktionen, ggfs. kombinierbar, aber meist nur 1 pro start:
 	                                                  //                pull, commit, fetch, push, commitAndPush 
 													  //ConnectionType: HTTPS oder SSH
@@ -31,7 +31,7 @@ public interface IConfigStarterJGIT extends IConfigJGIT{
 	final static String sPATTERN_DEFAULT= sPATTERN4GIT_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
-
+	public String readActionStatus() throws ExceptionZZZ;
 	public String readActionPull() throws ExceptionZZZ;
 	public String readActionCommit() throws ExceptionZZZ;
 	public String readActionFetch() throws ExceptionZZZ;

@@ -21,6 +21,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarter;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
@@ -410,7 +411,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	//##############################
 	//###### COMMIT ################
 	@Override
-	public boolean commitit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
