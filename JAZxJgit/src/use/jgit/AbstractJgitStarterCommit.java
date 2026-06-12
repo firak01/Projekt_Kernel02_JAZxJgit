@@ -187,8 +187,56 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 			
 	 */
-	@Override
+	
+		
+	/* (non-Javadoc)
+	 * @see use.jgit.IJgitStarter#configureRepositoryLocal(use.jgit.config.IConfigStarterJGIT)
+	 * 
+	 * 
+	 * Fehlerhaft wäre
+				
+					[remote "origin"]
+						url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+						fetch = +refs/heads/*:refs/remotes/origin/*
+					[branch "master"]
+						remote = origin
+						merge = refs/heads/master
+	    Weil es remotes/origin nicht gibt.... vermutlich wurde hier fehlerhaft der Section-Alias als Branch verwendet.
+	    
+	    
+	   Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+			
+	 */
 	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
+	@Override
 	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
@@ -333,19 +381,11 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				}
 				
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-//				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
-//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
-//				if(bLocalRepositoryConfigured) {
-//					System.out.println("Lokales Repository erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//				}
-//				
-//				//braucht man das hier???
-//				//Ja, zum initialisieren des Git-Objects
+
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit
+				//braucht man das hier, man ruft doch nur den Status ab???
+				//Ja, zum initialisieren des Git-Objects				
 				boolean bSuccess = this.configureGit(objConfig);
 				if(bSuccess) {
 					System.out.println("Git erfolgreich konfiguriert");
@@ -382,32 +422,15 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	//### aus IJgitStarterCommit
 	@Override
 	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-		
-			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit(objConfig);
-			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
-			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
-				break main;
-			}
-			
-			//+++++++++++++++++++++++++++++++
-			//Finde geaenderte und neue Dateien fuer den commit
-			Git git = this.getGitObject();
-			bReturn = this.commitit(git);
-		}//end main:
-		return bReturn;
+		return this.commitit(objConfig, null);
 	}
 	
 	@Override
-	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sComment) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sCommentIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 		
-			//Konfiguriere JGit für HTTPS
+			//Konfiguriere JGit
 			boolean bSuccess = this.configureGit(objConfig);
 			if(bSuccess) {
 				System.out.println("Git erfolgreich konfiguriert");
@@ -416,10 +439,13 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				break main;
 			}
 			
+			String sComment = objConfig.readComment(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 
+			this.setCommentCommit(sComment);
+						
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
 			Git git = this.getGitObject();
-			bReturn = this.commitit(git, sComment);
+			bReturn = this.commitit(git, sCommentIn);
 		}//end main:
 		return bReturn;
 	}
@@ -560,9 +586,10 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 		boolean bReturn = false;
 		main:{
 			try {
-				//TODOGOON20260611; Verwende ggfs. dies wieder...				
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.			
+				//Verwende ggfs. dies wieder...				
+				//ABER: HIER GIBT ES KEIN OBJEKT IConfigGIT
+				
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen							
 				/*
 				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {

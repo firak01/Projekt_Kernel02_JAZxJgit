@@ -45,7 +45,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		super();			
 	}
 
-	
 	//### aus IJgitStarter
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
@@ -408,126 +407,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		return bReturn;
 	}
 
-//	//##############################
-//	//###### COMMIT ################
-//	@Override
-//	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
-//		boolean bReturn = false;
-//		main:{
-//			try {
-//				if(objConfig==null) {
-//					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//							
-//				//################################################
-//				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
-////				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-////				if(bLocalRepositoryConfigured) {
-////					System.out.println("Lokales Repository erfolgreich konfiguriert");
-////				}else {
-////					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-////					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-////				}
-//								
-//				//######################################################################################
-//				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
-////Braucht man nicht beim Commit				
-////				String sConnectionTypeIn = objConfig.readConnectionType();
-////				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-////					if(bLocalRepositoryConfigured) {
-////						//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
-////						String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
-////						if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-////							ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-////							throw ez;
-////						}
-////						
-////						sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
-////					}else {
-////						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-////						throw ez;
-////					}
-////				}
-////				
-////			
-////				String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
-////				if(StringZZZ.isEmpty(sRepositoryRemoteHost)){
-////					ExceptionZZZ ez = new ExceptionZZZ("Hostname des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-////					throw ez;
-////				}
-////				
-////				String sRepositoryRemoteAccount = objConfig.readRepositoryRemoteAccount();
-////				if(StringZZZ.isEmpty(sRepositoryRemoteAccount)){
-////					ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-////					throw ez;
-////				}
-//				
-//				String sComment = objConfig.readComment();
-//				this.setCommentCommit(sComment);
-//				
-//				//+++++++++++++++++++++++
-////Braucht man nicht beim Commit
-////				this.setConnectionType(sConnectionTypeIn);
-//				this.setRepositoryRemoteHost(sRepositoryRemoteHost);
-//				this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
-//								
-//				
-//				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
-//				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
-//				
-//				//######################################################
-//				//Konfiguriere JGit für SSH
-//				//boolean bSuccessConfigureGit = this.configureGit();
-//				
-//				//################################################
-//				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen	
-//				boolean bSuccessConfigureGit = this.configureGit(objConfig);
-//				if(bSuccessConfigureGit) {
-//					System.out.println("Git erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Git NICHT erfolgreich konfiguriert");
-//					break main;
-//				}
-//							
-//				//+++++++++++++++++++++++++++++++
-//				//Finde geaenderte und neue Dateien fuer den commit
-//				Git git = this.getGitObject();
-//				boolean bSuccessCommit = this.commitit(git);
-//		        if(bSuccessCommit) {
-//		        	System.out.println("STATUS AFTER COMMIT: SUCCESSFULL");
-//		        	this.printStatus(git);
-//		        	bReturn = true;
-//		        }else {
-//		        	System.out.println("STATUS AFTER COMMIT: FAILED");
-//		        	this.printStatus(git);
-//		        	bReturn = false;
-//		        }
-//
-//			    git.close();
-//			    
-//	        //###############################################################	  
-//			}catch(TransportException tex) {
-//				ExceptionZZZ ez = new ExceptionZZZ(tex);
-//				throw ez;	
-//			}catch(IllegalStateException ie) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ie);
-//				throw ez;
-//			}catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			}
-//		}//end main:
-//		return bReturn;
-//	}	
-	
 		
-	//##############################
-	//###### PUSH #################
+	//################################################################
+	//###### CommitAndPush ###########################################
 
 	@Override
 	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
@@ -535,7 +417,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	}
 	
 	@Override
-	public boolean commitAndPushit(IConfigStarterJGIT objConfig, String sComment) throws ExceptionZZZ {	
+	public boolean commitAndPushit(IConfigStarterJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 			try {
@@ -608,11 +490,14 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					System.out.println("Git NICHT erfolgreich konfiguriert");
 					break main;
 				}
-							
+					
+				String sComment = objConfig.readComment(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 
+				this.setCommentCommit(sComment);
+				
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git, sComment);
+				boolean bSuccessCommit = this.commitit(git, sCommentIn);
 				if(bSuccessCommit) {
 					System.out.println("commit erfolgreich");
 				}else {
@@ -681,36 +566,24 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					throw ez;
 				}
 							
-				//################################################
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-				if(bLocalRepositoryConfigured) {
-					System.out.println("Lokales Repository erfolgreich konfiguriert");
-				}else {
-					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-				}
-								
-				//######################################################################################
-				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
-				String sConnectionTypeIn = objConfig.readConnectionType();
-				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-					if(bLocalRepositoryConfigured) {
-						//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
-						String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
-						if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-							ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-							throw ez;
-						}
-						
-						sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
-					}else {
-						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-				}
 				
-			
+				//######################################################
+				//Konfiguriere JGit für SSH
+				boolean bSuccessConfigureGit = this.configureGit((IConfigStarterCommitJGIT) objConfig);
+				if(bSuccessConfigureGit) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+					
+				//#####################################################################################
+				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//######################################################################################
+				
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen	
 				String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
 				if(StringZZZ.isEmpty(sRepositoryRemoteHost)){
 					ExceptionZZZ ez = new ExceptionZZZ("Hostname des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -722,8 +595,26 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-	
 				
+				
+				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
+				String sConnectionTypeIn = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
+					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
+					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
+						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+					
+					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+				}
+				//Falls immer noch leer, Fehler!
+				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+					
 				//+++++++++++++++++++++++								
 				this.setConnectionType(sConnectionTypeIn);
 				this.setRepositoryRemoteHost(sRepositoryRemoteHost);
@@ -737,24 +628,23 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
-				//######################################################
-				//Konfiguriere JGit für SSH
-				boolean bSuccessConfigureGit = this.configureGit();
-				if(bSuccessConfigureGit) {
-					System.out.println("Git erfolgreich konfiguriert");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
-					break main;
-				}
+//				//######################################################
+//				//Konfiguriere JGit für SSH
+//				boolean bSuccessConfigureGit = this.configureGit();
+//				if(bSuccessConfigureGit) {
+//					System.out.println("Git erfolgreich konfiguriert");
+//				}else {
+//					System.out.println("Git NICHT erfolgreich konfiguriert");
+//					break main;
+//				}
 							
 				//+++++++++++++++++++++++++++++++++++
 		        //Führe den Push durch
-				Git git = this.getGitObject();
-		        
 		        //a) Zugriff sicherstellen
 		        //   Das passiert durch die lokalen ssh-id Dateien
 		        
 		        //b) Mache den push	
+				Git git = this.getGitObject();				
 		        bReturn = this.pushit(git);
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
@@ -782,7 +672,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
-			    bReturn = true;
 	        //###############################################################	  
 			}catch(TransportException tex) {
 				ExceptionZZZ ez = new ExceptionZZZ(tex);
@@ -830,10 +719,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 
 					objAnalyseResult.printReport();
 				}
-				// ############################################################
 				
-				
-				//###############################################################
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
 				throw ez;
@@ -1020,7 +906,4 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		}//end main:
 		return bReturn;
 	}
-
-
-	
 }

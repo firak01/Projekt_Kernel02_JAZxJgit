@@ -221,20 +221,20 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
+//				
+//				String sRepositoryLocalBase = objConfig.readRepositoryLocal();//darf theoretisch leer sein
+//				this.setRepositoryLocalBase(sRepositoryLocalBase);
+//				String sRepositoryProject = objConfig.readRepositoryProjectName(); //darf theoretisch leer sein
+//				this.setRepositoryProject(sRepositoryProject);
+//				
+//				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
+//				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
+//				String sComment = objConfig.readComment();
+//				this.setCommentCommit(sComment);
 				
-				String sRepositoryLocalBase = objConfig.readRepositoryLocal();//darf theoretisch leer sein
-				this.setRepositoryLocalBase(sRepositoryLocalBase);
-				String sRepositoryProject = objConfig.readRepositoryProjectName(); //darf theoretisch leer sein
-				this.setRepositoryProject(sRepositoryProject);
 				
-				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
-				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
-				String sComment = objConfig.readComment();
-				this.setCommentCommit(sComment);
-				
-				
-				//Konfiguriere JGit für HTTPS							
-				boolean bSuccess = this.configureGit();
+				//Konfiguriere JGit						
+				boolean bSuccess = this.configureGit(objConfig);
 				if(bSuccess) {
 					System.out.println("Git erfolgreich konfiguriert");
 				}else {
@@ -243,6 +243,12 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				}
 				
 				//Finde geaenderte und neue Dateien fuer den commit
+//				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
+				String sRepositoryLocalBase = this.getRepositoryLocalBase();
+				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
+				String sComment = objConfig.readComment();
+				this.setCommentCommit(sComment);
+				
 				Git git = this.getGitObject();				
 				boolean bSuccessConflict = this.conflictCommitit(git, sFilePathTotal, sComment);
 				if(bSuccessConflict) {

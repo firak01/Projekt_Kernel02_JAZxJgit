@@ -139,9 +139,11 @@ public class JgitUtilSSH implements IConstantZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);			
+
 			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
@@ -388,28 +390,37 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	/** Z.B.  von git@github.com:firak01
+	/** Z.B.  von ssh://git@github.com/firak01/repo.git
 	 * @param sRepositoryRemoteUrlSSH
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String getHostFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+	public static String getHostFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
 			
-			sReturn = StringZZZ.mid(sRepositoryRemoteUrlSSH, "@", ":");
+			sReturn = UrlLogicZZZ.getHost(sRepositoryRemoteUrlHTTPS);
 		}//end main:
 		return sReturn;
 	}
 	
 	/** Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git 
+	 *       von https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	 * @param sRepositoryRemoteUrlHTTPS
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
 	public static String getProjectFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
-		return JgitUtilZZZ.getProjectFromUrl(sRepositoryRemoteUrlSSH);
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			
+			String sUrlWithoutEnding = StringZZZ.stripRight(sRepositoryRemoteUrlSSH, ".git");
+			String sProject = StringZZZ.right(sUrlWithoutEnding, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = sProject;
+		}//end main:
+		return sReturn;
 	}
 	
 	/** Z.B.  von git@github.com:firak01
@@ -417,30 +428,38 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String getProtocolFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+	public static String getProtocolFromUrl(String sRepositoryRemoteUrl) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrl)) break main;
 			
-			sReturn = StringZZZ.left(sRepositoryRemoteUrlSSH+"@", "@");
+			sReturn = UrlLogicZZZ.getProtocol(sRepositoryRemoteUrl);
+		
 		}//end main:
 		return sReturn;
 	}
 	
 	
-	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	/** Z.B.  von Z.B. von ssh://git@github.com/firak01/repo.git
 	 * @param sRepositoryRemoteUrlSSH
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String getUrlPartFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+	public static String getUrlPartFromUrl(String sRepositoryRemoteUrl) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
-			
-			String sUrlSSHWithoutProtocol = StringZZZ.right("@" + sRepositoryRemoteUrlSSH, "@");
-			String sUrlSSHWithoutProtocolAndProject = StringZZZ.left(sUrlSSHWithoutProtocol + UrlLogicZZZ.sURL_SEPARATOR_PATH,UrlLogicZZZ.sURL_SEPARATOR_PATH );
-			sReturn = sUrlSSHWithoutProtocolAndProject;			
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrl)) break main;
+				
+				//String sUrlPartDomainFromHttpsRepo =StringZZZ.right("@" + sUrlHTTPS, "@");				
+				/////sUrlPartDomainFromHttpsRepo = StringZZZ.left(sUrlPartDomainFromHttpsRepo + ":", ":");				
+				////String sUrlPartRepoFromHttpsRepo = StringZZZ.right(":" + sUrlHTTPS, ":");				
+				////sReturn = sUrlPartDomainFromHttpsRepo + "/" + sUrlPartRepoFromHttpsRepo;
+				
+			sReturn = UrlLogicZZZ.getUrlWithoutParameter(sRepositoryRemoteUrl);
+				
+			String sUrlPartDomainFromHttpsRepo = UrlLogicZZZ.getHost(sRepositoryRemoteUrl); 
+			String sUrlPartRepoFromHttpsRepo = UrlLogicZZZ.getPath(sReturn); 
+			sReturn = sUrlPartDomainFromHttpsRepo + sUrlPartRepoFromHttpsRepo;
 		}//end main:
 		return sReturn;
 	}
@@ -646,7 +665,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
 				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
 				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 				System.out.println("Url für die Suche nach dem RepositoryAlias. Remote: " + sUrlRepoRemote);
 				
 				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.

@@ -124,7 +124,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	}
 	
 	
-	public static CredentialsProvider createCredentialsProviderByToken(Git git, String sPAT) {
+	public static CredentialsProvider createCredentialsProviderByToken(String sPAT) {
 		//aus Eclipse-Push Konfiguration:
 				//entspricht dem Github - Projekt - SSH
 				//git@github.com:firak01/HIS_QISSERVER_FGL.git
@@ -212,7 +212,15 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @throws ExceptionZZZ
 	 */
 	public static String getProjectFromUrl(String sRepositoryRemoteUrlHTTPS) throws ExceptionZZZ{
-		return JgitUtilZZZ.getProjectFromUrl(sRepositoryRemoteUrlHTTPS);
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
+			
+			String sUrlWithoutEnding = StringZZZ.stripRight(sRepositoryRemoteUrlHTTPS, ".git");
+			String sProject = StringZZZ.right(sUrlWithoutEnding, UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			sReturn = sProject;
+		}//end main:
+		return sReturn;
 	}
 	
 	
@@ -1168,17 +1176,28 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	
 	/**
 	 * Berechne die Remote Url - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
+	 * https:///firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	 * ZUM EINSATZ BEIM FETCH
 	 */
 	public static String computeRepositoryUrlHTTPS_forFetch(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
-			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
-			//sollte identisch sein... this.getRepositoryRemoteAccount();
+//			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+//			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+//			//sollte identisch sein... this.getRepositoryRemoteAccount();
+//			
+//			//original url mit Token, wie beim push arbeiten				
+//			sReturn = "https"+ UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;
 			
-			//original url mit Token, wie beim push arbeiten				
-			sReturn = "https"+ UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL +sAccountFromRepo+":" + sPAT + "@" + sUrlPartFromRepo;			
+			
+			String sHostIn = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);//.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+			String sUrlAccount = sAccountFromRepo+":" + sPAT;
+			
+			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlAccount);
+			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
+			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseWithProtocolIn, sHostIn, sAccountFromRepo, sRepositoryProjectIn);
+			sReturn = sUrlRepoRemote;
 		}//end main
 		return sReturn;
 		
@@ -1210,7 +1229,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			
 			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlPartFromRepo);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrl(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
@@ -1244,6 +1263,46 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		main:{
 			String sUrlBaseHTTPS = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHostIn, sAccountIn);		
 			sReturn = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseHTTPS, sRepositoryProjectIn);
+		}//end main:
+		return sReturn;
+	}
+	
+	//Z.B.: https:///firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	public static String computeRepositoryUrlHTTPS(String sUrlBaseIn, String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{			
+			if(StringZZZ.isEmpty(sUrlBaseIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sHostIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Host", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sHostIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Host", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sAccountIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Account", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sUrlBaseHTTPS = sUrlBaseIn;
+			String sHost = sHostIn;
+			String sAccount = sAccountIn;
+			String sRepositoryProject = sRepositoryProjectIn;
+			
+			
+			sReturn = sUrlBaseHTTPS + "@" + sHost + UrlLogicZZZ.sURL_SEPARATOR_PATH  + sAccount + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
 		}//end main:
 		return sReturn;
 	}

@@ -72,6 +72,10 @@ public interface IJgitStarter extends IJgitStarterCommit {
 //	public boolean statusit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 //	public boolean statusit(Git git) throws ExceptionZZZ;
 	
+	//nur HTTP+SSH
+	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
+	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
+	
 	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 	public boolean commitAndPushit(IConfigStarterJGIT objConfig, String sComment) throws ExceptionZZZ;
 	
@@ -85,12 +89,4 @@ public interface IJgitStarter extends IJgitStarterCommit {
 	
 	public boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 	public boolean pullit(Git git) throws ExceptionZZZ;
-	
-	
-	
-	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
-	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
-	
-	
-	
 }
