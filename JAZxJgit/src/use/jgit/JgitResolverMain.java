@@ -176,6 +176,9 @@ public class JgitResolverMain implements IConstantZZZ{
 			sAction = objConfig.readActionConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionCommit();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionConflictCommit();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
@@ -262,6 +265,9 @@ public class JgitResolverMain implements IConstantZZZ{
 					break;
 				case "conflict":
 					bReturn = objResolver.conflictit(objConfig);					
+					break;
+				case "commit":
+					bReturn = objResolver.commitit(objConfig);					
 					break;
 				case "conflictCommit":
 					bReturn = objResolver.conflictCommitit(objConfig);

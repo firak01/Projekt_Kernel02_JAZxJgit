@@ -71,43 +71,7 @@ public class ConfigStarterJGIT extends AbstractConfigStarterCommitJGIT implement
 	}
 	
 	//### aus IConfigStarterCommitJGIT
-//	@Override
-//	public String readActionStatus() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("status");			
-//		}//end main:		
-//		return sReturn;
-//	}
-//	@Override
-//	public String readActionCommit() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("commit");			
-//		}//end main:		
-//		return sReturn;
-//	}
-	
-//	@Override
-//	public String readActionFetch() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("fetch");			
-//		}//end main:		
-//		return sReturn;
-//	}
+	//siehe dort...
 	
 	//### aus IConfigStarterGIT
 	@Override

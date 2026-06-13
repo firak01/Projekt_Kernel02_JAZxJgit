@@ -1,6 +1,8 @@
 package use.jgit.protocol.https;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
@@ -96,9 +98,6 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);
 	}
 	
-	/* (non-Javadoc)
-	 * @see use.jgit.AbstractJgitStarter#getRepositoryTotalRemote()
-	 */
 	@Override
 	public String getRepositoryTotalRemote() throws ExceptionZZZ {		
 		if( this.sRepositoryTotalRemote==null) {
@@ -112,6 +111,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	}
 		
 	
+	/** Ohne ein IConfig - Objekt als Argument, muss alles aus den Properties des Objekts gelesen werden.
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
@@ -213,7 +216,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				
 				//################################################
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccessConfigureGit = this.configureGit((IConfigStarterCommitJGIT) objConfig);
+				boolean bSuccessConfigureGit = this.configureGit(objConfig);
 				if(bSuccessConfigureGit) {
 					System.out.println("Git erfolgreich konfiguriert");
 				}else {
@@ -226,50 +229,50 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
 				//######################################################################################				
 				
-				//################################################
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
-				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-															
-				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
-				if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}	
-				
-				//######################################################################################
-				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
-				String sConnectionTypeIn = objConfig.readConnectionType();
-				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
-					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
-					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					
-					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);					
-				}
-				//Falls immer noch leer, Fehler!
-				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-			
-				//+++++++++++++++++++++++				
-				this.setConnectionType(sConnectionTypeIn);
-				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
-				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
-				
-				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
-				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
+//				//################################################
+//				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+//				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
+//				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
+//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;
+//				}
+//															
+//				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
+//				if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
+//					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;
+//				}	
+//				
+//				//######################################################################################
+//				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
+//				String sConnectionTypeIn = objConfig.readConnectionType();
+//				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+//					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
+//					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
+//					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
+//						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//						throw ez;
+//					}
+//					
+//					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);					
+//				}
+//				//Falls immer noch leer, Fehler!
+//				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+//					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;
+//				}
+//			
+//				//+++++++++++++++++++++++				
+//				this.setConnectionType(sConnectionTypeIn);
+//				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
+//				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
+//				
+//				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
+//				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
+//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//					throw ez;
+//				}
+//				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
 				//################## 
 				//Besonderheit HTTPS
@@ -491,7 +494,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 
 			//+++++++++++++++++++++++++++++++
 			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit((IConfigStarterCommitJGIT) objConfig);
+			boolean bSuccess = this.configureGit(objConfig);
 			if(bSuccess) {
 				System.out.println("Git erfolgreich konfiguriert");
 			}else {
@@ -712,7 +715,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				
 				//################################################
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit((IConfigStarterCommitJGIT) objConfig);
+				boolean bSuccess = this.configureGit(objConfig);
 				if(bSuccess) {
 					System.out.println("Git erfolgreich konfiguriert");
 				}else {
@@ -787,18 +790,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				}
 				this.setPersonalAccessToken(sPatIn);
 													
-				
-			
-//				//################################################
-//				//Konfiguriere JGit für HTTPS
-//				boolean bSuccess = this.configureGit();
-//				if(bSuccess) {
-//					System.out.println("Git erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Git NICHT erfolgreich konfiguriert");
-//					break main;
-//				}
-//					
+
 //				//+++++++++++++++++++++++++++++++++++++++++++++++++
 //				//Mache den push	
 				Git git = this.getGitObject();
@@ -884,36 +876,24 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				throw ez;
 			}
 						
-			//################################################
-			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
-			boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-			if(bLocalRepositoryConfigured) {
-				System.out.println("Lokales Repository erfolgreich konfiguriert");
+			//######################################################
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccessConfigureGit = this.configureGit(objConfig);
+			if(bSuccessConfigureGit) {
+				System.out.println("Basis Git erfolgreich konfiguriert");
 			}else {
-				System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-				//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-			}
-							
-			//######################################################################################
-			//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
-			String sConnectionTypeIn = objConfig.readConnectionType();
-			if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-				if(bLocalRepositoryConfigured) {
-					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
-					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
-					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					
-					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
-				}else {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
+				System.out.println("Basis Git NICHT erfolgreich konfiguriert");
+				break main;
 			}
 			
-		
+			//#####################################################################################
+			//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+			//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+			//######################################################################################
+						
+			//################################################
+			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
+				
 			String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
 			if(StringZZZ.isEmpty(sRepositoryRemoteHost)){
 				ExceptionZZZ ez = new ExceptionZZZ("Hostname des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -925,7 +905,24 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				ExceptionZZZ ez = new ExceptionZZZ("Account des remote Repository", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-
+			
+			//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
+			String sConnectionTypeIn = objConfig.readConnectionType();
+			if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+				//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
+				String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
+			}
+			//Falls immer noch leer, Fehler!
+			if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+				ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
 			
 			//+++++++++++++++++++++++								
 			this.setConnectionType(sConnectionTypeIn);
@@ -947,18 +944,6 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				throw ez;
 			}
 			this.setPersonalAccessToken(sPatIn);
-			
-			
-			
-			//+++++++++++++++++++++++++++++++
-			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit();
-			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
-			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
-				break main;
-			}
 			
 			//+++++++++++++++++++++++++++++++
 			//Finde geaenderte und neue Dateien fuer den commit
@@ -989,46 +974,57 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		return bReturn;
 	}
 	
-	@Override
-	public boolean fetchit(Git git) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-			try {
-				//Finde geaenderte und neue Dateien fuer den Commit			
-				System.out.println("STATUS BEFORE FETCH");		
-				this.printStatus(git);
-		        //##################################################################
-		        
-				//s. ChatGPT vom 20260313
-		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-		        	        
-		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
-		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-
-		        
-		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-		        
-		        String sBranch = this.getRepositoryBranch();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
-			    System.out.println(("FETCH DONE"));
-			  	
-				
-				//##################################################################		        
-		        System.out.println("STATUS AFTER FETCH");
-		        this.printStatus(git);
-		        
-		        bReturn = true;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
-		}//end main:
-		return bReturn;
-	}
+//	@Override
+//	public boolean fetchit(Git git) throws ExceptionZZZ {
+//		boolean bReturn = false;
+//		main:{
+//			try {
+//				//Finde geaenderte und neue Dateien fuer den Commit			
+//				System.out.println("STATUS BEFORE FETCH");		
+//				this.printStatus(git);
+//				
+//				System.out.println("### DEGUB START");				
+//				try {
+//					JgitUtilZZZ.debugForFetch(git);
+//				} catch (URISyntaxException e) {
+//					ExceptionZZZ ez = new ExceptionZZZ(e);
+//					throw ez;
+//				}
+//		    	System.out.println("### DEBUG ENDE");
+//		        //##################################################################
+//		        
+//				//s. ChatGPT vom 20260313
+//		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+//		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+//		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+//		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+//		        	        
+//		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
+//		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
+//		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
+//
+//		        String sRepositoryRemote = this.getRepositoryTotalRemote();
+//		        
+//		        String sBranch = this.getRepositoryBranch();
+//		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
+//			    System.out.println(("FETCH DONE"));
+//			  	
+//				
+//				//##################################################################		        
+//		        System.out.println("STATUS AFTER FETCH");
+//		        this.printStatus(git);
+//		        
+//		        bReturn = true;
+//			}catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			} catch (IOException ioe) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//				throw ez;
+//			}
+//		}//end main:
+//		return bReturn;
+//	}
 	
 	//###############################################
 	//### FLAG HANDLING

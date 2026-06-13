@@ -40,8 +40,7 @@ public interface IJgitStarterCommit {
 	public void addFileUntracked() throws ExceptionZZZ;
 	public void addFileUntracked(Git git) throws ExceptionZZZ;
 	
-	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
-	public boolean configureGit() throws ExceptionZZZ;	
+	
 	
 	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
 	public boolean statusit(Git git) throws ExceptionZZZ;
@@ -58,8 +57,10 @@ public interface IJgitStarterCommit {
 	public String getCommentCommitDefault() throws ExceptionZZZ;
 	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ;
 	
-	//+++ Arbeiten mit dem Repository-Object, etc.
-	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
-	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ;
-		
+	//+++ Arbeiten mit dem LOCALEN Repository-Object, etc.
+	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;	
+	public boolean configureRepositoryLocal(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
+	
+	public boolean configureGit() throws ExceptionZZZ;
+	public boolean configureRepositoryLocal() throws ExceptionZZZ;	
 }

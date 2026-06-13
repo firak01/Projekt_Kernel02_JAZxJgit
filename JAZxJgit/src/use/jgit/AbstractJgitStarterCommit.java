@@ -238,7 +238,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	 */
 	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
 	@Override
-	public boolean configureRepositoryLocal(IConfigJGIT objConfig) throws ExceptionZZZ{
+	public boolean configureRepositoryLocal(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
@@ -273,6 +273,52 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 			//Merke: Branch darf leer sein
 			String sRepositoryBranch = objConfig.readRepositoryBranch();
 			this.setRepositoryBranch(sRepositoryBranch);
+			
+			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
+			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
+			if(!objDirectoryRepositoryLocalTotal.exists()){
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
+			
+			bReturn = true;
+		}//end main:
+		return bReturn;
+	}
+	
+	/** Ohne ein IConfig - Objekt als Argument, muss alles aus den Properties des Objekts gelesen werden.
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	@Override
+	public boolean configureRepositoryLocal() throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+		
+			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+			boolean bRemoteAliasAvailable = !StringZZZ.isEmpty(sRepositoryRemoteAlias);
+//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+			
+			String sRepositoryLocal = this.getRepositoryLocalBase();
+			if(StringZZZ.isEmpty(sRepositoryLocal)){
+				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryLocalBase(sRepositoryLocal);
+			
+			
+			String sRepositoryProject = this.getRepositoryProject();
+			if(StringZZZ.isEmpty(sRepositoryProject) & !bRemoteAliasAvailable){
+				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			//Merke: Branch darf leer sein
+			String sRepositoryBranch = this.getRepositoryBranch();
 			
 			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
@@ -582,60 +628,44 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	}
 
 	//#######################################
+	/* (non-Javadoc)
+	 * @see use.jgit.IJgitStarterCommit#configureGit()
+	 */
 	@Override
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
-			try {
-				//Verwende ggfs. dies wieder...				
-				//ABER: HIER GIBT ES KEIN OBJEKT IConfigGIT
-				
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen							
-				/*
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+			try {			
+				//### Soll das lokale Repository konfiguriert haben.			
+				//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal();
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
 				}else {
-					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
+					System.out.println("Lokales Repository NICHT einzeln erfolgreich konfiguriert");
 					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
 				}
-				*/				
-				
-				//A) Lokal
-				//a) Lokales Basis Verzeichnis
-				String sDirectoryRepositoryLocal = this.getRepositoryLocalBase();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				File objFileDir = new File(sDirectoryRepositoryLocal);
-				if(!objFileDir.exists()) {
-					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Basis Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+							
+				//++++++++++ Erst das lokale Git-Repository initialisieren
+				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
+				String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();				
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalTotal)) {
+					String sProject = this.getRepositoryProject();					
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis für das Projekt '" + sProject + "'nicht definiert.", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
+				}else {
+					System.out.println("Lokales Repository als Gesamtstring vorhanden: '" + sDirectoryRepositoryLocalTotal + "'");
 				}
 				
-				//b) Lokales Repository-Verzeichnis des Projekts
-				String sRepositoryProjectLocal = this.getRepositoryProject();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Projektname des lokalen Repositories, Angabe fehlt: '" + sRepositoryProjectLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
+				//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
 				
-				String sDirectoryRepositoryLocalTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepositoryLocal, sRepositoryProjectLocal);
 				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
 				if(!objFileDirTotal.exists()) {
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
 				}
-				this.setRepositoryTotalLocal(sDirectoryRepositoryLocalTotal);
 				
-//				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
-				
-				
-				//++++++++++ Erst das lokale Git-Repository initialisieren
-				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
 				InitCommand gitCommandInit = Git.init();
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
@@ -665,49 +695,51 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	}
 	
 	//#######################################
-		@Override
-		public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
-			boolean bReturn = false;
-			main:{
-				try {			
-					//### Soll das lokale Repository konfiguriert haben.			
-					//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
-					boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
-					if(bLocalRepositoryConfigured) {
-						System.out.println("Lokales Repository erfolgreich konfiguriert");
-					}else {
-						System.out.println("Lokales Repository NICHT einzeln erfolgreich konfiguriert");
-						//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-					}
-								
-					//++++++++++ Erst das lokale Git-Repository initialisieren
-					//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
-					String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();				
-					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalTotal)) {
-						String sProject = this.getRepositoryProject();					
-						ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis für das Projekt '" + sProject + "'nicht definiert.", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;				
-					}else {
-						System.out.println("Lokales Repository als Gesamtstring vorhanden: '" + sDirectoryRepositoryLocalTotal + "'");
-					}
+	@Override
+	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			try {			
+				//### Soll das lokale Repository konfiguriert haben.			
+				//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
+				if(bLocalRepositoryConfigured) {
+					System.out.println("Lokales Repository erfolgreich konfiguriert");
+				}else {
+					System.out.println("Lokales Repository NICHT einzeln erfolgreich konfiguriert");
+					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+				}
 					
-					//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-					//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
-					
-					File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
-					if(!objFileDirTotal.exists()) {
-						ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;				
-					}
-					
-					InitCommand gitCommandInit = Git.init();
-					gitCommandInit.setDirectory(objFileDirTotal);
-					
-					Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-					this.setGitObject(git);
-					System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
-					//##############################################
-					//Weil das was mit dem Protocol zu tun hat, hier nicht machen
+				//++++++++++ Erst das lokale Git-Repository initialisieren
+				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
+				String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();				
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalTotal)) {
+					String sProject = this.getRepositoryProject();					
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis für das Projekt '" + sProject + "'nicht definiert.", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}else {
+					System.out.println("Lokales Repository als Gesamtstring vorhanden: '" + sDirectoryRepositoryLocalTotal + "'");
+				}
+				
+				//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
+				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
+				
+				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
+				if(!objFileDirTotal.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				InitCommand gitCommandInit = Git.init();
+				gitCommandInit.setDirectory(objFileDirTotal);
+				
+				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+				this.setGitObject(git);
+			
+				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
+				
+				//##############################################
+				//Weil das was mit dem Protocol zu tun hat, hier nicht machen
 //													
 //					//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
 //					//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
@@ -718,15 +750,15 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 //						String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 //						JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
 //					}
-					bReturn = true;
-					//######################################
-				}catch(GitAPIException gae) {
-					ExceptionZZZ ez = new ExceptionZZZ(gae);
-					throw ez;
-				}
-			}//end main:
-			return bReturn;
-		}
+				bReturn = true;
+				//######################################
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
 	
 	//##################################################
 	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {

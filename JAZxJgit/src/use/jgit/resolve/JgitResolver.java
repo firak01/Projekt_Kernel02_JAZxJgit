@@ -82,8 +82,8 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//TODOGOON20260608;//JgitResolver sollte auch das lokale Repository konfiguriert haben.				
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigJGIT)objConfig);
+				//JgitResolver braucht nur das lokale Repository zu konfigurieren, kein GIT-Objekt, komplett				
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigStarterCommitJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
 				}else {
@@ -216,6 +216,16 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
+				//+++++++++++++++++++++++++++++++
+				//Konfiguriere JGit für HTTPS
+				boolean bSuccess = this.configureGit(objConfig);
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+				
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -234,13 +244,13 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				
 				
 				//Konfiguriere JGit						
-				boolean bSuccess = this.configureGit(objConfig);
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
-					break main;
-				}
+//				boolean bSuccess = this.configureGit(objConfig);
+//				if(bSuccess) {
+//					System.out.println("Git erfolgreich konfiguriert");
+//				}else {
+//					System.out.println("Git NICHT erfolgreich konfiguriert");
+//					break main;
+//				}
 				
 				//Finde geaenderte und neue Dateien fuer den commit
 //				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
@@ -382,41 +392,41 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 					throw ez;
 				}
 				
-			//+++++++++++++++++++++++++++++++
-			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit();
-			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
-			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
-				break main;
-			}
+				//+++++++++++++++++++++++++++++++
+				//Konfiguriere JGit für HTTPS
+				boolean bSuccess = this.configureGit(objConfig);
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+				
+				String sComment = objConfig.readComment();
+				this.setCommentCommit(sComment);
 			
-			String sComment = objConfig.readComment();
-			this.setCommentCommit(sComment);
-		
-			//+++++++++++++++++++++++++++++++
-			//Finde geaenderte und neue Dateien fuer den commit
-			Git git = this.getGitObject();
-			boolean bSuccessCommit = this.commitit(git);
-			if(bSuccessCommit) {
-				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
-				this.printStatus(git);
-				  bReturn = true;
-			}else {
-				System.out.println("STATUS AFTER COMMIT: FAILED");
-				this.printStatus(git);	
-				bReturn = false;
+				//+++++++++++++++++++++++++++++++
+				//Finde geaenderte und neue Dateien fuer den commit
+				Git git = this.getGitObject();
+				boolean bSuccessCommit = this.commitit(git);
+				if(bSuccessCommit) {
+					System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
+					this.printStatus(git);
+					  bReturn = true;
+				}else {
+					System.out.println("STATUS AFTER COMMIT: FAILED");
+					this.printStatus(git);	
+					bReturn = false;
+				}
+			
+			    git.close();
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
 			}
-		
-		    git.close();
-		}catch(IllegalStateException ie) {
-			ExceptionZZZ ez = new ExceptionZZZ(ie);
-			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
-		}
 		}//end main:
 		return bReturn;
 	}	

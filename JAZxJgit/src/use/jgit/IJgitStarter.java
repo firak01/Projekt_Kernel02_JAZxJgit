@@ -5,6 +5,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.config.IConfigJGIT;
+import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
 
 public interface IJgitStarter extends IJgitStarterCommit {
@@ -93,4 +94,7 @@ public interface IJgitStarter extends IJgitStarterCommit {
 	
 	public boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
 	public boolean pullit(Git git) throws ExceptionZZZ;
+	
+	//+++ Arbeiten mit dem REMOTE Repository-Object, etc.
+	public boolean configureGit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;		
 }
