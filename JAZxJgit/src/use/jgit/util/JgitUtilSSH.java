@@ -1,15 +1,12 @@
 package use.jgit.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Map;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullCommand;
@@ -18,12 +15,7 @@ import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.lib.BranchConfig;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.merge.MergeStrategy;
-import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -34,6 +26,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverUtilZZZ;
@@ -42,7 +35,7 @@ import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
 
 public class JgitUtilSSH implements IConstantZZZ{
-	public static final String sPROTOCOL_PART = "git@";
+	public static final String sPROTOCOL_PART = JgitStarterSSH.sPROTOCOL + "@";
 	
 	public static String addProtocolToUrl(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
@@ -119,10 +112,20 @@ public class JgitUtilSSH implements IConstantZZZ{
 			String sHost = sHostIn;
 			String sAccount = sAccountIn;
 			
-			sReturn = "git@" + sHost + ":" + sAccount;
+			sReturn = JgitStarterSSH.sPROTOCOL + "@" + sHost + ":" + sAccount;
 		}//end main:
 		return sReturn;
 	}
+	
+	public static String computeRepositoryUrlSSH(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sUrlBaseSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHostIn, sAccountIn);		
+			sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBaseSSH, sRepositoryProjectIn);
+		}//end main:
+		return sReturn;
+	}
+	//####################################
 	
 	
 	public static String computeRepositoryUrlSSH_forFetch(String sUrlRepoRemoteIn) throws ExceptionZZZ{
@@ -137,23 +140,26 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 */
 	public static String computeRepositoryUrlSSH(String sUrlRepoRemoteIn) throws ExceptionZZZ{
 		String sReturn = null;
-		main:{
-			String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
-			String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);			
-
-			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
+		main:{		
+			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
+			
+			//String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl(JgitStarterSSH.sPROTOCOL, sUrlPartFromRepo);
+			String sRepositoryHostIn = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);
+			
+			String sRepositoryAccountIn = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+			
+			String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
 	}
 	
 	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlSSH(String sUrlBaseSSHin, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlSSH(String sUrlBaseSshWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sUrlBaseSSHin)){
+			if(StringZZZ.isEmpty(sUrlBaseSshWithAccountIn)){
 				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
@@ -163,7 +169,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				throw ez;
 			}
 			
-			String sUrlBaseSSH = sUrlBaseSSHin;
+			String sUrlBaseSSH = sUrlBaseSshWithAccountIn;
 			String sRepositoryProject = sRepositoryProjectIn;
 			
 			sReturn = sUrlBaseSSH + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
@@ -171,14 +177,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	public static String computeRepositoryUrlSSH(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			String sUrlBaseSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHostIn, sAccountIn);		
-			sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBaseSSH, sRepositoryProjectIn);
-		}//end main:
-		return sReturn;
-	}
+	
 	
 	public static FetchResult fetchIgnoreNothingToFetch(
 	        Git git,	        
@@ -875,30 +874,8 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return bReturn;
 	}
 	
-	/** Für den SSH Weg:
-	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 *         Hier ist ein fetch nicht notwendig.
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
-		
-		
-		s. ChatGPT 20260323, 20260508ff
-	 * @param git
-	 * @param credentialsProvider
-	 * @param sUrlRepoRemoteIn
-	 * @return
-	 * @throws ExceptionZZZ
-	 */
-	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
-		//return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, objEnumstrategy);
-		
-		return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict);
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {		
+		return pullIgnoreCheckoutConflictsSSH(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 	}
 	
 	/** Für den SSH Weg:
@@ -921,12 +898,46 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ {
+		if(bUseFetchMerge) {
+			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict);
+		}else {
+			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict);
+		}
+	}
+				
 	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
-		//das ist dann irgendwie ein doppelter Merge
-		return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);
+		return pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
+	}
+	
+	/** Für den SSH Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
 		
-		//das soll eigentlich verwendet werden
-		//return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);
+		
+		s. ChatGPT 20260323, 20260508ff
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
+		if(bUseFetchMerge) {
+			//das soll eigentlich verwendet werden
+			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);
+		}else {
+			//das ist dann irgendwie ein doppelter Merge
+			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);			
+		}				
 	}
 	
 	

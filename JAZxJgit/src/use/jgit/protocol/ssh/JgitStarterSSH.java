@@ -17,6 +17,7 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarter;
 import use.jgit.IJgitEnabledZZZ;
@@ -37,15 +38,28 @@ import use.jgit.util.JgitUtilZZZ;
 
 
 
+/**Klasse heisst SSH, weil sie den SSH Port verwendet.
+ * Die URLs lauten dann aber mit dem Protocol git
+ * @author Fritz Lindhauer
+ *
+ * @param <T>
+ */
 public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitStarterSSH{
 	private static final long serialVersionUID = 521157607363069534L;
-
+	public static final String sPROTOCOL="git";
+	
 	//### Konstruktor
 	public JgitStarterSSH() {	
 		super();			
 	}
 
 	//### aus IJgitStarter
+	@Override 
+	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {
+		return JgitStarterSSH.sPROTOCOL;
+	}
+	//!!! Kein Setter
+	
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
 		return JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);
@@ -150,24 +164,41 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-							
-				//################################################
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
 						
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-				if(bLocalRepositoryConfigured) {
-					System.out.println("Lokales Repository erfolgreich konfiguriert");
+				//######################################################
+				//Konfiguriere JGit für SSH				
+				boolean bSuccess = this.configureGit((IConfigStarterCommitJGIT) objConfig);
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
 				}else {
-					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
 				}
 				
+				//#####################################################################################
+				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//######################################################################################				
+				
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen		
+				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+									
+				//Wird der Accountname überhaupt gebraucht bei SSH? JA, zum neuen Ausrechnen der URL
+				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Accountname", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 				//######################################################################################
 				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
 				String sConnectionTypeIn = objConfig.readConnectionType();
 				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-					if(bLocalRepositoryConfigured) {
 						//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
 						String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
 						if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
@@ -176,28 +207,14 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 						}
 						
 						sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);
-					}else {
-						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
 				}
-				
-				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
-				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				//Falls immer noch leer, Fehler!
+				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-								
-								
-				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
-				if(sConnectionTypeIn.equalsIgnoreCase("https")) {
-					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-								
-				//+++++++++++++++++++++++
-								
+																		
+				//+++++++++++++++++++++++								
 				this.setConnectionType(sConnectionTypeIn);
 				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
 				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
@@ -211,17 +228,6 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				
 				//###########################################
 				//Keine Besonderheit für SSH (also kein sPAT wie bei HTTPS) an dieser Stelle.
-				
-				
-				//######################################################
-				//Konfiguriere JGit für SSH				
-				boolean bSuccess = this.configureGit();
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
-					break main;
-				}
 				
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
@@ -347,12 +353,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			
 			//anders als bei HTTPS gibt es hier auch die Möglichkeite direkt zu pull
 			//Was aber eigentlich technisch umständlicher ist.
-			boolean bUsePullDirect = this.getFlag(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
-			if(bUsePullDirect) {
-				objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch, false, true);
-			}else {
-				objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch);
-			}
+			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch, !bUsePullDirect, true);
+			
 			
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
@@ -381,7 +384,14 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	@Override
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
-		main:{			
+		main:{		
+			//Merke: Bei SSH gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
+			//       FETCH + MERGE ist eigentlich optimaler als direkt.
+			//Der Weg ist über FLAGZ konfigurierbar
+			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			
+			
+			
 			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
@@ -905,5 +915,50 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			}
 		}//end main:
 		return bReturn;
+	}
+	
+	//###############################################
+	//### FLAG HANDLING
+	//###############################################
+	
+	//###############################################
+	//### FLOGLOCAL 
+	
+	//### aus IJgitStarterSSHEnabled	
+	@Override
+	public boolean getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.getFlagLocal(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean setFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
+	}
+
+	@Override
+	public boolean[] setFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		boolean[] baReturn=null;
+		main:{
+			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
+				baReturn = new boolean[objaEnumFlag.length];
+				int iCounter=-1;
+				for(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
+					iCounter++;
+					boolean bReturn = this.setFlagLocal(objEnumFlag, bFlagValue);
+					baReturn[iCounter]=bReturn;
+				}
+			}
+		}//end main:
+		return baReturn;
+	}
+
+	@Override
+	public boolean proofFlagLocalExists(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagLocalExists(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean proofFlagSetBefore(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 }

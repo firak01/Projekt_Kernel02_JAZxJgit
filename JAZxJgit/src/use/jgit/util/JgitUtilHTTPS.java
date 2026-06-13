@@ -1,20 +1,17 @@
 package use.jgit.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
+import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -33,6 +30,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
@@ -40,7 +38,7 @@ import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
 
 public class JgitUtilHTTPS implements IConstantZZZ{
-	public static final String sPROTOCOL_PART = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL;
+	public static final String sPROTOCOL_PART = JgitStarterHTTPS.sPROTOCOL + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL;
 	
 	public static String addProtocolToUrl(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
@@ -118,52 +116,62 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			String sAccount = sAccountIn;
 			
 			
-			sReturn = "https" + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL  + sHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccount;
+			sReturn = JgitStarterHTTPS.sPROTOCOL + UrlLogicZZZ.sURL_SEPARATOR_PROTOCOL  + sHost + UrlLogicZZZ.sURL_SEPARATOR_PATH + sAccount;
 		}//end main:
 		return sReturn;
 	}
 	
+	/*Ziel ist es für HTTPS eine PAT - String zu nutzen.
+	  Aus Eclipse-Push Konfiguration:
+	  Github - Projekt - HTTPS URL
+	  https://github.com/firak01/HIS_QISSERVER_FGL.git
 	
-	public static CredentialsProvider createCredentialsProviderByToken(String sPAT) {
-		//aus Eclipse-Push Konfiguration:
-				//entspricht dem Github - Projekt - SSH
-				//git@github.com:firak01/HIS_QISSERVER_FGL.git
-				
-				//aus Github - Projekt - HTTPS
-				//https://github.com/firak01/HIS_QISSERVER_FGL.git
-				
-				//##################
-				//Authentifizierung mit https
-				/*https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
-				Authenticating with a remote
-				Most remote repos will require authentication (at least for the push command). In this tutorial, we’ll be working with remote repositories hosted on GitHub, which has two common authentication methods:
-		    	Using a personal access token (PAT) for authentication over HTTPS
-		    	Using SSH keys for authentication over SSH
-				To keep things simple in this tutorial, we’ll only be covering HTTPS authentication; SSH is more complex and will be covered in part 2 of this two-part blog post.
+	  entspricht Github - Projekt - SSH
+	  git@github.com:firak01/HIS_QISSERVER_FGL.git
+	
+	
+	### ABER ###############
+	Authentifizierung mit https
+	https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
+	
+	Authenticating with a remote
+	Most remote repos will require authentication (at least for the push command). In this tutorial, we’ll be working with remote repositories hosted on GitHub, which has two common authentication methods:
+	Using a personal access token (PAT) for authentication over HTTPS
+	Using SSH keys for authentication over SSH
+	To keep things simple in this tutorial, we’ll only be covering HTTPS authentication; SSH is more complex and will be covered in part 2 of this two-part blog post.
 
-				So in the following examples, we’ll be using a personal access token (PAT) for authentication via HTTPS. For more information on creating a PAT token, see the GitHub docs.
-				Providing Credentials for Authentication
+	So in the following examples, we’ll be using a personal access token (PAT) for authentication via HTTPS. For more information on creating a PAT token, see the GitHub docs.
+	Providing Credentials for Authentication
 
-				The JGit command objects for operations such as git push, git pull, and git clone all share a setCredentialsProvider method that allows us to provide credentials to authenticate with the remote repository.
+	The JGit command objects for operations such as git push, git pull, and git clone all share a setCredentialsProvider method that allows us to provide credentials to authenticate with the remote repository.
 
-				The setCredentialsProvider method takes a CredentialsProvider instance as its parameter. This interface has many implementations, the one we need to use for a PAT token is the UsernamePasswordCredentialsProvider (more commonly used for basic authentication).
-				Constructing a CredentialsProvider for a PAT token
+	The setCredentialsProvider method takes a CredentialsProvider instance as its parameter. This interface has many implementations, the one we need to use for a PAT token is the UsernamePasswordCredentialsProvider (more commonly used for basic authentication).
+	Constructing a CredentialsProvider for a PAT token
 
-				The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
-				 */
-				
-				
-				CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
-				//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht
-				
-				/*Fehler:
-				 Exception in thread "main" org.eclipse.jgit.errors.UnsupportedCredentialItem: ssh://git@github.com:22: org.eclipse.jgit.transport.CredentialItem$YesNoType:The authenticity of host 'github.com' can't be established.
-		RSA key fingerprint is.... .
-		Are you sure you want to continue connecting?
+	The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
+
+	 * @param sPAT
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static CredentialsProvider createCredentialsProviderByToken(String sPAT) throws ExceptionZZZ {
+		CredentialsProvider credentialsProvider = null;
+		main:{
+			if(StringZZZ.isEmpty(sPAT)){
+				ExceptionZZZ ez = new ExceptionZZZ("sPAT", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+					
+			credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
+			//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht			
+			/*Fehler:
+			Exception in thread "main" org.eclipse.jgit.errors.UnsupportedCredentialItem: ssh://git@github.com:22: org.eclipse.jgit.transport.CredentialItem$YesNoType:The authenticity of host 'github.com' can't be established.
+			RSA key fingerprint is.... .
+			Are you sure you want to continue connecting?
 			at org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider.get(UsernamePasswordCredentialsProvider.java:119)
-				 */
+			*/
 
-			 
+		}//end main
 		return credentialsProvider;
 	}
 
@@ -171,6 +179,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		
 	/** Z.B.  von  https://github.com/firak01
 	 *        oder https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 *        
 	 * @param sRepositoryRemoteUrlHTTPS
 	 * @return
 	 * @throws ExceptionZZZ
@@ -234,7 +243,15 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlHTTPS)) break main;
 			
-			sReturn = UrlLogicZZZ.getProtocol(sRepositoryRemoteUrlHTTPS);
+			try {
+				sReturn = UrlLogicZZZ.getProtocol(sRepositoryRemoteUrlHTTPS);
+			}catch(ExceptionZZZ urle) {
+				if(urle.getMessage().startsWith("MalformedUrlException")) {
+					//Mache nix, da es wohl durchaus beim Überprüfen einer anderen art z.B. git:// zu Fehlern kommen kann
+				}else {
+					throw urle;
+				}
+			}
 		}//end main:
 		return sReturn;
 	}
@@ -1227,19 +1244,23 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		main:{
 			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
 			
-			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("https", sUrlPartFromRepo);
-			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+			//String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl(JgitStarterHTTPS.sPROTOCOL, sUrlPartFromRepo);
+			String sRepositoryHostIn = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);
+			
+			String sRepositoryAccountIn = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
+			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);			
+			
+			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
 	}
 	
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlHTTPS(String sUrlBaseHTTPSin, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlHTTPS(String sUrlBaseHttpsWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sUrlBaseHTTPSin)){
+			if(StringZZZ.isEmpty(sUrlBaseHttpsWithAccountIn)){
 				ExceptionZZZ ez = new ExceptionZZZ("Base Url Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
@@ -1249,7 +1270,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				throw ez;
 			}
 			
-			String sUrlBaseHTTPS = sUrlBaseHTTPSin;
+			String sUrlBaseHTTPS = sUrlBaseHttpsWithAccountIn;
 			String sRepositoryProject = sRepositoryProjectIn;
 			
 			sReturn = sUrlBaseHTTPS + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";

@@ -33,6 +33,7 @@ import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
@@ -794,8 +795,8 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	
 	//###################################
 	//### FLAGLOCAL Handling
-	
 
+	//### aus JgitEnabledZZZ	
 	@Override
 	public boolean getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagLocal(objEnumFlag.name());
@@ -832,6 +833,8 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
+
+	
 
 
 	//###################################

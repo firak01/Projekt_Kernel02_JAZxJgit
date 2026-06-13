@@ -14,6 +14,7 @@ import org.eclipse.jgit.transport.PushResult;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.AbstractJgitStarter;
@@ -22,6 +23,7 @@ import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigStarterCommitJGIT;
 import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
@@ -34,9 +36,16 @@ import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
 
-
+/**Klasse heisst HTTPS, weil sie den HTTPS Port verwendet.
+ * Die URLs lauten dann auch nocht dem Protocol https (Merke: Das ist bei SSH anders)  
+ * @author Fritz Lindhauer
+ *
+ * @param <T>
+ */
 public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgitStarterHTTPS{
 	private static final long serialVersionUID = -3594348507412511385L;
+	public static final String sPROTOCOL="https";
+	
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	public String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PAT-Werts durch sein Regelwerk, hier kann also keine statische Variable final definiert sein!!!
 	
@@ -76,6 +85,12 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 	
 	//### aus IJgitStarter
+	@Override 
+	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {
+		return JgitStarterHTTPS.sPROTOCOL;
+	}
+	//!!! Kein Setter
+	
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ {
 		return JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);
@@ -218,24 +233,14 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-								
-								
+															
 				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
 				if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}	
 				
-//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-//				if(bLocalRepositoryConfigured) {
-//					System.out.println("Lokales Repository erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//				}
-				
-				
-			
+				//######################################################################################
 				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
 				String sConnectionTypeIn = objConfig.readConnectionType();
 				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
@@ -274,19 +279,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 					throw ez;
 				}
 				this.setPersonalAccessToken(sPatIn);
-													
-				
-			
-//				//################################################
-//				//Konfiguriere JGit für HTTPS
-//				boolean bSuccess = this.configureGit();
-//				if(bSuccess) {
-//					System.out.println("Git erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Git NICHT erfolgreich konfiguriert");
-//					break main;
-//				}
-					
+																		
 				//+++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
 				Git git = this.getGitObject();
@@ -1035,5 +1028,50 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			}
 		}//end main:
 		return bReturn;
+	}
+	
+	//###############################################
+	//### FLAG HANDLING
+	//###############################################
+	
+	//###############################################
+	//### FLOGLOCAL 
+	
+	//### aus IJgitStarterHTTPSEnabled	
+	@Override
+	public boolean getFlagLocal(IJgitStarterHTTPSEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.getFlagLocal(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean setFlagLocal(IJgitStarterHTTPSEnabled.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
+	}
+
+	@Override
+	public boolean[] setFlagLocal(IJgitStarterHTTPSEnabled.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+		boolean[] baReturn=null;
+		main:{
+			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
+				baReturn = new boolean[objaEnumFlag.length];
+				int iCounter=-1;
+				for(IJgitStarterHTTPSEnabled.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
+					iCounter++;
+					boolean bReturn = this.setFlagLocal(objEnumFlag, bFlagValue);
+					baReturn[iCounter]=bReturn;
+				}
+			}
+		}//end main:
+		return baReturn;
+	}
+
+	@Override
+	public boolean proofFlagLocalExists(IJgitStarterHTTPSEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagLocalExists(objEnumFlag.name());
+	}
+
+	@Override
+	public boolean proofFlagSetBefore(IJgitStarterHTTPSEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 }

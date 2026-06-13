@@ -10,6 +10,9 @@ import use.jgit.config.IConfigStarterJGIT;
 public interface IJgitStarter extends IJgitStarterCommit {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	
+	//+++ In der Klasse definerte Werte
+	public String getRepositoryRemoteProtocol() throws ExceptionZZZ;
+		
 	//+++ Per Argument übergebene Werte
 	//public String getRepositoryProject() throws ExceptionZZZ;
 	//public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
@@ -48,6 +51,7 @@ public interface IJgitStarter extends IJgitStarterCommit {
 	
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ;
 	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
+	public String computeRepositoryRemoteUrl(String sRepositoryRemoteHost, String sRepositoryRemoteAccount, String sRepositoryProject) throws ExceptionZZZ;
 	
 	//+++ Arbeiten mit dem Repository-Object, etc.
 	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
