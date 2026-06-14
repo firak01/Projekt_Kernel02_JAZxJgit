@@ -17,12 +17,12 @@ import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
-import use.jgit.config.ConfigResolverJGIT;
-import use.jgit.config.ConfigStarterJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.ConfigResolverLocalJGIT;
+import use.jgit.config.ConfigStarterRemoteJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
-import use.jgit.resolve.JgitResolver;
+import use.jgit.resolve.JgitResolverLocal;
 
 public class JgitResolverMain implements IConstantZZZ{
 
@@ -166,7 +166,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			System.setProperty("https.protocols", "TLSv1.2"); 
 						
 			//### Argumente entgegenzunehmen
-			ConfigResolverJGIT objConfig = new ConfigResolverJGIT(args);
+			ConfigResolverLocalJGIT objConfig = new ConfigResolverLocalJGIT(args);
 			
 			//+++++++++++++++++++++++++++++++++
 			//actions
@@ -224,7 +224,7 @@ public class JgitResolverMain implements IConstantZZZ{
 		
 			//##############################################################
 			//Starte die passende Klasse mit der passenden Methode
-			JgitResolver objResolver = new JgitResolver();
+			JgitResolverLocal objResolver = new JgitResolverLocal();
 							
 			//Ggfs. uebergebene Flags setzen
 			hmFlag = objConfig.getHashMapFlagPassed();

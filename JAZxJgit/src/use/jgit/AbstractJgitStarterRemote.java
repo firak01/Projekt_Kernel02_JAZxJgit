@@ -32,14 +32,14 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
-public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T> implements IJgitStarter{
+public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLocal<T> implements IJgitStarterRemote{
 	private static final long serialVersionUID = -1998325674945232389L;
 	
 	protected volatile CredentialsProvider credentialsProviderObject = null;
@@ -52,12 +52,12 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
 		
 
-	//### aus IJgitStarterCommit
+	//### aus IJgitStarterLocal
 	@Override
-	public boolean configureGit(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
+	public boolean configureGit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{		
-			bReturn = super.configureGit((IConfigStarterCommitJGIT) objConfig);
+			bReturn = super.configureGit((IConfigStarterLocalJGIT) objConfig);
 			
 			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 			//Stelle sicher, dass das gewünschte Protokoll passt. Also: Die URL in die Konfiguration eintragen.
@@ -67,8 +67,6 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				throw ez;
 			}
 													
-			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
-			
 			//#######################################################
 			//### Remote Konfigurationen wiederverwenden
 			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
@@ -94,9 +92,14 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			
 			//########################################################
 			//### Remote Konfigurationen ausrechnen, wichtig, da wir sie ja neu in die Konfiguration schreiben wollen.
-			//    Merke: Für HTTPS ist hier auch ein URL ohne SPAT erlaubt: url = https://github.com/firak01/1fgl_Test_repo_readwrite.git
-			//                                                              url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-			String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();
+			//Problem: Wenn hier die GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
+//			//         Darum hier die remote Repository URL neu ausrechnen... 
+			//  Merke: Für HTTPS ist hier auch ein URL ohne SPAT erlaubt: url = https://github.com/firak01/1fgl_Test_repo_readwrite.git
+			//                                                            url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+			//Wenn es leer ist, wird dann auch (indirekt) neu berechnet
+			//String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();
+			//Aber transparenter ist das direkte Berechnen
+			String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote URL nicht vorhanden für Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -108,22 +111,22 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				throw ez;
 			}
 			//Lokal soll nun unbedingt der passende Eintrag in der GIT-Konfiguration gemacht werden
+			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
 			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, sRepositoryRemoteBranch, true);
 			
 			//##################################################
-			//### Wieder auslesen zur Ausgabe.....
-			String sRepositoryRemoteUrlByAlias = null; String sRepositoryRemoteFetchByAlias = null;
-			sRepositoryRemoteUrlByAlias = repo.getConfig()
+			//### Wieder auslesen zur Ausgabe.....							
+			String sRepositoryRemoteUrlByAlias = repo.getConfig()
 					       .getString("remote",sRepositoryRemoteAlias,"url");
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlByAlias)){
-				ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			sRepositoryRemoteFetchByAlias = repo.getConfig()
+			String sRepositoryRemoteFetchByAlias = repo.getConfig()
 				       .getString("remote",sRepositoryRemoteAlias,"fetch");
 			if(StringZZZ.isEmpty(sRepositoryRemoteFetchByAlias)){
-				ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 		
@@ -158,9 +161,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 				throw ez;
 			}
 			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
-			
-			
-			
+
 			//######################################
 		}//end main:
 		return bReturn;
@@ -293,7 +294,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			}
 			
 			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemoteIn);
-			sReturn = JgitUtilZZZ.computeRepositoryUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryTotalUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
 			
 		}//end main:
 		return sReturn;
@@ -341,7 +342,7 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 			//Die jeweilige Klasse kennt ihr Protokoll, das dann vorangestellt wird.
 			String sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sRepositoryRemoteHost, sRepositoryRemoteAccount);
 			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemote);
-			sReturn = JgitUtilZZZ.computeRepositoryUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryTotalUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
 			
 		}//end main:
 		return sReturn;
@@ -638,14 +639,14 @@ public abstract class AbstractJgitStarter<T> extends AbstractJgitStarterCommit<T
 	
 	
 	@Override
-	public abstract boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
+	public abstract boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 
 	@Override
-	public abstract boolean commitAndPushit(IConfigStarterJGIT objConfig, String sComment) throws ExceptionZZZ;
+	public abstract boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
 
 	
 	@Override
-	public abstract boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ;
+	public abstract boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 
 	
 	

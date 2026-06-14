@@ -290,11 +290,11 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;
 	}
 	
-	public static String computeRepositoryUrlFor(String sType, String sUrlBaseIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryTotalUrlFor(String sProtocolType, String sUrlBaseIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sType)){
-				ExceptionZZZ ez = new ExceptionZZZ("Type", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+			if(StringZZZ.isEmpty(sProtocolType)){
+				ExceptionZZZ ez = new ExceptionZZZ("ProtocolType", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -311,12 +311,12 @@ public class JgitUtilZZZ implements IConstantZZZ {
 			String sUrlBase = sUrlBaseIn;
 			String sRepositoryProject = sRepositoryProjectIn;
 			
-			if(sType.equalsIgnoreCase("https")) {
-				sReturn = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBase, sRepositoryProject);
-			}else if(sType.equalsIgnoreCase("ssh")) {
-				sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBase, sRepositoryProject);
-			}else if(sType.equalsIgnoreCase("git")) {
-				sReturn = JgitUtilGIT.computeRepositoryUrlGIT(sUrlBase, sRepositoryProject);
+			if(sProtocolType.equalsIgnoreCase("https")) {
+				sReturn = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sUrlBase, sRepositoryProject);
+			}else if(sProtocolType.equalsIgnoreCase("ssh")) {
+				sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBase, sRepositoryProject);
+			}else if(sProtocolType.equalsIgnoreCase("git")) {
+				sReturn = JgitUtilGIT.computeRepositoryTotalUrlGIT(sUrlBase, sRepositoryProject);
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlBase + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;

@@ -17,8 +17,8 @@ import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
-import use.jgit.config.ConfigStarterJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
+import use.jgit.config.ConfigStarterRemoteJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -164,10 +164,13 @@ public class JgitStarterMain implements IConstantZZZ{
 			System.setProperty("https.protocols", "TLSv1.2"); 
 						
 			//### Argumente entgegenzunehmen
-			ConfigStarterJGIT objConfig = new ConfigStarterJGIT(args);
+			ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);
 			
 			//+++++++++++++++++++++++++++++++++
 			//actions
+			sAction = objConfig.readActionStatus();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionPull();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
@@ -178,7 +181,6 @@ public class JgitStarterMain implements IConstantZZZ{
 				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
 				sComment = objConfig.readComment();
 			}
-			
 			
 			sAction = objConfig.readActionFetch();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
@@ -287,11 +289,14 @@ public class JgitStarterMain implements IConstantZZZ{
 				
 				for(String sActionTemp : listasAction) {				
 					switch(sActionTemp) {
+					case "status":
+						bReturn = objStarterSSH.statusit(objConfig);
+						break;
 					case "pull":
 						bReturn = objStarterSSH.pullit(objConfig);
 						break;
 					case "commit":
-						bReturn = objStarterSSH.commitit((IConfigStarterCommitJGIT) objConfig, sComment);						
+						bReturn = objStarterSSH.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
 						break;
 					case "fetch":
 						bReturn = objStarterSSH.fetchit(objConfig);
@@ -354,11 +359,14 @@ public class JgitStarterMain implements IConstantZZZ{
 				
 				for(String sActionTemp : listasAction) {				
 					switch(sActionTemp) {
+					case "status":
+						bReturn = objStarterHTTPS.statusit(objConfig);
+						break;
 					case "pull":
 						bReturn = objStarterHTTPS.pullit(objConfig);
 						break;						
 					case "commit":
-						bReturn = objStarterHTTPS.commitit((IConfigStarterCommitJGIT) objConfig, sComment);						
+						bReturn = objStarterHTTPS.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
 						break;	
 					case "fetch":
 						bReturn = objStarterHTTPS.fetchit(objConfig);

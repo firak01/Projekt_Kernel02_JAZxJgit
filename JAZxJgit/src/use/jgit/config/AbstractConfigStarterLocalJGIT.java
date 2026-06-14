@@ -31,219 +31,189 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigStarterJGIT extends AbstractConfigStarterCommitJGIT implements IConfigStarterJGIT{
-	
-	public ConfigStarterJGIT() throws ExceptionZZZ{
+public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT implements IConfigStarterLocalJGIT{
+	private static final long serialVersionUID = 1229381223690096548L;
+	public AbstractConfigStarterLocalJGIT() throws ExceptionZZZ{
 		super();
 	}
-	public ConfigStarterJGIT(String[] saArg) throws ExceptionZZZ {
+	public AbstractConfigStarterLocalJGIT(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 			
-	@Override
-	public String getPatternStringDefault() {
-		return IConfigStarterJGIT.sPATTERN_DEFAULT;
-	}
 	
-	@Override
-	public String[] getArgumentArrayDefault() {
-		String[] saArg = new String[8];
-		saArg[0] = "-pull";
-		saArg[1] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
-		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
-		saArg[3] = "origin";
-		saArg[4] = "-rl";
-		saArg[5] = IConfigStarterJGIT.sPROJECT_PATH;  //Das eigene Projekt als Default
-		saArg[6] = "-z";
-		saArg[7] = this.getConfigFlagzJsonDefault();
-	
-		return saArg;
-	}
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 		
 	
 	//### aus IConfigJGIT
+	
+		
+	//### aus IConfigStarterGIT
+	@Override
+	public String readActionStatus() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("status");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	
+	@Override
+	public String readActionCommit() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("commit");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String readActionFetch() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("fetch");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
+	//######################################
+	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
+	//    LOKALE KONFIGURATION
+	//++++++++++++++++++++++++++++++++++++++++++
+	
+	//### aus IConfigStarterLocalJGIT	
+	@Override
+	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
+		return IConfigJGIT.sPROJECT_PATH; //Also das eigene Projekt-Verzeichnis als Default
+	}
+	@Override
+	public String readRepositoryLocal() throws ExceptionZZZ {		
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("rl");
+			if(sReturn==null){
+				sReturn = this.getRepositoryLocalBaseDefault();
+			}
+		}//end main:		
+		return sReturn;
+	}		
+	
+	//++++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
+		return null;
+	}
+		
+	//++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String readRepositoryProjectName() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sProject = objOpt.readValue("project");
+			if(StringZZZ.isEmpty(sProject)) {
+				sProject = this.getRepositoryProjectNameDefault();				
+			}
+			
+			sReturn = sProject;
+		}//end main:		
+		return sReturn;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getRepositoryBranchDefault() throws ExceptionZZZ {		
+		return IConfigJGIT.sBRANCH_DEFAULT;
+	}
+
+	@Override
+	public String getRepositoryBranchAll() throws ExceptionZZZ {		
+		return IConfigJGIT.sBRANCH_ALL;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String readRepositoryBranch() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sBranch = objOpt.readValue("branch");
+			if(StringZZZ.isEmpty(sBranch)) {
+				sBranch = this.getRepositoryBranchAll();				
+			}
+			sReturn = sBranch;
+		}//end main:		
+		return sReturn;
+	}
+	
+	
+
+	
+	//++++++++++++++++++++++++++++++++++++++++++				
 	@Override
 	public String getCommentDefault() throws ExceptionZZZ {
 		return "";
 	}
-	
-	//### aus IConfigStarterCommitJGIT
-	//siehe dort...
-	
-	//### aus IConfigStarterGIT
 	@Override
-	public String readActionPull() throws ExceptionZZZ {
+	public String readComment() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("pull");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String readActionPush() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("push");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String readActionCommitAndPush() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("commitAndPush");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	
-	//++++++++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String getConnectionTypeDefault() {
-		return "ssh";
-	}
-	@Override
-	public String readConnectionType() throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			boolean bReturn = false;
-			
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			bReturn = this.isConnectionTypeSSH();
-			if(bReturn) {
-				sReturn = "ssh";
-				break main;
-			}
-			
-			bReturn = this.isConnectionTypeHTTPS();
-			if(bReturn) {
-				sReturn = "https";
-				break main;
-			}
-				
-			sReturn = this.getConnectionTypeDefault();			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public boolean isConnectionTypeSSH() throws ExceptionZZZ{
-		boolean bReturn = false;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sReturn = objOpt.readValue("ssh");	
-			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
-			
-		}//end main:		
-		return bReturn;
-	}
-	
-	@Override
-	public boolean isConnectionTypeHTTPS() throws ExceptionZZZ{
-		boolean bReturn = false;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sReturn = objOpt.readValue("https");
-			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
-			
-		}//end main:		
-		return bReturn;
-	}
-		
-		
-		//++++++++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String readRepositoryRemoteHost() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sHost = objOpt.readValue("rrh");
-			if(StringZZZ.isEmpty(sHost)) {
-				sHost = this.getRepositoryRemoteHostDefault();				
-			}
-			
-			sReturn = sHost;
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ{
-		return "github.com";
-	}
-	
-	@Override
-	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sHost = objOpt.readValue("rrac");
-			if(StringZZZ.isEmpty(sHost)) {
-				sHost = this.getRepositoryRemoteAccountDefault();				
-			}
-			
-			sReturn = sHost;
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ{
-		return "firak01";
-	}
-	
-	
-	
-	//++++++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String getPersonalAccessTokenDefault() {
-		return ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
-	}
-	@Override
-	public String readPersonalAccessToken() throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("pat");
+			sReturn = objOpt.readValue("comment");
 			if(sReturn==null){
-				sReturn = this.getPersonalAccessTokenDefault();
+				sReturn = this.getCommentDefault();
 			}
 		}//end main:		
 		return sReturn;
+
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++	
+	@Override
+	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("rra");
+			if(sReturn==null){
+				sReturn = this.getRepositoryRemoteAliasDefault();
+			}
+		}//end main:		
+		return sReturn;
+	}
+	@Override
+	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
+		return IConfigJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	}
 }

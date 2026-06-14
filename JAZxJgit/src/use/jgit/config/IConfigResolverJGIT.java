@@ -3,7 +3,7 @@ package use.jgit.config;
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 
-public interface IConfigResolverJGIT extends IConfigStarterCommitJGIT{
+public interface IConfigResolverJGIT extends IConfigStarterLocalJGIT{
 
 	//#####################################################################
 	//####### Konfiguration der Argumgentuebergabe von aussen an das Program (s. GetOptZZZ).

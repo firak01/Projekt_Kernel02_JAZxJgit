@@ -21,12 +21,12 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
-import use.jgit.AbstractJgitStarter;
+import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
@@ -47,7 +47,7 @@ import use.jgit.util.JgitUtilZZZ;
  *
  * @param <T>
  */
-public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitStarterSSH{
+public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterSSH{
 	private static final long serialVersionUID = 521157607363069534L;
 	public static final String sPROTOCOL="git";
 	
@@ -56,7 +56,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		super();			
 	}
 	
-	//### aus IJgitStarter
+	//### aus IJgitStarterRemote
 	@Override 
 	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {
 		return JgitStarterSSH.sPROTOCOL;
@@ -75,11 +75,15 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			String sAccount = this.getRepositoryRemoteAccount();						
 			String sRepositoryProjectRemote = this.getRepositoryProject();	
 			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
-			this.sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlSSH(sHost, sAccount, sRepositoryProjectRemote);			
+			this.sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH(sHost, sAccount, sRepositoryProjectRemote);			
 		}
 		return this.sRepositoryTotalRemote;
 	}
 	
+	/** Ohne ein IConfig - Objekt als Argument, muss alles aus den Properties des Objekts gelesen werden.
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
 	@Override
 	public boolean configureGit() throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -141,7 +145,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 			}
 			this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 			
-			String sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
+			String sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
 			this.setRepositoryTotalRemote(sRepositoryTotalRemote);
 				
 			
@@ -159,7 +163,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	//##################################################
 	//###### PULL ######################################
 	@Override 
-	public boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -422,12 +426,12 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	//###### CommitAndPush ###########################################
 
 	@Override
-	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		return this.commitAndPushit(objConfig, null);	
 	}
 	
 	@Override
-	public boolean commitAndPushit(IConfigStarterJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
+	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 			try {
@@ -506,9 +510,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 				Git git = this.getGitObject();
 				boolean bSuccessCommit = this.commitit(git, sCommentIn);
 				if(bSuccessCommit) {
-					System.out.println("commit erfolgreich");
+					System.out.println("commitit erfolgreich");
 				}else {
-					System.out.println("commit NICHT erfolgreich");
+					System.out.println("commitit NICHT erfolgreich");
 					break main;
 				}
  
@@ -564,7 +568,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	
 	
 	@Override
-	public boolean pushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -733,7 +737,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 	//##############################
 	//###### FETCH #################
 	@Override
-	public boolean fetchit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {	
+	public boolean fetchit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 			try {
@@ -830,59 +834,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarter<T> implements IJgitSt
 		}//end main:
 		return bReturn;
 	}
-	
 
-//	@Override
-//	public boolean fetchit(Git git) throws ExceptionZZZ {
-//		boolean bReturn = false;
-//		main:{
-//			try {
-//				//Finde geaenderte und neue Dateien fuer den Commit			
-//				System.out.println("STATUS BEFORE FETCH");		
-//				this.printStatus(git);
-//				
-//				System.out.println("### DEGUB START");				
-//				try {
-//					JgitUtilZZZ.debugForFetch(git);
-//				} catch (URISyntaxException e) {
-//					ExceptionZZZ ez = new ExceptionZZZ(e);
-//					throw ez;
-//				}
-//		    	System.out.println("### DEBUG ENDE");
-//		        //##################################################################
-//
-//				//s. ChatGPT vom 20260313
-//		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-//		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-//		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-//		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-//		        	        
-//		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-//		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
-//		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-//		        
-//		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-//		        
-//		        String sBranch = this.getRepositoryBranch();
-//		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
-//			    System.out.println(("FETCH DONE"));
-//			  	
-//				
-//				//##################################################################		        
-//		        System.out.println("STATUS AFTER FETCH");
-//		        this.printStatus(git);
-//		        
-//		        bReturn = true;
-//			}catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			} catch (IOException ioe) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
-//				throw ez;
-//			}
-//		}//end main:
-//		return bReturn;
-//	}
 	
 	//###############################################
 	//### FLAG HANDLING

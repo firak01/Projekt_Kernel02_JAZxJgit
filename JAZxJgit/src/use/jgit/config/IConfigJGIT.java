@@ -17,27 +17,4 @@ public interface IConfigJGIT extends IKernelConfigZZZ{
 	public  static String sFILE_CONFIG_DEFAULT = "";                //wird hier nicht benutzt... z.B.: "ZKernelConfigKernel_default.ini";
 	public  static String sKEY_APPLICATION_DEFAULT = "JGIT";
 	public  static String sNUMBER_SYSTEM_DEFAULT= "";               //wird hier nicht benutzt    z.B.: "01";
-	
-	
-	
-	//das lokale Repository-Verzeichnis
-	public String readRepositoryLocal() throws ExceptionZZZ;
-	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ;
-	
-	//... daran kommt dann noch das Projektverzeichnis
-	public String getRepositoryProjectNameDefault() throws ExceptionZZZ;
-	public String readRepositoryProjectName() throws ExceptionZZZ;
-	
-	//... der zu verwendende Branch. Falls nicht gesetzt werden im Standard alle Branches genommen.
-	public String getRepositoryBranchDefault() throws ExceptionZZZ;
-	public String getRepositoryBranchAll() throws ExceptionZZZ;
-	public String readRepositoryBranch() throws ExceptionZZZ;
-	
-	//... ein moeglicher Kommentar, z.B. für einen (notwendigen) Commit, auch nach dem Aufloesen des Merge-Konflikts
-	public String getCommentDefault() throws ExceptionZZZ;
-	public String readComment() throws ExceptionZZZ;
-	
-	//Verwende das ueber diesen Alias definerte remote Repository
-	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
-	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
 }

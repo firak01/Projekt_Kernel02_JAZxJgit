@@ -12,12 +12,12 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.FileTextReaderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
-import use.jgit.AbstractJgitStarterCommit;
+import use.jgit.AbstractJgitStarterLocal;
 import use.jgit.JgitStarterMain;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigResolverJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.tool.resolve.GitConflictResolverUtil;
 import use.jgit.util.JgitUtilZZZ;
 
@@ -29,11 +29,11 @@ import use.jgit.util.JgitUtilZZZ;
 //public class JgitResolver<T> extends AbstractJgitStarter<T> implements IJgitResolver, IJgitResolverEnabled{
 
 //Also nutze daraus alles was für den Commit wichtig ist.
-public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJgitResolver, IJgitResolverEnabled{
+public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements IJgitResolver, IJgitResolverEnabled{
 	private static final long serialVersionUID = 521157607363069534L;
 	
 	//### Konstruktor
-	public JgitResolver() {	
+	public JgitResolverLocal() {	
 		super();			
 	}
 	
@@ -54,7 +54,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 				
 				if(objEnumStrategyMergeConflict==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 								
@@ -83,7 +83,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
 				//JgitResolver braucht nur das lokale Repository zu konfigurieren, kein GIT-Objekt, komplett				
-				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigStarterCommitJGIT)objConfig);
+				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigStarterLocalJGIT)objConfig);
 				if(bLocalRepositoryConfigured) {
 					System.out.println("Lokales Repository erfolgreich konfiguriert");
 				}else {
@@ -93,7 +93,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
-					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -123,7 +123,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		boolean bReturn = false;
 		main:{
 			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -140,13 +140,13 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -172,7 +172,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 				
 			}
@@ -196,7 +196,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				}else {
 					//Default
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 			}
@@ -228,7 +228,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
-					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 //				
@@ -284,20 +284,20 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 		main:{
 		try {
 			if(StringZZZ.isEmpty(sFilePathTotal)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -321,7 +321,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
@@ -364,7 +364,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 				}else {
 					//Default
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolver.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 			}
@@ -383,7 +383,7 @@ public class JgitResolver<T> extends AbstractJgitStarterCommit<T> implements IJg
 	//##############################################################################
 	//### aus IJgitStarterCommit
 	@Override
-	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try{

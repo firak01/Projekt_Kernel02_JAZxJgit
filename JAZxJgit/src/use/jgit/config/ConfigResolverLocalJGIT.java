@@ -31,13 +31,13 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigResolverJGIT extends AbstractConfigStarterCommitJGIT implements IConfigResolverJGIT{
+public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT implements IConfigResolverJGIT{
 	private static final long serialVersionUID = 5176350334837106190L;
 
-	public ConfigResolverJGIT() throws ExceptionZZZ{
+	public ConfigResolverLocalJGIT() throws ExceptionZZZ{
 		super();
 	}
-	public ConfigResolverJGIT(String[] saArg) throws ExceptionZZZ {
+	public ConfigResolverLocalJGIT(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 			
@@ -67,7 +67,7 @@ public class ConfigResolverJGIT extends AbstractConfigStarterCommitJGIT implemen
 		return "Konflikt manuel aufgelöst.";
 	}
 		
-	//### aus IConfigStarterGIT
+	//### aus IConfigResolverGIT
 	@Override
 	public String readActionConflict() throws ExceptionZZZ {
 		String sReturn = null;
@@ -93,7 +93,6 @@ public class ConfigResolverJGIT extends AbstractConfigStarterCommitJGIT implemen
 		}//end main:		
 		return sReturn;
 	}	
-	
 	
 	@Override
 	public String readFilePath() throws ExceptionZZZ {

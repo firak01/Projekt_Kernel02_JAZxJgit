@@ -5,11 +5,10 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 
-public interface IJgitStarterCommit {
-//	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
+public interface IJgitStarterLocal {
 	
 	//+++ Per Argument übergebene Werte
 	public String getRepositoryProject() throws ExceptionZZZ;
@@ -21,14 +20,14 @@ public interface IJgitStarterCommit {
 	public String getRepositoryLocalBase() throws ExceptionZZZ;
 	public void setRepositoryLocalBase(String sRepositoryBaseLocal) throws ExceptionZZZ;
 
-	public String getRepositoryRemoteAlias() throws ExceptionZZZ;
+	public String getRepositoryRemoteAlias() throws ExceptionZZZ; //zwar REMOTE, wird aber zum Setzen von den Einträgen in der lokalen config-Datei gebraucht
 	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
 		
 	//+++ Errechnete Werte
 	public String getRepositoryLocalTotal() throws ExceptionZZZ;
 	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
 
-	public String getRepositoryTotalRemote() throws ExceptionZZZ;		
+	public String getRepositoryTotalRemote() throws ExceptionZZZ; //zwar REMOTE, wird aber zum Setzen von den Einträgen in der lokalen config-Datei gebraucht	
 	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ;
 	
 	//+++ Arbeit mit dem GitObject, etc.
@@ -40,27 +39,26 @@ public interface IJgitStarterCommit {
 	public void addFileUntracked() throws ExceptionZZZ;
 	public void addFileUntracked(Git git) throws ExceptionZZZ;
 	
+	//+++ Arbeiten mit dem LOCALEN Repository-Object, etc.
+	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	
+	public boolean configureRepositoryLocal(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	
+	public boolean configureGit() throws ExceptionZZZ;
+	public boolean configureRepositoryLocal() throws ExceptionZZZ;
 	
-	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
+    //+++ Arbeiten mit dem GIT-Objekt
+	public boolean statusit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	public boolean statusit(Git git) throws ExceptionZZZ;
 	
-	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;	
-	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sComment) throws ExceptionZZZ;
+	public boolean commitit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	
+	public boolean commitit(IConfigStarterLocalJGIT objConfig, String sComment) throws ExceptionZZZ;
 	public boolean commitit(Git git) throws ExceptionZZZ;
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	
-	//+++ Defaultkommentar, wenn keiner übergeben wurde. Ggfs. mit Besonderheit, z.B. beim Auflösen von Konflikten
+	//+++ Für Commit: Defaultkommentar, wenn keiner übergeben wurde. Ggfs. mit Besonderheit, z.B. beim Auflösen von Konflikten
 	public String getCommentCommit() throws ExceptionZZZ;
 	public void setCommentCommit(String sCommentCommit) throws ExceptionZZZ;
-	
+		
 	public String getCommentCommitDefault() throws ExceptionZZZ;
-	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ;
-	
-	//+++ Arbeiten mit dem LOCALEN Repository-Object, etc.
-	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;	
-	public boolean configureRepositoryLocal(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ;
-	
-	public boolean configureGit() throws ExceptionZZZ;
-	public boolean configureRepositoryLocal() throws ExceptionZZZ;	
+	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ;	
 }

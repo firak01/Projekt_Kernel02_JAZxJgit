@@ -117,19 +117,40 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	public static String computeRepositoryUrlSSH(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalSSH(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlBaseSSH = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHostIn, sAccountIn);		
-			sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBaseSSH, sRepositoryProjectIn);
+			sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBaseSSH, sRepositoryProjectIn);
 		}//end main:
 		return sReturn;
 	}
 	//####################################
 	
+	/** Berechne die Remote Url - auch wenn eine https Url uebergeben worden ist - passend fuer HTTPS	 	
+	 * Zum Einsatz beim FETCH
+	 * @param sUrlRepoRemoteIn
+	 * @param sPAT
+	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlTotalSSH_forFetch(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		return JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlRepoRemoteIn);	
+	}
 	
-	public static String computeRepositoryUrlSSH_forFetch(String sUrlRepoRemoteIn) throws ExceptionZZZ{
-		return JgitUtilSSH.computeRepositoryUrlSSH(sUrlRepoRemoteIn);	
+	/** Berechne die Remote Url - auch wenn eine https Url uebergeben worden ist - passend fuer HTTPS	 	
+	 * Zum Einsatz beim PUSCH
+	 * @param sUrlRepoRemoteIn
+	 * @param sPAT
+	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlTotalSSH_forPush(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			sReturn = computeRepositoryUrlTotalSSH_forFetch(sUrlRepoRemoteIn);
+		}//end main:
+		return sReturn;
 	}
 	
 	
@@ -138,7 +159,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String computeRepositoryUrlSSH(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalSSH(String sUrlRepoRemoteIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{		
 			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
@@ -149,14 +170,14 @@ public class JgitUtilSSH implements IConstantZZZ{
 			String sRepositoryAccountIn = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
 			
-			String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
 	}
 	
 	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlSSH(String sUrlBaseSshWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalSSH(String sUrlBaseSshWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlBaseSshWithAccountIn)){
@@ -664,7 +685,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
 				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
 				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryTotalUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 				System.out.println("Url für die Suche nach dem RepositoryAlias. Remote: " + sUrlRepoRemote);
 				
 				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.
@@ -782,7 +803,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		        //++++++++++++
 		        //Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
-		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlSSH_forFetch(sUrlRepoRemoteIn);
+		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH_forFetch(sUrlRepoRemoteIn);
 		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
 				
 		        //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.

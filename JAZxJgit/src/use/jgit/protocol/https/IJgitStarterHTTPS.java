@@ -4,11 +4,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitStarter;
+import use.jgit.IJgitStarterRemote;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.util.JgitUtilHTTPS;
 
-public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarter{
+public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarterRemote{
 	public void 	setPersonalAccessToken(String sPat) throws ExceptionZZZ;
 	public String getPersonalAccessToken() throws ExceptionZZZ;
 	

@@ -84,7 +84,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	}
 	
 	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlGIT(String sUrlBaseGitWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryTotalUrlGIT(String sUrlBaseGitWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlBaseGitWithAccountIn)){
@@ -109,7 +109,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlBaseSSH = JgitUtilGIT.computeRepositoryUrlBaseGIT(sHostIn, sAccountIn);		
-			sReturn = JgitUtilSSH.computeRepositoryUrlSSH(sUrlBaseSSH, sRepositoryProjectIn);
+			sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBaseSSH, sRepositoryProjectIn);
 		}//end main:
 		return sReturn;
 	}

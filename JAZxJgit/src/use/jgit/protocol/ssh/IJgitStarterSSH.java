@@ -4,10 +4,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitStarter;
+import use.jgit.IJgitStarterRemote;
 import use.jgit.resolve.IJgitResolverEnabled;
 
-public interface IJgitStarterSSH extends IJgitStarterSSHEnabled, IJgitStarter{
+public interface IJgitStarterSSH extends IJgitStarterSSHEnabled, IJgitStarterRemote{
 	
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ;
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ;

@@ -1,8 +1,6 @@
 package use.jgit.protocol.https;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
@@ -18,14 +16,10 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
-import basic.zBasic.util.web.cgi.UrlLogicZZZ;
-import use.jgit.AbstractJgitStarter;
-import use.jgit.AbstractJgitStarterCommit;
+import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
-import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
@@ -44,7 +38,7 @@ import use.jgit.util.JgitUtilZZZ;
  *
  * @param <T>
  */
-public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgitStarterHTTPS{
+public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterHTTPS{
 	private static final long serialVersionUID = -3594348507412511385L;
 	public static final String sPROTOCOL="https";
 	
@@ -86,7 +80,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 	
 	
-	//### aus IJgitStarter
+	//### aus IJgitStarterRemote
 	@Override 
 	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {
 		return JgitStarterHTTPS.sPROTOCOL;
@@ -105,7 +99,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 			String sAccount = this.getRepositoryRemoteAccount();
 			String sRepositoryProjectRemote = this.getRepositoryProject();
 			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
-			this.sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sHost, sAccount, sRepositoryProjectRemote);			
+			this.sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sHost, sAccount, sRepositoryProjectRemote);			
 		}
 		return this.sRepositoryTotalRemote;
 	}
@@ -176,7 +170,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 				
 				
-				String sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryBaseRemote, sRepositoryProjectRemote);
+				String sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sRepositoryBaseRemote, sRepositoryProjectRemote);
 				this.setRepositoryTotalRemote(sRepositoryTotalRemote);
 				
 				//+++++++++++++++++++++++++++++++
@@ -205,7 +199,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//###########################################################################
 	//###### PULL ###############################################################
 	@Override 
-	public boolean pullit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {			
@@ -476,13 +470,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//##########################################################################
 	//### CommitAndPushit
 	@Override
-	public boolean commitAndPushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		return commitAndPushit(objConfig, null);
 	}
 	
 	
 	@Override
-	public boolean commitAndPushit(IConfigStarterJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
+	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 		try {
@@ -645,7 +639,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 //				String sUrlRemote = "https://" + sAccountFromRepo + ":" + sPAT + "@" + sUrlPartFromRepo;
 
 				
-				String sUrlRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forPush(sUrlRepoRemote, sPAT);
+				String sUrlRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS_forPush(sUrlRepoRemote, sPAT);
 				
 //				String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemote);
 //				String sAccountFromRepo = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemote);
@@ -703,7 +697,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	
 
 	@Override 
-	public boolean pushit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {
+	public boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {			
@@ -796,9 +790,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 				Git git = this.getGitObject();
 				boolean bSuccessPush = this.pushit(git);
 		        if(bSuccessPush) {
-					System.out.println("push erfolgreich");
+					System.out.println("pushit erfolgreich");
 				}else {
-					System.out.println("push NICHT erfolgreich");
+					System.out.println("pushit NICHT erfolgreich");
 					break main;
 				}
 				git.close();
@@ -867,7 +861,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 	//##############################
 	//###### FETCH #################
 	@Override
-	public boolean fetchit(IConfigStarterJGIT objConfig) throws ExceptionZZZ {	
+	public boolean fetchit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 		try {
@@ -973,59 +967,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarter<T> implements IJgit
 		}//end main:
 		return bReturn;
 	}
-	
-//	@Override
-//	public boolean fetchit(Git git) throws ExceptionZZZ {
-//		boolean bReturn = false;
-//		main:{
-//			try {
-//				//Finde geaenderte und neue Dateien fuer den Commit			
-//				System.out.println("STATUS BEFORE FETCH");		
-//				this.printStatus(git);
-//				
-//				System.out.println("### DEGUB START");				
-//				try {
-//					JgitUtilZZZ.debugForFetch(git);
-//				} catch (URISyntaxException e) {
-//					ExceptionZZZ ez = new ExceptionZZZ(e);
-//					throw ez;
-//				}
-//		    	System.out.println("### DEBUG ENDE");
-//		        //##################################################################
-//		        
-//				//s. ChatGPT vom 20260313
-//		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-//		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-//		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-//		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-//		        	        
-//		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen 
-//		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
-//		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
-//
-//		        String sRepositoryRemote = this.getRepositoryTotalRemote();
-//		        
-//		        String sBranch = this.getRepositoryBranch();
-//		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
-//			    System.out.println(("FETCH DONE"));
-//			  	
-//				
-//				//##################################################################		        
-//		        System.out.println("STATUS AFTER FETCH");
-//		        this.printStatus(git);
-//		        
-//		        bReturn = true;
-//			}catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			} catch (IOException ioe) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
-//				throw ez;
-//			}
-//		}//end main:
-//		return bReturn;
-//	}
-	
+		
 	//###############################################
 	//### FLAG HANDLING
 	//###############################################

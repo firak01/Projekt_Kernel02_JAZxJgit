@@ -855,7 +855,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        //++++++++++++++
 		        //Die URL neu auszurechnen macht Sinn, wenn z.B. eine SSH Adresse übergeben wird. Dann muss das nach HTTPS umgewandelt werden.				
 		        //In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
-		        String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
+		        String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
 		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
 		        
 		        //Aber: Anders als beim SSH Weg, wird hier kein "RemoteAlias" verwendet,
@@ -1198,7 +1198,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	 * @throws ExceptionZZZ
 	 */
-	public static String computeRepositoryUrlHTTPS_forFetch(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalHTTPS_forFetch(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			String sHostIn = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);//.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
@@ -1207,7 +1207,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			
 			String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl(JgitStarterHTTPS.sPROTOCOL, sUrlAccount);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseWithProtocolIn, sHostIn, sAccountFromRepo, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sUrlBaseWithProtocolIn, sHostIn, sAccountFromRepo, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main
 		return sReturn;
@@ -1222,10 +1222,10 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
 	 * @throws ExceptionZZZ
 	 */
-	public static String computeRepositoryUrlHTTPS_forPush(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalHTTPS_forPush(String sUrlRepoRemoteIn, String sPAT) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			sReturn = computeRepositoryUrlHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
+			sReturn = computeRepositoryUrlTotalHTTPS_forFetch(sUrlRepoRemoteIn, sPAT);
 		}//end main:
 		return sReturn;
 	}
@@ -1237,7 +1237,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String computeRepositoryUrlHTTPS(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalHTTPS(String sUrlRepoRemoteIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{			
 			String sRepositoryHostIn = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepoRemoteIn);
@@ -1245,14 +1245,14 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 			String sRepositoryAccountIn = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);			
 			
-			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
 	}
 	
 	//Z.B. HTTPS Version: 	https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlHTTPS(String sUrlBaseHttpsWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalHTTPS(String sUrlBaseHttpsWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlBaseHttpsWithAccountIn)){
@@ -1274,17 +1274,18 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	}
 	
 	
-	public static String computeRepositoryUrlHTTPS(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalHTTPS(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlBaseHTTPS = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHostIn, sAccountIn);		
-			sReturn = JgitUtilHTTPS.computeRepositoryUrlHTTPS(sUrlBaseHTTPS, sRepositoryProjectIn);
+			sReturn = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sUrlBaseHTTPS, sRepositoryProjectIn);
 		}//end main:
 		return sReturn;
 	}
 	
-	//Z.B.: https:///firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryUrlHTTPS(String sUrlBaseIn, String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	//Wenn die UrlBase für den Fetch übergeben wird, dann sieht das so aus:
+	//Z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	public static String computeRepositoryUrlTotalHTTPS(String sUrlBaseIn, String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{			
 			if(StringZZZ.isEmpty(sUrlBaseIn)){

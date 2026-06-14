@@ -31,8 +31,8 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterCommitJGIT;
-import use.jgit.config.IConfigStarterJGIT;
+import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
@@ -46,7 +46,7 @@ import use.jgit.util.JgitUtilZZZ;
  *
  * @param <T>
  */
-public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarterCommit, IJgitEnabledZZZ{
+public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarterLocal, IJgitEnabledZZZ{
 	private static final long serialVersionUID = -1998325674945232389L;
 	
 	protected volatile Git gitObject = null;
@@ -55,13 +55,13 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	protected volatile String sRepositoryBranch=null; //Der Name des Branch, wenn man es nicht auf alle Branches beziehen will.
 	
 	protected volatile String sRepositoryLocalBase=null;  //Basis Verzeichnis
-	protected volatile String sRepositoryLocalTotal=null;  //Geamt Verzeichnis
+	protected volatile String sRepositoryLocalTotal=null; //Geamt Verzeichnis
 	
-	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL
-	
+	//Remoteinformatione, die in die lokale GIT-Konfiguration geschrieben werden 
+	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL	
 	protected volatile String sRepositoryRemoteAlias=null;//die Section in der ini z.B. [origin]
 	
-
+    //Für COMMIT:
 	//Merke: Das sind ergänzende Kommentare. Der Rechnername, etc. wird immer übergeben.
 	public static String sCOMMENT_COMMIT_DEFAULT=" "; //Wenn nix angegeben wurde
 	protected volatile String sCommentCommitDefault=null; //Ggfs. in überschreibender Klasse ein besonderer Wert.
@@ -157,54 +157,6 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	    Weil es remotes/origin nicht gibt.... vermutlich wurde hier fehlerhaft der Section-Alias als Branch verwendet.
 	    
 	    
-	   inierklaerung:
-				siehe .git\config Datei, entsprechende Zeile.
-				 
-				Das ist ein sogenannter RefSpec (Reference Specification).
-				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
-				
-				Aufbau allgemein:
-				[+]<Quelle>:<Ziel>
-				
-				Also:
-				Quelle (Remote-Seite)
-				refs/heads/ = alle Branches im Remote-Repository
-				 * = Wildcard → alle Branch-Namen
-	
-				➡️ Bedeutet:
-				Hole alle Branches vom Remote
-				
-				
-				Ziel (lokal)
-				refs/remotes/origin/ = Remote-Tracking-Branches
-				* = gleicher Name wie Quelle
-	
-				➡️ Bedeutet:
-				Speichere sie lokal als origin/branchname
-				
-				------------
-				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-				Mit + sagst du:
-				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-			
-	 */
-	
-		
-	/* (non-Javadoc)
-	 * @see use.jgit.IJgitStarter#configureRepositoryLocal(use.jgit.config.IConfigStarterJGIT)
-	 * 
-	 * 
-	 * Fehlerhaft wäre
-				
-					[remote "origin"]
-						url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-						fetch = +refs/heads/*:refs/remotes/origin/*
-					[branch "master"]
-						remote = origin
-						merge = refs/heads/master
-	    Weil es remotes/origin nicht gibt.... vermutlich wurde hier fehlerhaft der Section-Alias als Branch verwendet.
-	    
-	    
 	   Minierklaerung:
 				siehe .git\config Datei, entsprechende Zeile.
 				 
@@ -236,9 +188,8 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 			
 	 */
-	//public boolean configureRepositoryLocal(IConfigStarterJGIT objConfig) throws ExceptionZZZ{
 	@Override
-	public boolean configureRepositoryLocal(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
+	public boolean configureRepositoryLocal(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
@@ -277,7 +228,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
 			if(!objDirectoryRepositoryLocalTotal.exists()){
-				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
@@ -323,7 +274,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
 			if(!objDirectoryRepositoryLocalTotal.exists()){
-				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
@@ -338,14 +289,14 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				sRepositoryRemoteUrlByAlias = repo.getConfig()
 						       .getString("remote",sRepositoryRemoteAlias,"url");
 				if(StringZZZ.isEmpty(sRepositoryRemoteUrlByAlias)){
-					ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Keine Remote Repository URL bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				sRepositoryRemoteFetchByAlias = repo.getConfig()
 					       .getString("remote",sRepositoryRemoteAlias,"fetch");
 				if(StringZZZ.isEmpty(sRepositoryRemoteFetchByAlias)){
-					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarter.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Kein Remote Repository FETCH bei Verwendung des Alias '" + sRepositoryRemoteAlias, iERROR_PARAMETER_MISSING, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -398,7 +349,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	//####################################################################
 	//###### STATUS ######################################################
 	
-	//### aus IJgitStarterCommit
+	//### aus IJgitStarterLocal
 	@Override
 	public boolean statusit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -418,7 +369,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	}
 	
 	@Override
-	public boolean statusit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
+	public boolean statusit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try{
@@ -468,12 +419,12 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	 
 	//### aus IJgitStarterCommit
 	@Override
-	public boolean commitit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ {
 		return this.commitit(objConfig, null);
 	}
 	
 	@Override
-	public boolean commitit(IConfigStarterCommitJGIT objConfig, String sCommentIn) throws ExceptionZZZ {
+	public boolean commitit(IConfigStarterLocalJGIT objConfig, String sCommentIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 		
@@ -658,7 +609,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				}
 				
 				//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
+				//hier könnte man noch den RefNamen auf Gültigkeit prüfen, etc.
 				
 				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
 				if(!objFileDirTotal.exists()) {
@@ -673,17 +624,9 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 				this.setGitObject(git);
 				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
 				//##############################################
-				//Weil das was mit dem Protocol zu tun hat, hier nicht machen
-//												
-//				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-//				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
-//				//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
-//				//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
-//				String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
-//				if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
-//					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-//					JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-//				}
+				//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
+				//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+
 				bReturn = true;
 				//######################################
 			}catch(GitAPIException gae) {
@@ -696,7 +639,7 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 	
 	//#######################################
 	@Override
-	public boolean configureGit(IConfigStarterCommitJGIT objConfig) throws ExceptionZZZ{
+	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			try {			
@@ -738,18 +681,10 @@ public abstract class AbstractJgitStarterCommit<T> extends AbstractObjectWithFla
 			
 				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
 				
-				//##############################################
-				//Weil das was mit dem Protocol zu tun hat, hier nicht machen
-//													
-//					//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-//					//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)
-//					//Problem: Wenn hier dier GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
-//					//         Darum hier die remote Repository URL neu ausrechnen... String sRepositoryRemoteUrl = this.getRepositoryTotalRemote();	
-//					String sRepositoryRemoteUrl = this.computeRepositoryRemoteUrl();
-//					if(!StringZZZ.isEmpty(sRepositoryRemoteUrl)) {
-//						String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-//						JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-//					}
+				///##############################################
+				//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
+				//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
+
 				bReturn = true;
 				//######################################
 			}catch(GitAPIException gae) {
