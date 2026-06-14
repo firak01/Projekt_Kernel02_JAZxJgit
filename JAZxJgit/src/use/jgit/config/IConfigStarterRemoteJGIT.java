@@ -2,6 +2,9 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
+import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.https.JgitStarterHTTPS;
+import use.jgit.protocol.ssh.JgitStarterSSH;
 
 public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 
@@ -11,7 +14,7 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_DEFAULT="status|pull|commit|fetch|push|commitAndPush|ssh|https|git|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
+	final static String sPATTERN4GIT_REMOTE_DEFAULT= JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL + "|status|pull|commit|fetch|push|commitAndPush|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
 													  //Aktionen, ggfs. kombinierbar, aber meist nur 1 pro start:
 	                                                  //                pull, commit, fetch, push, commitAndPush 
 													  //ConnectionType: HTTPS oder SSH oder GIT, damit kann man die angegebene URL übersteuern
@@ -28,7 +31,7 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 													  //Merke: sPATTERN4FLAG_DEFAULT besteht aus
 	                                              	  //z = Flags, die dann JSON aehnlich uebergeben werden
 													  //zlocal = Lokale Flags, die dann JSON aehnlich uebergeben werden
-	final static String sPATTERN_DEFAULT= sPATTERN4GIT_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
+	final static String sPATTERN_DEFAULT= sPATTERN4GIT_REMOTE_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
 	public String readActionStatus() throws ExceptionZZZ;

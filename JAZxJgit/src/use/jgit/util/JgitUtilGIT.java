@@ -1,8 +1,11 @@
 package use.jgit.util;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 
 import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
@@ -15,6 +18,7 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
@@ -22,8 +26,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
-import use.jgit.protocol.https.JgitStarterHTTPS;
-import use.jgit.protocol.ssh.JgitStarterSSH;
+import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverUtilZZZ;
@@ -32,7 +35,7 @@ import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
 
 public class JgitUtilGIT implements IConstantZZZ{
-	public static final String sPROTOCOL_PART = JgitStarterSSH.sPROTOCOL + "@";
+	public static final String sPROTOCOL_PART = JgitStarterGIT.sPROTOCOL + "@";
 	public static String addProtocolToUrl(String sUrlRepo) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
@@ -50,36 +53,36 @@ public class JgitUtilGIT implements IConstantZZZ{
 			}else {
 				//das gefundene Protokol entfernen
 				String sUrlRepoWithoutProtocol = StringZZZ.stripLeft(sUrlRepo, sProtocolPartFound);
-				sReturn = JgitUtilSSH.sPROTOCOL_PART + sUrlRepoWithoutProtocol;
+				sReturn = JgitUtilGIT.sPROTOCOL_PART + sUrlRepoWithoutProtocol;
 			}
 		}//end main:
 		return sReturn;
 	}
 	
-	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+	//Z.B. GIT Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryAccountFromUrlGIT(String sUrlRepo) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlRepo)) break main;
 			
-			//klappt vielleicht nicht immer... sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlSSH, ":");
+			//klappt vielleicht nicht immer... sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlGIT, ":");
 			
 			//Neben dem Host steht der Account
 			String sHost = JgitUtilGIT.getHostFromUrl(sUrlRepo);	
 		
-			//sReturn = StringZZZ.mid(sRepositoryRemoteUrlSSH+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
-			//sReturn = StringZZZ.midLeftRight(sRepositoryRemoteUrlSSH+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			//sReturn = StringZZZ.mid(sRepositoryRemoteUrlGIT+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
+			//sReturn = StringZZZ.midLeftRight(sRepositoryRemoteUrlGIT+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
 			sReturn = StringZZZ.midRightLeft(sUrlRepo+UrlLogicZZZ.sURL_SEPARATOR_PATH, sHost+":", UrlLogicZZZ.sURL_SEPARATOR_PATH);
 		}//end main:
 		return sReturn;
 	}
 
-	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+	//Z.B. GIT Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryHostFromUrlGIT(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilGIT.getHostFromUrl(sUrlRepo);
 	}
 
-	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	//Z.B. GIT Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryProjectFromUrlGIT(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilGIT.getProjectFromUrl(sUrlRepo);
 	}
@@ -106,7 +109,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return sReturn;		
 	}
 	
-	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	//Z.B. GIT Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 	public static String computeRepositoryUrlTotalGIT(String sUrlBaseGitWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
@@ -120,10 +123,10 @@ public class JgitUtilGIT implements IConstantZZZ{
 				throw ez;
 			}
 			
-			String sUrlBaseSSH = sUrlBaseGitWithAccountIn;
+			String sUrlBaseGIT = sUrlBaseGitWithAccountIn;
 			String sRepositoryProject = sRepositoryProjectIn;
 			
-			sReturn = sUrlBaseSSH + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
+			sReturn = sUrlBaseGIT + UrlLogicZZZ.sURL_SEPARATOR_PATH + sRepositoryProject + ".git";
 		}//end main:
 		return sReturn;
 	}
@@ -131,15 +134,41 @@ public class JgitUtilGIT implements IConstantZZZ{
 	public static String computeRepositoryUrlTotalGIT(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			String sUrlBaseSSH = JgitUtilGIT.computeRepositoryUrlBaseGIT(sHostIn, sAccountIn);		
-			sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBaseSSH, sRepositoryProjectIn);
+			String sUrlBaseGIT = JgitUtilGIT.computeRepositoryUrlBaseGIT(sHostIn, sAccountIn);		
+			sReturn = JgitUtilGIT.computeRepositoryUrlTotalGIT(sUrlBaseGIT, sRepositoryProjectIn);
+		}//end main:
+		return sReturn;
+	}
+	
+	/** Berechne die Remote Url - auch wenn eine https Url uebergeben worden ist - passend fuer HTTPS	 	
+	 * Zum Einsatz beim FETCH
+	 * @param sUrlRepoRemoteIn
+	 * @param sPAT
+	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlTotalGIT_forFetch(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		return JgitUtilGIT.computeRepositoryUrlTotalGIT(sUrlRepoRemoteIn);	
+	}
+	
+	/** Berechne die Remote Url - auch wenn eine https Url uebergeben worden ist - passend fuer HTTPS	 	
+	 * Zum Einsatz beim PUSCH
+	 * @param sUrlRepoRemoteIn
+	 * @param sPAT
+	 * @return z.B.: https://firak01:<sPAT>@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlTotalGIT_forPush(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			sReturn = computeRepositoryUrlTotalGIT_forFetch(sUrlRepoRemoteIn);
 		}//end main:
 		return sReturn;
 	}
 	//###########################
 
 //	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-//	 * @param sRepositoryRemoteUrlSSH
+//	 * @param sRepositoryRemoteUrlGIT
 //	 * @return
 //	 * @throws ExceptionZZZ
 //	 */
@@ -156,7 +185,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 //		return sReturn;	
 //	}
 	
-	//Z.B. SSH Version: 	git@github.com:firak01   also ohne das Projekt
+	//Z.B. GIT Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryUrlBaseGIT(String sHostIn, String sAccountIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
@@ -173,23 +202,23 @@ public class JgitUtilGIT implements IConstantZZZ{
 			String sHost = sHostIn;
 			String sAccount = sAccountIn;
 			
-			sReturn = JgitStarterSSH.sPROTOCOL + "@" + sHost + ":" + sAccount;
+			sReturn = JgitStarterGIT.sPROTOCOL + "@" + sHost + ":" + sAccount;
 		}//end main:
 		return sReturn;
 	}
 
 	//#######################################################
 	/** Z.B.  von git@github.com:firak01 --> github.com
-	 * @param sRepositoryRemoteUrlSSH
+	 * @param sRepositoryRemoteUrlGIT
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String getHostFromUrl(String sRepositoryRemoteUrlSSH) throws ExceptionZZZ{
+	public static String getHostFromUrl(String sRepositoryRemoteUrlGIT) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
-			if(StringZZZ.isEmpty(sRepositoryRemoteUrlSSH)) break main;
+			if(StringZZZ.isEmpty(sRepositoryRemoteUrlGIT)) break main;
 			
-			sReturn = StringZZZ.mid(sRepositoryRemoteUrlSSH, "@", ":");
+			sReturn = StringZZZ.mid(sRepositoryRemoteUrlGIT, "@", ":");
 		}//end main:
 		return sReturn;
 	}
@@ -240,7 +269,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrlGIT)) break main;
 			
-			//klappt vielleicht nicht immer... sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlSSH, ":");
+			//klappt vielleicht nicht immer... sReturn = StringZZZ.right(":"+ sRepositoryRemoteUrlGIT, ":");
 			
 			//Neben dem Host steht der Account
 			String sHost = JgitUtilGIT.getHostFromUrl(sRepositoryRemoteUrlGIT);	
@@ -251,7 +280,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	}
 	
 	/** Z.B.  von Z.B. von ssh://git@github.com/firak01/repo.git
-	 * @param sRepositoryRemoteUrlSSH
+	 * @param sRepositoryRemoteUrlGIT
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
@@ -275,21 +304,207 @@ public class JgitUtilGIT implements IConstantZZZ{
 	}
 	
 	
-
+	//######################################################
+	//### FETCH
+//	public static FetchResult fetchIgnoreNothingToFetch(
+//	        Git git,	        
+//	        CredentialsProvider credentialsProvider,
+//	        String sBranchIn
+//	) throws ExceptionZZZ {
+//		FetchResult objReturn = null;
+//		main:{
+//		    try {
+//		        // =========================
+//		        // 1. FETCH (nur ein Branch!)
+//		        // =========================
+//		        FetchCommand fetchCommand = git.fetch();
+//
+//		        if (credentialsProvider != null) {
+//		            fetchCommand.setCredentialsProvider(credentialsProvider);
+//		        }
+//		        
+//		        //aus .git\config Datei:
+//		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+//		        String branch = "master";
+//		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
+//		        
+//		        String remoteRef = "refs/heads/" + branch;
+//		        String localTrackingRef = "refs/remotes/origin/" + branch;
+//		        
+//		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+//		        //+ für "fast forward"
+//		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+//
+//		        objReturn = fetchCommand.call();
+//	
+//		        
+//		        
+//		        // Optional: Logging / Prüfung
+//		        if (objReturn.getTrackingRefUpdates().isEmpty()) {
+//		            System.out.println("Fetch erfolgreich, aber keine Änderungen vorhanden.");
+//		        } else {
+//		            System.out.println("Fetch erfolgreich, Änderungen empfangen.");
+//		        }
+//	
+//		    } catch (TransportException te) {
+//	
+//		        String msg = te.getMessage();
+//	
+//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+//		            System.out.println("Nothing to fetch - Repository ist aktuell.");
+//		            return null; // bewusst null zurückgeben als Signal
+//		        }
+//	
+//		        // alle anderen Fehler weiterwerfen!
+//		        ExceptionZZZ ez = new ExceptionZZZ(te);
+//		        throw ez;
+//		    }catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			} 
+//		}//end main:
+//		 return objReturn;
+//	}
+//	
+//	/**
+//	 * @param git
+//	 * @param credentialsProvider
+//	 * @param sRemoteRepositoryAlias
+//	 * @param sBranchIn
+//	 * @return
+//	 * @throws ExceptionZZZ
+//	 * 
+//	 * 
+//	 		    Minierklaerung:
+//				siehe .git\config Datei, entsprechende Zeile.
+//				 
+//				Das ist ein sogenannter RefSpec (Reference Specification).
+//				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+//				
+//				Aufbau allgemein:
+//				[+]<Quelle>:<Ziel>
+//				
+//				Also:
+//				Quelle (Remote-Seite)
+//				refs/heads/ = alle Branches im Remote-Repository
+//				 * = Wildcard → alle Branch-Namen
+//	
+//				➡️ Bedeutet:
+//				Hole alle Branches vom Remote
+//				
+//				
+//				Ziel (lokal)
+//				refs/remotes/origin/ = Remote-Tracking-Branches
+//				* = gleicher Name wie Quelle
+//	
+//				➡️ Bedeutet:
+//				Speichere sie lokal als origin/branchname
+//				
+//				------------
+//				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+//				Mit + sagst du:
+//				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+//				 
+//	 */
+//	public static FetchResult fetchIgnoreNothingToFetch(
+//	        Git git,	        
+//	        CredentialsProvider credentialsProvider,
+//	        String sRemoteRepositoryAlias,
+//	        String sBranchIn
+//	) throws ExceptionZZZ{
+//		FetchResult objReturn = null;
+//		main:{
+//		    try {
+//		    	try {
+//					JgitUtilZZZ.debugForFetch(git);
+//				} catch (URISyntaxException e) {
+//					ExceptionZZZ ez = new ExceptionZZZ(e);
+//					throw ez;
+//				}
+//		    	
+//		    	
+//		        // =========================
+//		        // 1. FETCH (nur ein Branch!)
+//		        // =========================
+//		        FetchCommand gitCommandFetch = git.fetch();
+//		        
+//		        //SSH-Weg: Ohne URL!
+//		        //dafuer mit Alias
+//		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
+//		        
+//		        if (credentialsProvider != null) {
+//		            gitCommandFetch.setCredentialsProvider(credentialsProvider);
+//		        }
+//		        
+//		        //aus .git\config Datei:
+//		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+//		        String sBranch = "master";
+//		        if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+//		        
+//		        String remoteRef = "refs/heads/" + sBranch;
+//		        String localTrackingRef = "refs/remotes/origin/" + sBranch;
+//		        
+//		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+//		        //+ für "fast forward"
+//		        gitCommandFetch.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+//
+//		        
+//		        
+////		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
+////			    gitCommandFetch.setRefSpecs(
+////			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
+////			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
+////
+////			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
+////			    		//der zweite Teil ist remote... 
+////			    		//das Wort orign taucht nur als Section auf
+////			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
+////			    		//                   Bei der Konfiguration
+////			    		new RefSpec("+refs/heads/" + sBranch + ":refs/remotes/origin/"+sBranch);	
+////			    		
+////			    	);
+//		        
+//		        
+//		        objReturn = gitCommandFetch.call();
+//	
+//		     
+//	
+//		    } catch (TransportException te) {
+//	
+//		        String msg = te.getMessage();
+//	
+//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+//		            System.out.println("Nothing to fetch - Lokales Repository ist aktuell bzg. Remore Repository.");
+//		            return null; // bewusst null zurückgeben als Signal
+//		        }
+//	
+//		        // alle anderen Fehler weiterwerfen!
+//		        ExceptionZZZ ez = new ExceptionZZZ(te);
+//		        throw ez;
+//		    }catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			} catch (IOException ioe) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//				throw ez;
+//			} 
+//		}//end main:
+//		 return objReturn;
+//	}
 	
 	//######################################################
 	//###  PULL
 	
 	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
 	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim SSH Weg nicht direkt 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
 	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
 	 *        
 	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
 	 * 
 	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
   	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-  	 *        Darum eher pullSSH_by_FetchMerge verwenden.
+  	 *        Darum eher pullGIT_by_FetchMerge verwenden.
   	 *        
 	 * @param git
 	 * @param credentialsProvider
@@ -303,14 +518,14 @@ public class JgitUtilGIT implements IConstantZZZ{
 	
 	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
 	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim SSH Weg nicht direkt 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
 	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
 	 *        
 	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
 	 * 
   	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
   	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-  	 *        Darum eher pullSSH_by_FetchMerge verwenden.
+  	 *        Darum eher pullGIT_by_FetchMerge verwenden.
   	 *        
 	 * @param git
 	 * @param credentialsProvider
@@ -342,7 +557,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	
 	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
 	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim SSH Weg nicht direkt 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
 	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
 	 *        
 	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
@@ -385,10 +600,10 @@ public class JgitUtilGIT implements IConstantZZZ{
 		
 		        
 		        //wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
-				System.out.println("SSH-Loesung: Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				System.out.println("GIT-Loesung: Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
 				
 				//+++++++++++++++
-				//Die URL neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
+				//Die URL neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach GIT umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
 				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
 				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
@@ -503,15 +718,15 @@ public class JgitUtilGIT implements IConstantZZZ{
 		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
 		       		        
 		        //Zwar geht Pull auch direkt, aber: Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am Schluss.							
-				System.out.println("SSH-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");
+				System.out.println("GIT-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");
 				
 		        
 		        Repository repo = git.getRepository();
 		
 		        //++++++++++++
-		        //Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach SSH umgewandelt werden.				
+		        //Das neu auszurechnen macht Sinn, wenn z.B. eine HTTPS Adresse übergeben wird. Dann muss das nach GIT umgewandelt werden.				
 				//In der der zuvor gemachten Git Konfiguration wurde sichergestellt "ensureRemoteExists", das solch ein Eintrag existiert.
-		        String sUrlRepoRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH_forFetch(sUrlRepoRemoteIn);
+		        String sUrlRepoRemote = JgitUtilGIT.computeRepositoryUrlTotalGIT_forFetch(sUrlRepoRemoteIn);
 		        System.out.println("Url fuer Fetch (neu ausgerechnet): '" + sUrlRepoRemote + "'");
 				
 		        //Aber: Anders als beim HTTPS Weg, darf die URL nicht direkt übergeben werden.
@@ -523,13 +738,13 @@ public class JgitUtilGIT implements IConstantZZZ{
 				//denn hier in der static Methode geht ja leider nicht: this.getRepositoryRemoteAlias(); 
 		        
 				String sRemoteRepositoryAlias = JgitUtilZZZ.findRemoteNameByUrl(git, sUrlRepoRemote);
-				System.out.println("RepositoryAlias fuer Fetch (SSH Weg, neu gesucht per Url): '" + sRemoteRepositoryAlias + "'");
+				System.out.println("RepositoryAlias fuer Fetch (GIT Weg, neu gesucht per Url): '" + sRemoteRepositoryAlias + "'");
 						        
 		        // =========================
 		        // 1. FETCH (nur ein Branch!)
 		        // ========================= 
 		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
-				FetchResult fetchResult = JgitUtilSSH.fetchIgnoreNothingToFetch(git, credentialsProvider, sRemoteRepositoryAlias, sBranchIn);
+				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, credentialsProvider, sRemoteRepositoryAlias, sBranchIn);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
@@ -607,7 +822,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return pullIgnoreCheckoutConflictsGIT(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 	}
 	
-	/** Für den SSH Weg:
+	/** Für den GIT Weg:
 	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
 	 *         Hier ist ein fetch nicht notwendig.
 	 * 
@@ -684,7 +899,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		
 	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
 	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullIgnoreCheckoutConflictsSSH_by_FetchMerge_ verwenden.
+	 *        Darum eher pullIgnoreCheckoutConflictsGIT_by_FetchMerge_ verwenden.
 		
 		s. ChatGPT 20260323, 20260508ff
 	 * @param git
@@ -786,7 +1001,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		
 	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
 	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullIgnoreCheckoutConflictsSSH_by_FetchMerge_ verwenden.
+	 *        Darum eher pullIgnoreCheckoutConflictsGIT_by_FetchMerge_ verwenden.
 		
 		s. ChatGPT 20260323, 20260508ff
 	 * @param git
@@ -873,7 +1088,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	}
 
 	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	 * @param sRepositoryRemoteUrlSSH
+	 * @param sRepositoryRemoteUrlGIT
 	 * @return
 	 * @throws ExceptionZZZ
 	 */

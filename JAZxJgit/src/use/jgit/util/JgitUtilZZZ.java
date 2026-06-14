@@ -28,6 +28,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
@@ -43,6 +45,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.config.IConfigJGIT;
+import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -820,7 +823,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 			String sProtocol = JgitUtilSSH.getProtocolFromUrl(sUrlRepo);
 			if(StringZZZ.isEmpty(sProtocol)) break main;
 			
-			if(sProtocol.equalsIgnoreCase(JgitStarterHTTPS.sPROTOCOL)) {
+			if(sProtocol.equalsIgnoreCase(JgitStarterSSH.sPROTOCOL)) {
 				bReturn = true;
 				break main;
 			}
@@ -839,7 +842,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 			String sProtocol = JgitUtilGIT.getProtocolFromUrl(sUrlRepo);
 			if(StringZZZ.isEmpty(sProtocol)) break main;
 			
-			if(sProtocol.equalsIgnoreCase(JgitStarterSSH.sPROTOCOL)) {
+			if(sProtocol.equalsIgnoreCase(JgitStarterGIT.sPROTOCOL)) {
 				bReturn = true;
 				break main;
 			}
@@ -1190,6 +1193,85 @@ Repository existingRepo = new FileRepositoryBuilder()
 	    return bReturn;
 	}
 	
+	//######################################################
+	//######### FETCH	
+	//Wenn nicht zu fetchen ist, wird eine Exception geworfen. Das ist unschoen.
+	//von ChatGPT 20260320, aber für meine einfachen zwecke brauch ich kein FetchResult, also nur die ExceptionHandling uebernommen
+	public static FetchResult fetchIgnoreNothingToFetch(
+	        Git git,
+	        String sUrlRemote,
+	        CredentialsProvider credentialsProvider
+	) throws ExceptionZZZ {
+		return JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrlRemote, credentialsProvider, null);
+	}
+	
+	public static FetchResult fetchIgnoreNothingToFetch(
+	        Git git,
+	        String sUrlRemote,
+	        CredentialsProvider credentialsProvider,
+	        String sBranchIn
+	) throws ExceptionZZZ {
+		FetchResult objReturn = null;
+		main:{
+		    try {
+		    	try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
+		    	
+		    	
+		        // =========================
+		        // 1. FETCH (nur ein Branch!)
+		        // =========================
+		        FetchCommand fetchCommand = git.fetch();
+	
+		        if (sUrlRemote != null && sUrlRemote.trim().length() > 0) {
+		            fetchCommand.setRemote(sUrlRemote); // kann Alias ODER URL sein
+		        }
+	
+		        if (credentialsProvider != null) {
+		            fetchCommand.setCredentialsProvider(credentialsProvider);
+		        }
+		        
+
+		        //aus .git\config Datei:
+		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+		        String branch = "master";
+		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
+		        
+		        String remoteRef = "refs/heads/" + branch;
+		        String localTrackingRef = "refs/remotes/origin/" + branch;
+		        
+		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+		        //+ für "fast forward"
+		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+
+		        objReturn = fetchCommand.call();
+	
+		    } catch (TransportException te) {
+	
+		        String msg = te.getMessage();
+	
+		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+		            System.out.println("Nothing to fetch - Repository ist aktuell.");
+		            return null; // bewusst null zurückgeben als Signal
+		        }
+	
+		        // alle anderen Fehler weiterwerfen!
+		        ExceptionZZZ ez = new ExceptionZZZ(te);
+		        throw ez;
+		    }catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+		    } catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			} 
+		}//end main:
+		 return objReturn;
+	}
 	
 	//######################################################
 	//######### FETCH	
@@ -1300,6 +1382,192 @@ Repository existingRepo = new FileRepositoryBuilder()
 		}//end main:
 		return bReturn;
 	}	
+	
+	public static FetchResult fetchIgnoreNothingToFetch(
+	        Git git,	        
+	        CredentialsProvider credentialsProvider,
+	        String sBranchIn
+	) throws ExceptionZZZ {
+		FetchResult objReturn = null;
+		main:{
+		    try {
+		        // =========================
+		        // 1. FETCH (nur ein Branch!)
+		        // =========================
+		        FetchCommand fetchCommand = git.fetch();
+
+		        if (credentialsProvider != null) {
+		            fetchCommand.setCredentialsProvider(credentialsProvider);
+		        }
+		        
+		        //aus .git\config Datei:
+		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+		        String branch = "master";
+		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
+		        
+		        String remoteRef = "refs/heads/" + branch;
+		        String localTrackingRef = "refs/remotes/origin/" + branch;
+		        
+		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+		        //+ für "fast forward"
+		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+
+		        objReturn = fetchCommand.call();
+	
+		        
+		        
+		        // Optional: Logging / Prüfung
+		        if (objReturn.getTrackingRefUpdates().isEmpty()) {
+		            System.out.println("Fetch erfolgreich, aber keine Änderungen vorhanden.");
+		        } else {
+		            System.out.println("Fetch erfolgreich, Änderungen empfangen.");
+		        }
+	
+		    } catch (TransportException te) {
+	
+		        String msg = te.getMessage();
+	
+		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+		            System.out.println("Nothing to fetch - Repository ist aktuell.");
+		            return null; // bewusst null zurückgeben als Signal
+		        }
+	
+		        // alle anderen Fehler weiterwerfen!
+		        ExceptionZZZ ez = new ExceptionZZZ(te);
+		        throw ez;
+		    }catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			} 
+		}//end main:
+		 return objReturn;
+	}
+	
+	/**
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sRemoteRepositoryAlias
+	 * @param sBranchIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 * 
+	 * 
+	 		    Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+	
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+				 
+	 */
+	public static FetchResult fetchIgnoreNothingToFetch(
+	        Git git,	        
+	        CredentialsProvider credentialsProvider,
+	        String sRemoteRepositoryAlias,
+	        String sBranchIn
+	) throws ExceptionZZZ{
+		FetchResult objReturn = null;
+		main:{
+		    try {
+		    	try {
+					JgitUtilZZZ.debugForFetch(git);
+				} catch (URISyntaxException e) {
+					ExceptionZZZ ez = new ExceptionZZZ(e);
+					throw ez;
+				}
+		    	
+		    	
+		        // =========================
+		        // 1. FETCH (nur ein Branch!)
+		        // =========================
+		        FetchCommand gitCommandFetch = git.fetch();
+		        
+		        //SSH-Weg: Ohne URL!
+		        //dafuer mit Alias
+		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
+		        
+		        if (credentialsProvider != null) {
+		            gitCommandFetch.setCredentialsProvider(credentialsProvider);
+		        }
+		        
+		        //aus .git\config Datei:
+		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+		        String sBranch = "master";
+		        if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+		        
+		        String remoteRef = "refs/heads/" + sBranch;
+		        String localTrackingRef = "refs/remotes/origin/" + sBranch;
+		        
+		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+		        //+ für "fast forward"
+		        gitCommandFetch.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+
+		        
+		        
+//		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
+//			    gitCommandFetch.setRefSpecs(
+//			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
+//			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
+//
+//			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
+//			    		//der zweite Teil ist remote... 
+//			    		//das Wort orign taucht nur als Section auf
+//			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
+//			    		//                   Bei der Konfiguration
+//			    		new RefSpec("+refs/heads/" + sBranch + ":refs/remotes/origin/"+sBranch);	
+//			    		
+//			    	);
+		        
+		        
+		        objReturn = gitCommandFetch.call();
+	
+		     
+	
+		    } catch (TransportException te) {
+	
+		        String msg = te.getMessage();
+	
+		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+		            System.out.println("Nothing to fetch - Lokales Repository ist aktuell bzg. Remore Repository.");
+		            return null; // bewusst null zurückgeben als Signal
+		        }
+	
+		        // alle anderen Fehler weiterwerfen!
+		        ExceptionZZZ ez = new ExceptionZZZ(te);
+		        throw ez;
+		    }catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			} catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			} 
+		}//end main:
+		 return objReturn;
+	}
 	
 	//########################################
 	//### MERGE

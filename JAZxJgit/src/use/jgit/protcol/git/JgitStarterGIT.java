@@ -1,18 +1,14 @@
 package use.jgit.protcol.git;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -24,8 +20,6 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
-import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
@@ -37,12 +31,11 @@ import use.jgit.tool.push.GitPostPushAnalyse;
 import use.jgit.tool.push.ResultPostPushAnalysis;
 import use.jgit.util.JgitUtilGIT;
 import use.jgit.util.JgitUtilHTTPS;
-import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
 
 
-/**Klasse heisst SSH, weil sie den SSH Port verwendet.
+/**Klasse heisst GIT, weil sie den GIT Port verwendet.
  * Die URLs lauten dann aber mit dem Protocol git
  * @author Fritz Lindhauer
  *
@@ -66,7 +59,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
-		return JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);
+		return JgitUtilGIT.computeRepositoryUrlBaseGIT(sHost, sAccount);
 	}
 	
 	@Override
@@ -76,7 +69,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			String sAccount = this.getRepositoryRemoteAccount();						
 			String sRepositoryProjectRemote = this.getRepositoryProject();	
 			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
-			this.sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH(sHost, sAccount, sRepositoryProjectRemote);			
+			this.sRepositoryTotalRemote = JgitUtilGIT.computeRepositoryUrlTotalGIT(sHost, sAccount, sRepositoryProjectRemote);			
 		}
 		return this.sRepositoryTotalRemote;
 	}
@@ -90,12 +83,12 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		boolean bReturn = false;
 		main:{
 		
-			//Konfiguriere JGit für SSH
+			//Konfiguriere JGit für GIT
 			
 			//+++ Zugriff sicherstellen
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
 			JGitGitConfigZZZ.configure();
-			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+			System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
 			
 			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)
@@ -117,8 +110,8 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 					ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				String sUrlSSHorHTTPS = this.searchRepositoryRemote(sRepositoryRemoteAlias);
-				sDirectoryRepositoryRemote = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSHorHTTPS);
+				String sUrlGITorHTTPS = this.searchRepositoryRemote(sRepositoryRemoteAlias);
+				sDirectoryRepositoryRemote = JgitUtilGIT.computeRepositoryUrlPartFromUrlGIT(sUrlGITorHTTPS);
 			}
 			if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -134,25 +127,25 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			}
 		
 			//Das ist umso wichtiger, weil mit HTTPS Url wird ein Credentials Provider erwartet.
-			//Den gibt es für SSH aber nicht... 
+			//Den gibt es für GIT aber nicht... 
 			//Darum muss die URL zum verwendeten Protokol stimmen.
 			String sRepositoryBaseRemote = null;
 			if(JgitUtilZZZ.isUrlHTTPS(sDirectoryRepositoryRemote)) {
 				String sAccount = JgitUtilHTTPS.getAccountFromUrl(sDirectoryRepositoryRemote);
 				String sHost = JgitUtilHTTPS.getHostFromUrl(sDirectoryRepositoryRemote);	
-				sRepositoryBaseRemote = JgitUtilSSH.computeRepositoryUrlBaseSSH(sHost, sAccount);				
+				sRepositoryBaseRemote = JgitUtilGIT.computeRepositoryUrlBaseGIT(sHost, sAccount);				
 			}else {
 				sRepositoryBaseRemote = sDirectoryRepositoryRemote;
 			}
 			this.setRepositoryBaseRemote(sRepositoryBaseRemote);
 			
-			String sRepositoryTotalRemote = JgitUtilSSH.computeRepositoryUrlTotalSSH(sRepositoryBaseRemote, sRepositoryProjectRemote);
+			String sRepositoryTotalRemote = JgitUtilGIT.computeRepositoryUrlTotalGIT(sRepositoryBaseRemote, sRepositoryProjectRemote);
 			this.setRepositoryTotalRemote(sRepositoryTotalRemote);
 				
 			
-			//+++ SSH Zugriff sicherstellen
-			//Merke: Es gibt keinen Credentials Provider für SSH.
-			//Bei SSH muss man sich auf die korrekte ssh URL verlassen
+			//+++ GIT Zugriff sicherstellen
+			//Merke: Es gibt keinen Credentials Provider für GIT.
+			//Bei GIT muss man sich auf die korrekte ssh URL verlassen
 			//Übergibt man eine HTTPS URL kommt die Fehlermeldung:
 			//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.TransportException: https://github.com/firak01/Projekt_Kernel02_JAZDummy.git: Authentication is required but no CredentialsProvider has been registered
 
@@ -174,7 +167,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				}
 						
 				//######################################################
-				//Konfiguriere JGit für SSH				
+				//Konfiguriere JGit für GIT				
 				boolean bSuccessConfigureGit = this.configureGit(objConfig);
 				if(bSuccessConfigureGit) {
 					System.out.println("Git erfolgreich konfiguriert");
@@ -185,7 +178,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 				//#####################################################################################
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / GIT / SSH)				
 				//######################################################################################				
 				
 				//################################################
@@ -196,7 +189,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 					throw ez;
 				}
 									
-				//Wird der Accountname überhaupt gebraucht bei SSH? JA, zum neuen Ausrechnen der URL
+				//Wird der Accountname überhaupt gebraucht bei GIT? JA, zum neuen Ausrechnen der URL
 				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
 				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("Accountname", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -229,13 +222,13 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 								
 				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote GIT Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
 				//###########################################
-				//Keine Besonderheit für SSH (also kein sPAT wie bei HTTPS) an dieser Stelle.
+				//Keine Besonderheit für GIT (also kein sPAT wie bei HTTPS) an dieser Stelle.
 				
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
@@ -325,7 +318,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote);
+			MergeResult objMergeResult = JgitUtilGIT.pullGIT(git, credentialsProvider, sRepoRemote);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
@@ -390,14 +383,14 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{		
-			//Merke: Bei SSH gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
+			//Merke: Bei GIT gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
 			//       FETCH + MERGE ist eigentlich optimaler als direkt.
 			//Der Weg ist über FLAGZ konfigurierbar
 			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
 			
 			
 			
-			MergeResult objMergeResult =  JgitUtilSSH.pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);
+			MergeResult objMergeResult =  JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
@@ -442,7 +435,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				}
 							
 				//######################################################
-				//Konfiguriere JGit für SSH
+				//Konfiguriere JGit für GIT
 				boolean bSuccessConfigureGit = this.configureGit(objConfig);
 				if(bSuccessConfigureGit) {
 					System.out.println("Git erfolgreich konfiguriert");
@@ -453,7 +446,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 					
 				//#####################################################################################
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH / GIT)				
 				//######################################################################################				
 				
 				//################################################
@@ -497,7 +490,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote GIT Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
@@ -579,7 +572,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				}
 							
 				//######################################################
-				//Konfiguriere JGit für SSH
+				//Konfiguriere JGit für GIT
 				boolean bSuccessConfigureGit = this.configureGit(objConfig);
 				if(bSuccessConfigureGit) {
 					System.out.println("Git erfolgreich konfiguriert");
@@ -590,7 +583,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 					
 				//#####################################################################################
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH / GIT)				
 				//######################################################################################
 				
 				//################################################
@@ -634,7 +627,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 //				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 //				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote GIT Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 //					throw ez;
 //				}
 //				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
@@ -748,7 +741,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				}
 						
 				//######################################################
-				//Konfiguriere JGit für SSH
+				//Konfiguriere JGit für GIT
 				boolean bSuccessConfigureGit = this.configureGit(objConfig);
 				if(bSuccessConfigureGit) {
 					System.out.println("Basis Git erfolgreich konfiguriert");
@@ -759,7 +752,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 				//#####################################################################################
 				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
-				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH / GIT)				
 				//######################################################################################
 				
 				String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
@@ -800,7 +793,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote GIT Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
@@ -844,7 +837,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	//###############################################
 	//### FLOGLOCAL 
 	
-	//### aus IJgitStarterSSHEnabled	
+	//### aus IJgitStarterGITEnabled	
 	@Override
 	public boolean getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagLocal(objEnumFlag.name());

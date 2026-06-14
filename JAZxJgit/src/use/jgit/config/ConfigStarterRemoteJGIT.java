@@ -7,6 +7,9 @@ import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
+import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.https.JgitStarterHTTPS;
+import use.jgit.protocol.ssh.JgitStarterSSH;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.
@@ -129,18 +132,24 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			bReturn = this.isConnectionTypeSSH();
+			bReturn = this.isConnectionTypeGIT();
 			if(bReturn) {
-				sReturn = "ssh";
+				sReturn = JgitStarterGIT.sPROTOCOL;
 				break main;
 			}
 			
 			bReturn = this.isConnectionTypeHTTPS();
 			if(bReturn) {
-				sReturn = "https";
+				sReturn = JgitStarterHTTPS.sPROTOCOL;
 				break main;
 			}
-				
+			
+			bReturn = this.isConnectionTypeSSH();
+			if(bReturn) {
+				sReturn = JgitStarterSSH.sPROTOCOL;
+				break main;
+			}
+			
 			sReturn = this.getConnectionTypeDefault();			
 		}//end main:		
 		return sReturn;
@@ -154,7 +163,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			String sReturn = objOpt.readValue("ssh");	
+			String sReturn = objOpt.readValue(JgitStarterGIT.sPROTOCOL);	
 			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
 			
 		}//end main:		
@@ -169,7 +178,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			String sReturn = objOpt.readValue("https");
+			String sReturn = objOpt.readValue(JgitStarterHTTPS.sPROTOCOL);
 			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
 			
 		}//end main:		
@@ -184,7 +193,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			String sReturn = objOpt.readValue("git");	
+			String sReturn = objOpt.readValue(JgitStarterGIT.sPROTOCOL);	
 			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
 			
 		}//end main:		

@@ -1,7 +1,6 @@
 package use.jgit.util;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -389,7 +388,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				System.out.println("Url fuer Fetch: '" + sUrl + "'");
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider, sBranch);
+				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider, sBranch);
 				if(fetchResult==null) break main;
 					
 				//+++ Auswerten eines Fetch
@@ -606,7 +605,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				System.out.println("Url fuer Fetch: '" + sUrl + "'");
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 				
@@ -865,7 +864,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        // 1. FETCH (nur ein Branch!)
 		        // =========================		
 		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider, sBranch);
+				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider, sBranch);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
@@ -1127,7 +1126,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				System.out.println("Url fuer Fetch: '" + sUrl + "'");
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
 				if(fetchResult==null) break main;
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		        					
@@ -1330,84 +1329,84 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	}
 
 	
-	//######################################################
-	//######### FETCH	
-	//Wenn nicht zu fetchen ist, wird eine Exception geworfen. Das ist unschoen.
-	//von ChatGPT 20260320, aber für meine einfachen zwecke brauch ich kein FetchResult, also nur die ExceptionHandling uebernommen
-	public static FetchResult fetchIgnoreNothingToFetch(
-	        Git git,
-	        String sUrlRemote,
-	        CredentialsProvider credentialsProvider
-	) throws ExceptionZZZ {
-		return JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRemote, credentialsProvider, null);
-	}
-	
-	public static FetchResult fetchIgnoreNothingToFetch(
-	        Git git,
-	        String sUrlRemote,
-	        CredentialsProvider credentialsProvider,
-	        String sBranchIn
-	) throws ExceptionZZZ {
-		FetchResult objReturn = null;
-		main:{
-		    try {
-		    	try {
-					JgitUtilZZZ.debugForFetch(git);
-				} catch (URISyntaxException e) {
-					ExceptionZZZ ez = new ExceptionZZZ(e);
-					throw ez;
-				}
-		    	
-		    	
-		        // =========================
-		        // 1. FETCH (nur ein Branch!)
-		        // =========================
-		        FetchCommand fetchCommand = git.fetch();
-	
-		        if (sUrlRemote != null && sUrlRemote.trim().length() > 0) {
-		            fetchCommand.setRemote(sUrlRemote); // kann Alias ODER URL sein
-		        }
-	
-		        if (credentialsProvider != null) {
-		            fetchCommand.setCredentialsProvider(credentialsProvider);
-		        }
-		        
-
-		        //aus .git\config Datei:
-		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
-		        String branch = "master";
-		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
-		        
-		        String remoteRef = "refs/heads/" + branch;
-		        String localTrackingRef = "refs/remotes/origin/" + branch;
-		        
-		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
-		        //+ für "fast forward"
-		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
-
-		        objReturn = fetchCommand.call();
-	
-		    } catch (TransportException te) {
-	
-		        String msg = te.getMessage();
-	
-		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
-		            System.out.println("Nothing to fetch - Repository ist aktuell.");
-		            return null; // bewusst null zurückgeben als Signal
-		        }
-	
-		        // alle anderen Fehler weiterwerfen!
-		        ExceptionZZZ ez = new ExceptionZZZ(te);
-		        throw ez;
-		    }catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-		    } catch (IOException ioe) {
-				ExceptionZZZ ez = new ExceptionZZZ(ioe);
-				throw ez;
-			} 
-		}//end main:
-		 return objReturn;
-	}
+//	//######################################################
+//	//######### FETCH	
+//	//Wenn nicht zu fetchen ist, wird eine Exception geworfen. Das ist unschoen.
+//	//von ChatGPT 20260320, aber für meine einfachen zwecke brauch ich kein FetchResult, also nur die ExceptionHandling uebernommen
+//	public static FetchResult fetchIgnoreNothingToFetch(
+//	        Git git,
+//	        String sUrlRemote,
+//	        CredentialsProvider credentialsProvider
+//	) throws ExceptionZZZ {
+//		return JgitUtilHTTPS.fetchIgnoreNothingToFetch(git, sUrlRemote, credentialsProvider, null);
+//	}
+//	
+//	public static FetchResult fetchIgnoreNothingToFetch(
+//	        Git git,
+//	        String sUrlRemote,
+//	        CredentialsProvider credentialsProvider,
+//	        String sBranchIn
+//	) throws ExceptionZZZ {
+//		FetchResult objReturn = null;
+//		main:{
+//		    try {
+//		    	try {
+//					JgitUtilZZZ.debugForFetch(git);
+//				} catch (URISyntaxException e) {
+//					ExceptionZZZ ez = new ExceptionZZZ(e);
+//					throw ez;
+//				}
+//		    	
+//		    	
+//		        // =========================
+//		        // 1. FETCH (nur ein Branch!)
+//		        // =========================
+//		        FetchCommand fetchCommand = git.fetch();
+//	
+//		        if (sUrlRemote != null && sUrlRemote.trim().length() > 0) {
+//		            fetchCommand.setRemote(sUrlRemote); // kann Alias ODER URL sein
+//		        }
+//	
+//		        if (credentialsProvider != null) {
+//		            fetchCommand.setCredentialsProvider(credentialsProvider);
+//		        }
+//		        
+//
+//		        //aus .git\config Datei:
+//		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
+//		        String branch = "master";
+//		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
+//		        
+//		        String remoteRef = "refs/heads/" + branch;
+//		        String localTrackingRef = "refs/remotes/origin/" + branch;
+//		        
+//		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+//		        //+ für "fast forward"
+//		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+//
+//		        objReturn = fetchCommand.call();
+//	
+//		    } catch (TransportException te) {
+//	
+//		        String msg = te.getMessage();
+//	
+//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
+//		            System.out.println("Nothing to fetch - Repository ist aktuell.");
+//		            return null; // bewusst null zurückgeben als Signal
+//		        }
+//	
+//		        // alle anderen Fehler weiterwerfen!
+//		        ExceptionZZZ ez = new ExceptionZZZ(te);
+//		        throw ez;
+//		    }catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//		    } catch (IOException ioe) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//				throw ez;
+//			} 
+//		}//end main:
+//		 return objReturn;
+//	}
 
 }//end class

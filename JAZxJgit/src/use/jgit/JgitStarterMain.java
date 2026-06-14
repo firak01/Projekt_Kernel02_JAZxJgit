@@ -251,7 +251,7 @@ public class JgitStarterMain implements IConstantZZZ{
 			
 			boolean bReturn = false;				
 			switch(sConnectionType) {
-			case"it":								
+			case"git":								
 				
 				//##############################################################
 				//Starte die passende Klasse mit der passenden Methode
