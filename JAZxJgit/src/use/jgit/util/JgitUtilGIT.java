@@ -66,7 +66,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static String computeRepositoryUrlGIT(String sUrlRepoRemoteIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalGIT(String sUrlRepoRemoteIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
@@ -77,14 +77,14 @@ public class JgitUtilGIT implements IConstantZZZ{
 			String sRepositoryAccountIn = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepoRemoteIn);
 			String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);			
 			
-			String sUrlRepoRemote = JgitUtilGIT.computeRepositoryUrlGIT(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
+			String sUrlRepoRemote = JgitUtilGIT.computeRepositoryUrlTotalGIT(sRepositoryHostIn, sRepositoryAccountIn, sRepositoryProjectIn);
 			sReturn = sUrlRepoRemote;
 		}//end main:
 		return sReturn;		
 	}
 	
 	//Z.B. SSH Version: 	git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	public static String computeRepositoryTotalUrlGIT(String sUrlBaseGitWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalGIT(String sUrlBaseGitWithAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sUrlBaseGitWithAccountIn)){
@@ -105,7 +105,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	public static String computeRepositoryUrlGIT(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalGIT(String sHostIn, String sAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			String sUrlBaseSSH = JgitUtilGIT.computeRepositoryUrlBaseGIT(sHostIn, sAccountIn);		

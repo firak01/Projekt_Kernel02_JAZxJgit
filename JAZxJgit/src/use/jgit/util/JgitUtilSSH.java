@@ -685,7 +685,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				String sUrlBaseIn = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sUrlRepoRemoteIn);
 				String sUrlBaseWithProtocolIn = JgitUtilZZZ.addProtocolToUrl("git", sUrlBaseIn);
 				String sRepositoryProjectIn = JgitUtilZZZ.computeRepositoryProjectFromUrlRepo(sUrlRepoRemoteIn);
-				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryTotalUrlFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
+				String sUrlRepoRemote = JgitUtilZZZ.computeRepositoryUrlTotalFor("git", sUrlBaseWithProtocolIn, sRepositoryProjectIn);
 				System.out.println("Url für die Suche nach dem RepositoryAlias. Remote: " + sUrlRepoRemote);
 				
 				//Da wir den Aliasnamen übergeben müssen, aber eine Url reinbekommen.

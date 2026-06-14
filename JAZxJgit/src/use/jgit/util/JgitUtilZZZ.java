@@ -290,7 +290,7 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;
 	}
 	
-	public static String computeRepositoryTotalUrlFor(String sProtocolType, String sUrlBaseIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+	public static String computeRepositoryUrlTotalFor(String sProtocolType, String sUrlBaseIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
 			if(StringZZZ.isEmpty(sProtocolType)){
@@ -316,7 +316,7 @@ public class JgitUtilZZZ implements IConstantZZZ {
 			}else if(sProtocolType.equalsIgnoreCase("ssh")) {
 				sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBase, sRepositoryProject);
 			}else if(sProtocolType.equalsIgnoreCase("git")) {
-				sReturn = JgitUtilGIT.computeRepositoryTotalUrlGIT(sUrlBase, sRepositoryProject);
+				sReturn = JgitUtilGIT.computeRepositoryUrlTotalGIT(sUrlBase, sRepositoryProject);
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sUrlBase + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;

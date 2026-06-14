@@ -294,7 +294,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			}
 			
 			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemoteIn);
-			sReturn = JgitUtilZZZ.computeRepositoryTotalUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
 			
 		}//end main:
 		return sReturn;
@@ -342,7 +342,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			//Die jeweilige Klasse kennt ihr Protokoll, das dann vorangestellt wird.
 			String sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sRepositoryRemoteHost, sRepositoryRemoteAccount);
 			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemote);
-			sReturn = JgitUtilZZZ.computeRepositoryTotalUrlFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
 			
 		}//end main:
 		return sReturn;
