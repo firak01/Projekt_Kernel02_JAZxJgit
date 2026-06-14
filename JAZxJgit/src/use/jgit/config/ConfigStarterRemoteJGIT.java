@@ -17,16 +17,16 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 	
 	Verwende eine eigene Klasse, die KernelConfigZZZ erweitert, um für eine Spezielles Projekt andere Werte zu verwenden.
 	
-	Siehe IConfigDEV:
-	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rrh:rra:rrac:z:"; //ConnectionType: HTTPS oder SSH
+	Siehe IConfigStarterRemoteJGIT:
+	final static String sPATTERN_DEFAULT="pull|push|ssh|https|git|rl:pat:rrh:rra:rrac:z:"; //ConnectionType: HTTPS oder SSH
 	
 	Beispiele für Kommandozeilenstrings:
 	aa) -pull -https -pat -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	Problem mit dem Doppelpunkt in https: und im Dateipfad C: 
 	ab) -pull -https -pat -rrh "github.com" -rrac=firak01 -project="Projekt_Kernel02_JAZDummy" -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
-	ba) -pull -ssl -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
-	bb) -pull -ssl -rrh "github.com" -racc=firak01 -project=Projekt_Kernel02_JAZDummy -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	ba) -pull -ssh -rra origin -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	bb) -pull -ssh -rrh "github.com" -racc=firak01 -project=Projekt_Kernel02_JAZDummy -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
 	
  * @author lindhauer
  *
@@ -49,7 +49,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 	public String[] getArgumentArrayDefault() {
 		String[] saArg = new String[8];
 		saArg[0] = "-pull";
-		saArg[1] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
+		saArg[1] = "-git";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
 		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
 		saArg[3] = "origin";
 		saArg[4] = "-rl";
@@ -170,6 +170,21 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			String sReturn = objOpt.readValue("https");
+			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+			
+		}//end main:		
+		return bReturn;
+	}
+	
+	@Override
+	public boolean isConnectionTypeGIT() throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sReturn = objOpt.readValue("git");	
 			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
 			
 		}//end main:		

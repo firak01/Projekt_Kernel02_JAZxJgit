@@ -19,6 +19,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
+import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -244,12 +245,81 @@ public class JgitStarterMain implements IConstantZZZ{
 			}
 			
 			//Unterschiedliche Wege: 
-			//-https oder -ssh
+			//-https, -git oder -ssh
 			//mit jeweils unterschiedlichem Remote Repository
 			//PAT nur bei HTTPS notwendig
 			
 			boolean bReturn = false;				
 			switch(sConnectionType) {
+			case"it":								
+				
+				//##############################################################
+				//Starte die passende Klasse mit der passenden Methode
+				JgitStarterGIT objStarterGIT = new JgitStarterGIT();
+				
+				//Ggfs. uebergebene Flags setzen
+				hmFlag = objConfig.getHashMapFlagPassed();
+				if(hmFlag!=null) {
+					for(int i=0; i< hmFlag.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+						Boolean boolFlagValue = hmFlag.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterGIT.setFlag(sFlagName, bFlagValue);
+					}
+				}
+				
+				hmFlagCustom = objConfig.getHashMapFlagCustom();
+				if(hmFlagCustom!=null) {
+					for(int i=0; i< hmFlagCustom.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterGIT.setFlagCustom(sFlagName, bFlagValue);
+					}
+				}
+				
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				if(hmFlagLocal!=null) {
+					for(int i=0; i< hmFlagLocal.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objStarterGIT.setFlagLocal(sFlagName, bFlagValue);
+					}
+				}
+				
+				for(String sActionTemp : listasAction) {				
+					switch(sActionTemp) {
+					case "status":
+						bReturn = objStarterGIT.statusit(objConfig);
+						break;
+					case "pull":
+						bReturn = objStarterGIT.pullit(objConfig);
+						break;
+					case "commit":
+						bReturn = objStarterGIT.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
+						break;
+					case "fetch":
+						bReturn = objStarterGIT.fetchit(objConfig);
+						break;
+					case "push":
+						bReturn = objStarterGIT.pushit(objConfig);						
+						break;
+					case "commitAndPush":
+						bReturn = objStarterGIT.commitAndPushit(objConfig, sComment);						
+						break;
+					default:
+						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+					
+					if(!bReturn) {
+						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;						
+					}
+				}
+				break;
+				
 			case"ssh":								
 										
 				//##############################################################

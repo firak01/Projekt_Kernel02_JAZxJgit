@@ -1,4 +1,4 @@
-package use.jgit.protocol.ssh;
+package use.jgit.protcol.git;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +35,7 @@ import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
 import use.jgit.tool.push.ResultPostPushAnalysis;
+import use.jgit.util.JgitUtilGIT;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
@@ -47,19 +48,19 @@ import use.jgit.util.JgitUtilZZZ;
  *
  * @param <T>
  */
-public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterSSH{
+public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterGIT{
 	private static final long serialVersionUID = 521157607363069534L;
-	public static final String sPROTOCOL="ssh";
+	public static final String sPROTOCOL="git";
 	
 	//### Konstruktor
-	public JgitStarterSSH() {	
+	public JgitStarterGIT() {	
 		super();			
 	}
 	
 	//### aus IJgitStarterRemote
 	@Override 
 	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {
-		return JgitStarterSSH.sPROTOCOL;
+		return JgitStarterGIT.sPROTOCOL;
 	}
 	//!!! Kein Setter
 	
@@ -93,7 +94,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			
 			//+++ Zugriff sicherstellen
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
-			JGitSshConfigZZZ.configure();
+			JGitGitConfigZZZ.configure();
 			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
 			
@@ -357,8 +358,8 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			
 			//anders als bei HTTPS gibt es hier auch die Möglichkeite direkt zu pull
 			//Was aber eigentlich technisch umständlicher ist.
-			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
-			objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote, sBranch, !bUsePullDirect, true);
+			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			objMergeResult = JgitUtilGIT.pullGIT(git, credentialsProvider, sRepoRemote, sBranch, !bUsePullDirect, true);
 			
 			
 			if(objMergeResult==null) {
@@ -392,7 +393,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			//Merke: Bei SSH gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
 			//       FETCH + MERGE ist eigentlich optimaler als direkt.
 			//Der Weg ist über FLAGZ konfigurierbar
-			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
 			
 			
 			
@@ -845,23 +846,23 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	
 	//### aus IJgitStarterSSHEnabled	
 	@Override
-	public boolean getFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+	public boolean getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.getFlagLocal(objEnumFlag.name());
 	}
 
 	@Override
-	public boolean setFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+	public boolean setFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
 		return this.setFlagLocal(objEnumFlag.name(), bFlagValue);
 	}
 
 	@Override
-	public boolean[] setFlagLocal(IJgitStarterSSHEnabled.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
+	public boolean[] setFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ {
 		boolean[] baReturn=null;
 		main:{
 			if(!ArrayUtilZZZ.isNull(objaEnumFlag)) {
 				baReturn = new boolean[objaEnumFlag.length];
 				int iCounter=-1;
-				for(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
+				for(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag:objaEnumFlag) {
 					iCounter++;
 					boolean bReturn = this.setFlagLocal(objEnumFlag, bFlagValue);
 					baReturn[iCounter]=bReturn;
@@ -872,12 +873,12 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 
 	@Override
-	public boolean proofFlagLocalExists(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+	public boolean proofFlagLocalExists(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagLocalExists(objEnumFlag.name());
 	}
 
 	@Override
-	public boolean proofFlagSetBefore(IJgitStarterSSHEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+	public boolean proofFlagSetBefore(IJgitStarterGITEnabled.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 }
