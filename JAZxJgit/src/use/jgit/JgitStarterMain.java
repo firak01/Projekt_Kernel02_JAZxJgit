@@ -208,7 +208,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					break main;
 				}
 				
-				sAction = objConfig.readActionQuestionMark();
+				sAction = objConfig.readActionH();
 				if(!StringZZZ.isEmpty(sAction)) {
 					System.out.println("TODO: Ausgabe zentraler hilfe2");
 					String sHelp = objConfig.getHelp();
