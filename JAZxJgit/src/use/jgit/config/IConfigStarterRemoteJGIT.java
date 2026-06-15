@@ -14,7 +14,7 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_REMOTE_DEFAULT= JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL + "|status|pull|commit|fetch|push|commitAndPush|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
+	final static String sPATTERN4GIT_REMOTE_DEFAULT= JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL + "|help|?|status|pull|commit|fetch|push|commitAndPush|rl:pat:rrh:rra:rrac:project:branch:comment:"; 
 													  //Aktionen, ggfs. kombinierbar, aber meist nur 1 pro start:
 	                                                  //                pull, commit, fetch, push, commitAndPush 
 													  //ConnectionType: HTTPS oder SSH oder GIT, damit kann man die angegebene URL übersteuern

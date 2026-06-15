@@ -16,5 +16,6 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-conflictCommit                                                                                                      -filepath &quot;JAZDummy\Arbeit_mit_Git\test.txt&quot;                                                               -rl &quot;$.{sRLZZZ#RepositoryLocal per Umgebungsvariable fehlt}&quot;&#13;&#10;-project &quot;Projekt_Kernel02_JAZDummy&quot;                                                                  -comment &quot;Testkommentar ResolveConflictCommit - keep OURS&quot;&#13;&#10;-zlocal {&quot;USE_STRATEGY_MERGE_CONFLICT_OURS&quot;:true}"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JAZxJgit"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+<booleanAttribute key="org.eclipse.jdt.launching.STOP_IN_MAIN" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=${env_var:MY_TRUSTSTORE}&#13;&#10;-Djavax.net.ssl.trustStorePassword=changeit"/>
 </launchConfiguration>

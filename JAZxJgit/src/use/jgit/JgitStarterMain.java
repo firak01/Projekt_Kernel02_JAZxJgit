@@ -23,6 +23,25 @@ import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
+/**Klasse, mit der man mit einem GitHub Repository arbeiten kann.
+ * Gesteuert wird dies über Übergabeparameter, z.B. aus einer Batch heraus.
+ * 
+ * Dabei kann man das "Protokoll" auswählen,
+ *   GIT oder HTTPS (SSH ist noch TODO20260615)
+ * unabhängig von der eigentlichen URL, die man angibt.
+ * 
+ * Aktionen sind 
+ * -commit
+ * -fetch
+ * -pull
+ * -push
+ * und sinnvolle Kombinationen
+ * 
+ * Details zu den Übergabeparametern gibt es mit dem Übergabeparameter -? oder -help. 
+ * 
+ * @author Fritz Lindhauer
+ *
+ */
 public class JgitStarterMain implements IConstantZZZ{
 
 	/**
@@ -134,348 +153,378 @@ public class JgitStarterMain implements IConstantZZZ{
 		//siehe: https://www.vogella.com/tutorials/JGit/article.html
 		//siehe: https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
 		
-		try {	
-			//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
-			//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
-			//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.
-			System.out.println("Vorhandene Umgebungsvariablen, seit Eclipsestart:");
-			System.out.println(System.getenv("MY_TRUSTSTORE"));
-			System.out.println(System.getenv("sPATZZZ"));
-			System.out.println(System.getenv("sRLZZZ"));
-			System.out.println(System.getenv("sRRHZZZ"));		
-			System.out.println(System.getenv("sRRACZZZ"));
-			
-			
-			String sAction=null; String sComment=null;
-			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
-						
-			//Trotz Einbinden von  in pom.xml Fehlermeldung;
-			//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
-			//Lösung dazu:
-			//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
-			//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
-			System.setProperty("log4j.configurationFile","./use/jgit/log/log4j2.xml");
-			
-			//Logger log = LogManager.getLogger(this.getClass().getName());		
-			Logger log = LogManager.getLogger();
-			
-			//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
-			//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
-			//System.setProperty("https.protocols", "TLSv1");		
-			System.setProperty("https.protocols", "TLSv1.2"); 
-						
-			//### Argumente entgegenzunehmen
-			ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);
-			
-			//+++++++++++++++++++++++++++++++++
-			//actions
-			sAction = objConfig.readActionStatus();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionPull();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionCommit();
-			if(!StringZZZ.isEmpty(sAction)) {
-				listasAction.add(sAction);
+		/*Merke:
+		 https://stackoverflow.com/questions/11200237/how-do-i-get-git-to-default-to-ssh-and-not-https-for-new-repositories
+		 
+		 But here is what you can directly add in your .gitconfig:
+		# Enforce SSH
+		[url "ssh://git@github.com/"]
+  			insteadOf = https://github.com/
+		[url "ssh://git@gitlab.com/"]
+  			insteadOf = https://gitlab.com/
+		[url "ssh://git@bitbucket.org/"]
+  			insteadOf = https://bitbucket.org/
+		 */
+		main:{
+			try {	
+				//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
+				//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
+				//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.
+				System.out.println("Vorhandene Umgebungsvariablen, seit Eclipsestart:");
+				System.out.println(System.getenv("MY_TRUSTSTORE"));
+				System.out.println(System.getenv("sPATZZZ"));
+				System.out.println(System.getenv("sRLZZZ"));
+				System.out.println(System.getenv("sRRHZZZ"));		
+				System.out.println(System.getenv("sRRACZZZ"));
 				
-				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
-				sComment = objConfig.readComment();
-			}
-			
-			sAction = objConfig.readActionFetch();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionPush();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionCommitAndPush();
-			if(!StringZZZ.isEmpty(sAction)) {
-				listasAction.add(sAction);
 				
-				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
-				sComment = objConfig.readComment();
-			}
-			
-			if(listasAction.isEmpty()) {
-				ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			//++++++++++++++++++++++++++++++++
-			//-z  Flags:
-			//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
-			HashMap<String,Boolean> hmFlag = null;
-			HashMap<String,Boolean> hmFlagCustom = null;
-			HashMap<String,Boolean> hmFlagLocal = null;
-			
-			//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
-			//       Von dort dann über .getHashMapFlagZPassed holen 
-						
-			
-			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
-			//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
-			//a) Das Füllen des FlagContainers
-			FlagContainerZZZ objFlagContainer = null;					
-			String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
-			if(!StringZZZ.isEmpty(sFlagZJson)) {
-				Gson gson = new Gson();			
-				objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
-			}						
-			
-			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
-			//b) Das Auslesen des FlagContainers und ggfs. uebergebene Flags setzen:
-			if(objFlagContainer!=null) {
-				HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
-				for(int i=0; i< hmFlagByContainer.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagByContainer, i);
-					Boolean boolFlagValue = hmFlagByContainer.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					
-					System.out.println(i + ". HmFlagByContainer: " + sFlagName + ": " + bFlagValue);					
+				String sAction=null; String sComment=null;
+				ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
+							
+				//Trotz Einbinden von  in pom.xml Fehlermeldung;
+				//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
+				//Lösung dazu:
+				//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
+				//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
+				System.setProperty("log4j.configurationFile","./use/jgit/log/log4j2.xml");
+				
+				//Logger log = LogManager.getLogger(this.getClass().getName());		
+				Logger log = LogManager.getLogger();
+				
+				//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
+				//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
+				//System.setProperty("https.protocols", "TLSv1");		
+				System.setProperty("https.protocols", "TLSv1.2"); 
+							
+				//### Argumente entgegenzunehmen
+				ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);
+				
+				//hilfsaktion
+				sAction = objConfig.readActionHelp();
+				if(!StringZZZ.isEmpty(sAction)) {
+					System.out.println("TODO: Ausgabe zentraler hilfe");
+					String sHelp = objConfig.getHelp();
+					System.out.println(sHelp);
+					break main;
 				}
-			}
+				
+				sAction = objConfig.readActionQuestionMark();
+				if(!StringZZZ.isEmpty(sAction)) {
+					System.out.println("TODO: Ausgabe zentraler hilfe2");
+					String sHelp = objConfig.getHelp();
+					System.out.println(sHelp);
+					break main;
+				}
+				
+				//+++++++++++++++++++++++++++++++++
+				//actions
+				sAction = objConfig.readActionStatus();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionPull();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionCommit();
+				if(!StringZZZ.isEmpty(sAction)) {
+					listasAction.add(sAction);
+					
+					//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+					sComment = objConfig.readComment();
+				}
+				
+				sAction = objConfig.readActionFetch();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionPush();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionCommitAndPush();
+				if(!StringZZZ.isEmpty(sAction)) {
+					listasAction.add(sAction);
+					
+					//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+					sComment = objConfig.readComment();
+				}
+				
+				if(listasAction.isEmpty()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				//++++++++++++++++++++++++++++++++
+				//-z  Flags:
+				//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
+				HashMap<String,Boolean> hmFlag = null;
+				HashMap<String,Boolean> hmFlagCustom = null;
+				HashMap<String,Boolean> hmFlagLocal = null;
+				
+				//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
+				//       Von dort dann über .getHashMapFlagZPassed holen 
+							
+				
+				//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+				//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
+				//a) Das Füllen des FlagContainers
+				FlagContainerZZZ objFlagContainer = null;					
+				String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
+				if(!StringZZZ.isEmpty(sFlagZJson)) {
+					Gson gson = new Gson();			
+					objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
+				}						
+				
+				//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+				//b) Das Auslesen des FlagContainers und ggfs. uebergebene Flags setzen:
+				if(objFlagContainer!=null) {
+					HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
+					for(int i=0; i< hmFlagByContainer.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagByContainer, i);
+						Boolean boolFlagValue = hmFlagByContainer.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						
+						System.out.println(i + ". HmFlagByContainer: " + sFlagName + ": " + bFlagValue);					
+					}
+				}
+			
+				//++++++++++++++++++++++++++++++++
+				//Steuerung der Verbindung
+				String sConnectionType = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionType)){
+					ExceptionZZZ ez = new ExceptionZZZ("Verbindungstyp", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				//Unterschiedliche Wege: 
+				//-https, -git oder -ssh
+				//mit jeweils unterschiedlichem Remote Repository
+				//PAT nur bei HTTPS notwendig
+				
+				boolean bReturn = false;				
+				switch(sConnectionType) {
+				case"git":								
+					
+					//##############################################################
+					//Starte die passende Klasse mit der passenden Methode
+					JgitStarterGIT objStarterGIT = new JgitStarterGIT();
+					
+					//Ggfs. uebergebene Flags setzen
+					hmFlag = objConfig.getHashMapFlagPassed();
+					if(hmFlag!=null) {
+						for(int i=0; i< hmFlag.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+							Boolean boolFlagValue = hmFlag.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterGIT.setFlag(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagCustom = objConfig.getHashMapFlagCustom();
+					if(hmFlagCustom!=null) {
+						for(int i=0; i< hmFlagCustom.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+							Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterGIT.setFlagCustom(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagLocal = objConfig.getHashMapFlagLocal();
+					if(hmFlagLocal!=null) {
+						for(int i=0; i< hmFlagLocal.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+							Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterGIT.setFlagLocal(sFlagName, bFlagValue);
+						}
+					}
+					
+					for(String sActionTemp : listasAction) {				
+						switch(sActionTemp) {
+						case "status":
+							bReturn = objStarterGIT.statusit(objConfig);
+							break;
+						case "pull":
+							bReturn = objStarterGIT.pullit(objConfig);
+							break;
+						case "commit":
+							bReturn = objStarterGIT.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
+							break;
+						case "fetch":
+							bReturn = objStarterGIT.fetchit(objConfig);
+							break;
+						case "push":
+							bReturn = objStarterGIT.pushit(objConfig);						
+							break;
+						case "commitAndPush":
+							bReturn = objStarterGIT.commitAndPushit(objConfig, sComment);						
+							break;
+						default:
+							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;
+						}
+						
+						if(!bReturn) {
+							ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;						
+						}
+					}
+					break;
+					
+				case"ssh":								
+											
+					//##############################################################
+					//Starte die passende Klasse mit der passenden Methode
+					JgitStarterSSH objStarterSSH = new JgitStarterSSH();
+					
+					//Ggfs. uebergebene Flags setzen
+					hmFlag = objConfig.getHashMapFlagPassed();
+					if(hmFlag!=null) {
+						for(int i=0; i< hmFlag.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+							Boolean boolFlagValue = hmFlag.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterSSH.setFlag(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagCustom = objConfig.getHashMapFlagCustom();
+					if(hmFlagCustom!=null) {
+						for(int i=0; i< hmFlagCustom.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+							Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterSSH.setFlagCustom(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagLocal = objConfig.getHashMapFlagLocal();
+					if(hmFlagLocal!=null) {
+						for(int i=0; i< hmFlagLocal.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+							Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterSSH.setFlagLocal(sFlagName, bFlagValue);
+						}
+					}
+					
+					for(String sActionTemp : listasAction) {				
+						switch(sActionTemp) {
+						case "status":
+							bReturn = objStarterSSH.statusit(objConfig);
+							break;
+						case "pull":
+							bReturn = objStarterSSH.pullit(objConfig);
+							break;
+						case "commit":
+							bReturn = objStarterSSH.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
+							break;
+						case "fetch":
+							bReturn = objStarterSSH.fetchit(objConfig);
+							break;
+						case "push":
+							bReturn = objStarterSSH.pushit(objConfig);						
+							break;
+						case "commitAndPush":
+							bReturn = objStarterSSH.commitAndPushit(objConfig, sComment);						
+							break;
+						default:
+							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;
+						}
+						
+						if(!bReturn) {
+							ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;						
+						}
+					}
+					break;
+					
+				case "https":
+					
+					//##############################################################
+					//Starte die passende Klasse mit der passenden Methode
+					JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
 		
-			//++++++++++++++++++++++++++++++++
-			//Steuerung der Verbindung
-			String sConnectionType = objConfig.readConnectionType();
-			if(StringZZZ.isEmpty(sConnectionType)){
-				ExceptionZZZ ez = new ExceptionZZZ("Verbindungstyp", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;				
+					//Ggfs. uebergebene Flags setzen
+					hmFlag = objConfig.getHashMapFlagPassed();
+					if(hmFlag!=null) {
+						for(int i=0; i< hmFlag.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+							Boolean boolFlagValue = hmFlag.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterHTTPS.setFlag(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagCustom = objConfig.getHashMapFlagCustom();
+					if(hmFlagCustom!=null) {
+						for(int i=0; i< hmFlagCustom.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+							Boolean boolFlagValue = hmFlagCustom.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterHTTPS.setFlagCustom(sFlagName, bFlagValue);
+						}
+					}
+					
+					hmFlagLocal = objConfig.getHashMapFlagLocal();
+					if(hmFlagLocal!=null) {
+						for(int i=0; i< hmFlagLocal.size(); i++) {
+							String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+							Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+							boolean bFlagValue = boolFlagValue.booleanValue();
+							objStarterHTTPS.setFlagLocal(sFlagName, bFlagValue);
+						}
+					}
+					
+					
+					for(String sActionTemp : listasAction) {				
+						switch(sActionTemp) {
+						case "status":
+							bReturn = objStarterHTTPS.statusit(objConfig);
+							break;
+						case "pull":
+							bReturn = objStarterHTTPS.pullit(objConfig);
+							break;						
+						case "commit":
+							bReturn = objStarterHTTPS.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
+							break;	
+						case "fetch":
+							bReturn = objStarterHTTPS.fetchit(objConfig);
+							break;
+						case "push":
+							bReturn = objStarterHTTPS.pushit(objConfig);						
+							break;
+						case "commitAndPush":
+							bReturn = objStarterHTTPS.commitAndPushit(objConfig, sComment);						
+							break;
+						default:
+							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;
+						}
+						
+						if(!bReturn) {
+							ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							throw ez;						
+						}
+					}
+					break;
+					
+				default:
+					ExceptionZZZ ez = new ExceptionZZZ("Nicht behandelter Verbindungstyp '" + sConnectionType + "'", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				
+			} catch (IllegalStateException e) {
+				e.printStackTrace();		
+			} catch (ExceptionZZZ e) {
+				e.printStackTrace();
+			} catch (JGitInternalException e) {
+				e.printStackTrace();
+			} catch (NotSupportedException e) {
+				e.printStackTrace();
 			}
-			
-			//Unterschiedliche Wege: 
-			//-https, -git oder -ssh
-			//mit jeweils unterschiedlichem Remote Repository
-			//PAT nur bei HTTPS notwendig
-			
-			boolean bReturn = false;				
-			switch(sConnectionType) {
-			case"git":								
-				
-				//##############################################################
-				//Starte die passende Klasse mit der passenden Methode
-				JgitStarterGIT objStarterGIT = new JgitStarterGIT();
-				
-				//Ggfs. uebergebene Flags setzen
-				hmFlag = objConfig.getHashMapFlagPassed();
-				if(hmFlag!=null) {
-					for(int i=0; i< hmFlag.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-						Boolean boolFlagValue = hmFlag.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterGIT.setFlag(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagCustom = objConfig.getHashMapFlagCustom();
-				if(hmFlagCustom!=null) {
-					for(int i=0; i< hmFlagCustom.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
-						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterGIT.setFlagCustom(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagLocal = objConfig.getHashMapFlagLocal();
-				if(hmFlagLocal!=null) {
-					for(int i=0; i< hmFlagLocal.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
-						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterGIT.setFlagLocal(sFlagName, bFlagValue);
-					}
-				}
-				
-				for(String sActionTemp : listasAction) {				
-					switch(sActionTemp) {
-					case "status":
-						bReturn = objStarterGIT.statusit(objConfig);
-						break;
-					case "pull":
-						bReturn = objStarterGIT.pullit(objConfig);
-						break;
-					case "commit":
-						bReturn = objStarterGIT.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
-						break;
-					case "fetch":
-						bReturn = objStarterGIT.fetchit(objConfig);
-						break;
-					case "push":
-						bReturn = objStarterGIT.pushit(objConfig);						
-						break;
-					case "commitAndPush":
-						bReturn = objStarterGIT.commitAndPushit(objConfig, sComment);						
-						break;
-					default:
-						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					
-					if(!bReturn) {
-						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;						
-					}
-				}
-				break;
-				
-			case"ssh":								
-										
-				//##############################################################
-				//Starte die passende Klasse mit der passenden Methode
-				JgitStarterSSH objStarterSSH = new JgitStarterSSH();
-				
-				//Ggfs. uebergebene Flags setzen
-				hmFlag = objConfig.getHashMapFlagPassed();
-				if(hmFlag!=null) {
-					for(int i=0; i< hmFlag.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-						Boolean boolFlagValue = hmFlag.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlag(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagCustom = objConfig.getHashMapFlagCustom();
-				if(hmFlagCustom!=null) {
-					for(int i=0; i< hmFlagCustom.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
-						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlagCustom(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagLocal = objConfig.getHashMapFlagLocal();
-				if(hmFlagLocal!=null) {
-					for(int i=0; i< hmFlagLocal.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
-						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlagLocal(sFlagName, bFlagValue);
-					}
-				}
-				
-				for(String sActionTemp : listasAction) {				
-					switch(sActionTemp) {
-					case "status":
-						bReturn = objStarterSSH.statusit(objConfig);
-						break;
-					case "pull":
-						bReturn = objStarterSSH.pullit(objConfig);
-						break;
-					case "commit":
-						bReturn = objStarterSSH.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
-						break;
-					case "fetch":
-						bReturn = objStarterSSH.fetchit(objConfig);
-						break;
-					case "push":
-						bReturn = objStarterSSH.pushit(objConfig);						
-						break;
-					case "commitAndPush":
-						bReturn = objStarterSSH.commitAndPushit(objConfig, sComment);						
-						break;
-					default:
-						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					
-					if(!bReturn) {
-						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;						
-					}
-				}
-				break;
-				
-			case "https":
-				
-				//##############################################################
-				//Starte die passende Klasse mit der passenden Methode
-				JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
-	
-				//Ggfs. uebergebene Flags setzen
-				hmFlag = objConfig.getHashMapFlagPassed();
-				if(hmFlag!=null) {
-					for(int i=0; i< hmFlag.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-						Boolean boolFlagValue = hmFlag.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlag(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagCustom = objConfig.getHashMapFlagCustom();
-				if(hmFlagCustom!=null) {
-					for(int i=0; i< hmFlagCustom.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
-						Boolean boolFlagValue = hmFlagCustom.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlagCustom(sFlagName, bFlagValue);
-					}
-				}
-				
-				hmFlagLocal = objConfig.getHashMapFlagLocal();
-				if(hmFlagLocal!=null) {
-					for(int i=0; i< hmFlagLocal.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
-						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlagLocal(sFlagName, bFlagValue);
-					}
-				}
-				
-				
-				for(String sActionTemp : listasAction) {				
-					switch(sActionTemp) {
-					case "status":
-						bReturn = objStarterHTTPS.statusit(objConfig);
-						break;
-					case "pull":
-						bReturn = objStarterHTTPS.pullit(objConfig);
-						break;						
-					case "commit":
-						bReturn = objStarterHTTPS.commitit((IConfigStarterLocalJGIT) objConfig, sComment);						
-						break;	
-					case "fetch":
-						bReturn = objStarterHTTPS.fetchit(objConfig);
-						break;
-					case "push":
-						bReturn = objStarterHTTPS.pushit(objConfig);						
-						break;
-					case "commitAndPush":
-						bReturn = objStarterHTTPS.commitAndPushit(objConfig, sComment);						
-						break;
-					default:
-						ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}
-					
-					if(!bReturn) {
-						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;						
-					}
-				}
-				break;
-				
-			default:
-				ExceptionZZZ ez = new ExceptionZZZ("Nicht behandelter Verbindungstyp '" + sConnectionType + "'", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			
-			
-		} catch (IllegalStateException e) {
-			e.printStackTrace();		
-		} catch (ExceptionZZZ e) {
-			e.printStackTrace();
-		} catch (JGitInternalException e) {
-			e.printStackTrace();
-		} catch (NotSupportedException e) {
-			e.printStackTrace();
-		}
-		
+		}//end main:
 	}
 	
 	

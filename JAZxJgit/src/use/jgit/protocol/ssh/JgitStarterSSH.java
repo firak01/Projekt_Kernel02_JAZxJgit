@@ -1,18 +1,14 @@
 package use.jgit.protocol.ssh;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -24,8 +20,6 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
-import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
