@@ -279,7 +279,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	/** Z.B.  von Z.B. von ssh://git@github.com/firak01/repo.git
+	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git --> github.com:firak01
 	 * @param sRepositoryRemoteUrlGIT
 	 * @return
 	 * @throws ExceptionZZZ
@@ -289,16 +289,13 @@ public class JgitUtilGIT implements IConstantZZZ{
 		main:{
 			if(StringZZZ.isEmpty(sRepositoryRemoteUrl)) break main;
 				
-				//String sUrlPartDomainFromHttpsRepo =StringZZZ.right("@" + sUrlHTTPS, "@");				
+				String sUrlPartDomainFromHttpsRepo =StringZZZ.right("@" + sRepositoryRemoteUrl, "@");				
 				/////sUrlPartDomainFromHttpsRepo = StringZZZ.left(sUrlPartDomainFromHttpsRepo + ":", ":");				
 				////String sUrlPartRepoFromHttpsRepo = StringZZZ.right(":" + sUrlHTTPS, ":");				
 				////sReturn = sUrlPartDomainFromHttpsRepo + "/" + sUrlPartRepoFromHttpsRepo;
 				
-			sReturn = UrlLogicZZZ.getUrlWithoutParameter(sRepositoryRemoteUrl);
-				
-			String sUrlPartDomainFromHttpsRepo = UrlLogicZZZ.getHost(sRepositoryRemoteUrl); 
-			String sUrlPartRepoFromHttpsRepo = UrlLogicZZZ.getPath(sReturn); 
-			sReturn = sUrlPartDomainFromHttpsRepo + sUrlPartRepoFromHttpsRepo;
+			sReturn = UrlLogicZZZ.getUrlWithoutParameter(sUrlPartDomainFromHttpsRepo);
+			sReturn = StringZZZ.left(sReturn + "/", "/");
 		}//end main:
 		return sReturn;
 	}
