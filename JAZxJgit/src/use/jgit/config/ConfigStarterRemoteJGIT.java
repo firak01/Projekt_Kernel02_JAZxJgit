@@ -56,7 +56,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
 		saArg[3] = "origin";
 		saArg[4] = "-rl";
-		saArg[5] = IConfigStarterRemoteJGIT.sPROJECT_PATH;  //Das eigene Projekt als Default
+		saArg[5] = "."; //statt IConfigStarterRemoteJGIT.sPROJECT_PATH;  //Das eigene Projekt als Default
 		saArg[6] = "-z";
 		saArg[7] = this.getConfigFlagzJsonDefault();
 	
@@ -66,6 +66,16 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 		
+	//### aus IConfigZZZ
+	@Override
+	public String getProjectDirectory() throws ExceptionZZZ {
+		return IConfigJGIT.sPROJECT_DIRECTORY;
+	}
+	
+	@Override
+	public String getProjectName() throws ExceptionZZZ {
+		return IConfigJGIT.sPROJECT_NAME;
+	}
 	
 	//### aus IConfigJGIT
 	@Override

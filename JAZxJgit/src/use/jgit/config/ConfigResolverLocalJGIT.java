@@ -116,4 +116,5 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	public String getFilePathDefault() throws ExceptionZZZ{
 		return "";
 	}
+	
 }

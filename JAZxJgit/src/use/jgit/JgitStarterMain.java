@@ -1,5 +1,6 @@
 package use.jgit;
 
+import java.io.File;
 import java.util.HashMap;
 
 import javax.ws.rs.NotSupportedException;
@@ -197,7 +198,9 @@ public class JgitStarterMain implements IConstantZZZ{
 				System.setProperty("https.protocols", "TLSv1.2"); 
 							
 				//### Argumente entgegenzunehmen
-				ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);
+				ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);						
+				File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
+				System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
 				
 				//hilfsaktion
 				sAction = objConfig.readActionHelp();

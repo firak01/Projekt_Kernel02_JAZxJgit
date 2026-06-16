@@ -1,5 +1,7 @@
 package use.jgit.config;
 
+import java.io.File;
+
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
@@ -48,8 +50,7 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	
 	//### aus IConfigJGIT
 	
-		
-	//### aus IConfigStarterGIT
+	//### aus IConfigStarterLocalJGIT	
 	@Override
 	public String readActionStatus() throws ExceptionZZZ {
 		String sReturn = null;
@@ -99,8 +100,14 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	//### aus IConfigStarterLocalJGIT	
 	@Override
 	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
-		return IConfigJGIT.sPROJECT_PATH; //Also das eigene Projekt-Verzeichnis als Default
+		return "."; //Das eigene Projekt-Verzeichnis als Default
 	}
+	
+	@Override
+	public File getRepositoryLocalBaseDirectoryDefault() throws ExceptionZZZ {
+		return new File(this.getRepositoryLocalBaseDefault()); //Also das eigene Projekt-Verzeichnis als Default
+	}
+	
 	@Override
 	public String readRepositoryLocal() throws ExceptionZZZ {		
 		String sReturn = null;
@@ -120,7 +127,7 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	//++++++++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
-		return null;
+		return this.getProjectName(); //Einfach als Default, kann ja überschrieben werden.
 	}
 		
 	//++++++++++++++++++++++++++++++++++++++
