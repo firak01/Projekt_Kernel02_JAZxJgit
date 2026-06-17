@@ -43,20 +43,11 @@ public abstract class AbstractConfigJGIT extends AbstractConfigZZZ implements IC
 		
 		//Gib die Hilfsinfos als String zurück
 		@Override
-		public abstract String getHelp() throws ExceptionZZZ;
-		//kein setter
+		public abstract String createHelp() throws ExceptionZZZ;
 		
-		//Merke 20260615: Besser eine Liste von Hilf-Objekt-Zeilen auch kein Enum, der Ansatz mit der einfachen Liste der Objekte läßt sich einfacher 
-		//                über mehrere Projekte und Vererbungstrukturen umsetzen
-		//Also nicht so etwas nutzen wie:
-		//public enum LOGSTRINGFORMAT implements IEnumSetMappedStringFormatZZZ{		
-		//            und darin:    STRINGTYPE01_STRING_BY_STRING("stringtype01",IStringFormatZZZ.iFACTOR_STRINGTYPE01_STRING_BY_STRING, IStringFormatZZZ.sSEPARATOR_PREFIX_DEFAULT + "[A01]", "%s",IStringFormatZZZ.iARG_STRING,  "[/A01]" + IStringFormatZZZ.sSEPARATOR_POSTFIX_DEFAULT, "Gib den naechsten Log String - sofern vorhanden - in diesem Format aus."),			
-		//@Override
-		//public abstract List<IKernelConfigHelpLineZZZ>getHelpList() throws ExceptionZZZ;
-		
-		//### HIER NUR ARGUMENTE, DIE ETWAS MIT DEM KERNEL ZU TUN HABEN
-		//### Dafür muss AbstractKernelConfigZZZ die Elternklasse sein, z.B.:
-		//@Override
-		//public String getApplicationKeyDefault() { ....
-		
+		@Override
+		public List<IKernelConfigHelpLineZZZ> getHelpList() throws ExceptionZZZ{
+			return super.getHelpList();
+		}
+				
 	}

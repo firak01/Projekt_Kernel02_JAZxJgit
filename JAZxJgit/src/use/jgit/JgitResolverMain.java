@@ -1,5 +1,6 @@
 package use.jgit;
 
+import java.io.File;
 import java.util.HashMap;
 
 import javax.ws.rs.NotSupportedException;
@@ -134,7 +135,7 @@ public class JgitResolverMain implements IConstantZZZ{
 		//siehe: https://www.baeldung.com/jgit
 		//siehe: https://www.vogella.com/tutorials/JGit/article.html
 		//siehe: https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
-		
+		main:{
 		try {	
 			//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
 			//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
@@ -164,9 +165,28 @@ public class JgitResolverMain implements IConstantZZZ{
 			//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
 			//System.setProperty("https.protocols", "TLSv1");		
 			System.setProperty("https.protocols", "TLSv1.2"); 
-						
+			
 			//### Argumente entgegenzunehmen
-			ConfigResolverLocalJGIT objConfig = new ConfigResolverLocalJGIT(args);
+			ConfigResolverLocalJGIT objConfig = new ConfigResolverLocalJGIT(args);						
+			File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
+			System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
+			
+			//hilfsaktion
+			sAction = objConfig.readActionHelp();
+			if(!StringZZZ.isEmpty(sAction)) {
+				System.out.println("TODO: Ausgabe zentraler hilfe");
+				String sHelp = objConfig.createHelp();
+				System.out.println(sHelp);
+				break main;
+			}
+			
+			sAction = objConfig.readActionH();
+			if(!StringZZZ.isEmpty(sAction)) {
+				System.out.println("TODO: Ausgabe zentraler hilfe2");
+				String sHelp = objConfig.createHelp();
+				System.out.println(sHelp);
+				break main;
+			}
 			
 			//+++++++++++++++++++++++++++++++++
 			//actions
@@ -294,7 +314,7 @@ public class JgitResolverMain implements IConstantZZZ{
 		}
 		
 	}
-	
+	}//end main:
 	
 
 }

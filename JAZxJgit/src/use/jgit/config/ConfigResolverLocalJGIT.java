@@ -1,11 +1,19 @@
 package use.jgit.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.config.IConfigConstantZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.IKernelConfigZZZ;
+import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
+import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
+import basic.zKernel.config.help.KernelConfigHeaderLineZZZ;
+import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
 import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 
 
@@ -60,6 +68,56 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 		
+	//### aus IConfigZZZ
+	//Merke 20260615: Besser eine Liste von Hilf-Objekt-Zeilen auch kein Enum, der Ansatz mit der einfachen Liste der Objekte läßt sich einfacher 
+	//                über mehrere Projekte und Vererbungstrukturen umsetzen
+	//Also nicht so etwas nutzen wie:
+	//public enum LOGSTRINGFORMAT implements IEnumSetMappedStringFormatZZZ{		
+	//            und darin:    STRINGTYPE01_STRING_BY_STRING("stringtype01",IStringFormatZZZ.iFACTOR_STRINGTYPE01_STRING_BY_STRING, IStringFormatZZZ.sSEPARATOR_PREFIX_DEFAULT + "[A01]", "%s",IStringFormatZZZ.iARG_STRING,  "[/A01]" + IStringFormatZZZ.sSEPARATOR_POSTFIX_DEFAULT, "Gib den naechsten Log String - sofern vorhanden - in diesem Format aus."),			
+	@Override
+	public List<IKernelConfigHelpLineZZZ>getHelpList() throws ExceptionZZZ{
+		ArrayList<IKernelConfigHelpLineZZZ>listaReturn=new ArrayList<IKernelConfigHelpLineZZZ>();
+		main:{
+		//Berücksichtige dabei die Paramter aus den "Pattern" Strings
+		//final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|conflict|commit|conflictCommit|rl:project:filepath:comment.";	
+		IKernelConfigHeaderLineZZZ objHeaderLine=null;
+		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente für: " + this.getProjectName());
+		
+		IKernelConfigHelpLineZZZ objHelp=null;
+		objHelp = new KernelConfigHelpLineZZZ();
+		objHelp.setHeaderLine(objHeaderLine);
+		listaReturn.add(objHelp);
+		
+		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);				
+		objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");
+		objHelp.setHeaderLine(objHeaderLine);
+		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("conflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
+		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");
+		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("conflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("rl:","Dateipfad","Pfad zum lokalen Repository");
+		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");
+		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
+		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
+		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
+		listaReturn.add(objHelp);
+//
+//		objHelp = new KernelConfigHelpLineZZZ("zcustom:","Custom Flag","Flagdefinition, berücksichtigen nur direkte Vererbungshierarchie. Es muss ein JSON String folgen, z.B. -zcustom {\"xyz\":false,\"abc\":true}");
+//		listaReturn.add(objHelp);	
+//		objHelp = new KernelConfigHelpLineZZZ("zlocal:","Lokaler Flag","Flagdefinition, berücksichtigen KEINE Vererbungshierarchie. Es muss ein JSON String folgen, z.B. -zlocal {\"MERGE_IGNORE_CHECKOUT_CONFLICTS\":false,\"USE_STRATEGY_MERGE_CONFLICT_THEIRS\":false,\"USE_PULL_DIRECT\":true}");
+//		//objHelp.setHeaderLine(objHeaderLine);
+//		listaReturn.add(objHelp);	
+		
+		}//end main:
+		return listaReturn;
+	}
 	
 	//### aus IConfigJGIT
 	@Override
@@ -116,5 +174,4 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	public String getFilePathDefault() throws ExceptionZZZ{
 		return "";
 	}
-	
 }

@@ -1,13 +1,17 @@
 package use.jgit.config;
 
 import java.io.File;
+import java.util.List;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.abstractList.ListUtilZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.IKernelConfigZZZ;
+import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
+import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
 import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 
 
@@ -46,7 +50,60 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
-		
+	
+	//### aus 
+	//Gib die Hilfsinfos als String zurück
+		@Override
+		public String createHelp() throws ExceptionZZZ{
+			String sReturn = "";
+			main:{
+				//Hier gibt es keine Elternklasse mit solch einer Methode... 
+				List<IKernelConfigHelpLineZZZ> listaHelpLineSuper = super.getHelpList();											
+				List<IKernelConfigHelpLineZZZ> listaHelpLineTotal = this.getHelpList();
+				
+			    listaHelpLineTotal = ListUtilZZZ.join(listaHelpLineSuper, listaHelpLineTotal);
+			    
+			    String sHeadLineOld = "";
+				for(IKernelConfigHelpLineZZZ objHelpLineTotal : listaHelpLineTotal) {
+					IKernelConfigHeaderLineZZZ objHeaderLine = objHelpLineTotal.getHeaderLine();
+					String sHeadLine = "";
+					if(objHeaderLine!=null) {
+						sHeadLine = objHeaderLine.getHeaderLine();
+					}				
+					String sAbbr = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getAbbreviation())){
+						sAbbr = StringZZZ.left(objHelpLineTotal.getAbbreviation() + StringZZZ.repeat(" ", 10),10);
+					}else {
+						sAbbr = StringZZZ.repeat(" ", 10);
+					}
+					
+					String sName = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getName())){
+						sName = StringZZZ.left(objHelpLineTotal.getName() + StringZZZ.repeat(" ", 20),20);
+					}else {
+						sName = StringZZZ.repeat(" ", 20);
+					}
+									
+					String sDescr = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getDescription())) {
+						sDescr = objHelpLineTotal.getDescription();
+					}
+					
+					
+					if(!StringZZZ.isEmptyNull(sHeadLine) & !sHeadLine.equals(sHeadLineOld)) {
+						sReturn = sReturn + sHeadLine + StringZZZ.crlf();
+						sHeadLineOld = sHeadLine;
+					}
+					
+					sReturn = sReturn + sAbbr + sName + sDescr;
+					if(!StringZZZ.isEmptyTrimmed(sReturn)){
+						sReturn = sReturn + StringZZZ.crlf();
+					}
+				}
+			}//end main
+			return sReturn;
+		}
+
 	
 	//### aus IConfigJGIT
 	

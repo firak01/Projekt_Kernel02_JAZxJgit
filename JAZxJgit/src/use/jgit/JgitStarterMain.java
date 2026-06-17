@@ -206,7 +206,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				sAction = objConfig.readActionHelp();
 				if(!StringZZZ.isEmpty(sAction)) {
 					System.out.println("TODO: Ausgabe zentraler hilfe");
-					String sHelp = objConfig.getHelp();
+					String sHelp = objConfig.createHelp();
 					System.out.println(sHelp);
 					break main;
 				}
@@ -214,7 +214,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				sAction = objConfig.readActionH();
 				if(!StringZZZ.isEmpty(sAction)) {
 					System.out.println("TODO: Ausgabe zentraler hilfe2");
-					String sHelp = objConfig.getHelp();
+					String sHelp = objConfig.createHelp();
 					System.out.println(sHelp);
 					break main;
 				}
