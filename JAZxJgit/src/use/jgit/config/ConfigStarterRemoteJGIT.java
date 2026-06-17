@@ -1,11 +1,20 @@
 package use.jgit.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.config.IConfigConstantZZZ;
+import basic.zBasic.util.abstractList.ListUtilZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.IKernelConfigZZZ;
+import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
+import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
+import basic.zKernel.config.help.KernelConfigHeaderLineZZZ;
+import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
 import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
@@ -75,6 +84,87 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 	@Override
 	public String getProjectName() throws ExceptionZZZ {
 		return IConfigJGIT.sPROJECT_NAME;
+	}
+	
+	//Gib die Hilfsinfos als String zurück
+		@Override
+		public String getHelp() throws ExceptionZZZ{
+			String sReturn = "";
+			main:{
+				//Hier gibt es keine Elternklasse mit solch einer Methode... 
+				List<IKernelConfigHelpLineZZZ> listaHelpLineSuper = super.getHelpList();											
+				List<IKernelConfigHelpLineZZZ> listaHelpLineTotal = this.getHelpList();
+				
+			    listaHelpLineTotal = ListUtilZZZ.join(listaHelpLineSuper, listaHelpLineTotal);
+			    
+			    String sHeadLineOld = "";
+				for(IKernelConfigHelpLineZZZ objHelpLineTotal : listaHelpLineTotal) {
+					IKernelConfigHeaderLineZZZ objHeaderLine = objHelpLineTotal.getHeaderLine();
+					String sHeadLine = "";
+					if(objHeaderLine!=null) {
+						sHeadLine = objHeaderLine.getHeaderLine();
+					}				
+					String sAbbr = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getAbbreviation())){
+						sAbbr = StringZZZ.left(objHelpLineTotal.getAbbreviation() + StringZZZ.repeat(" ", 10),10);
+					}else {
+						sAbbr = StringZZZ.repeat(" ", 10);
+					}
+					
+					String sName = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getName())){
+						sName = StringZZZ.left(objHelpLineTotal.getName() + StringZZZ.repeat(" ", 20),20);
+					}else {
+						sName = StringZZZ.repeat(" ", 20);
+					}
+									
+					String sDescr = "";
+					if(!StringZZZ.isEmptyNull(objHelpLineTotal.getDescription())) {
+						sDescr = objHelpLineTotal.getDescription();
+					}
+					
+					
+					if(!StringZZZ.isEmptyNull(sHeadLine) & !sHeadLine.equals(sHeadLineOld)) {
+						sReturn = sReturn + sHeadLine + StringZZZ.crlf();
+						sHeadLineOld = sHeadLine;
+					}
+					
+					sReturn = sReturn + sAbbr + sName + sDescr;
+					if(!StringZZZ.isEmptyTrimmed(sReturn)){
+						sReturn = sReturn + StringZZZ.crlf();
+					}
+				}
+			}//end main
+			return sReturn;
+		}
+		//kein setter
+		
+	//Merke 20260615: Besser eine Liste von Hilf-Objekt-Zeilen auch kein Enum, der Ansatz mit der einfachen Liste der Objekte läßt sich einfacher 
+	//                über mehrere Projekte und Vererbungstrukturen umsetzen
+	//Also nicht so etwas nutzen wie:
+	//public enum LOGSTRINGFORMAT implements IEnumSetMappedStringFormatZZZ{		
+	//            und darin:    STRINGTYPE01_STRING_BY_STRING("stringtype01",IStringFormatZZZ.iFACTOR_STRINGTYPE01_STRING_BY_STRING, IStringFormatZZZ.sSEPARATOR_PREFIX_DEFAULT + "[A01]", "%s",IStringFormatZZZ.iARG_STRING,  "[/A01]" + IStringFormatZZZ.sSEPARATOR_POSTFIX_DEFAULT, "Gib den naechsten Log String - sofern vorhanden - in diesem Format aus."),			
+	@Override
+	public List<IKernelConfigHelpLineZZZ>getHelpList() throws ExceptionZZZ{
+		ArrayList<IKernelConfigHelpLineZZZ>listaReturn=new ArrayList<IKernelConfigHelpLineZZZ>();
+		main:{
+		//Berücksichtige dabei die Paramter aus den "Pattern" Strings
+		//JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL + "|help|h|status|pull|commit|fetch|push|commitAndPush|rl:pat:rrh:rra:rrac:project:branch:comment:";
+		IKernelConfigHeaderLineZZZ objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + this.getProjectName());
+			
+		IKernelConfigHelpLineZZZ objHelp=null;
+		objHelp = new KernelConfigHelpLineZZZ();
+		objHelp.setHeaderLine(objHeaderLine);
+		listaReturn.add(objHelp);
+		
+		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + IConfigStarterRemoteJGIT.sPROJECT_NAME);		
+		
+		objHelp = new KernelConfigHelpLineZZZ("ssh","SSH Protokol","Nutze das SSH Protokol in der URL für Aktionen.");
+		objHelp.setHeaderLine(objHeaderLine);
+		listaReturn.add(objHelp);	
+		
+		}//end main:
+		return listaReturn;
 	}
 	
 	//### aus IConfigJGIT
