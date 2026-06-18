@@ -417,15 +417,15 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 
 		
 	//################################################################
-	//###### CommitAndPush ###########################################
+	//###### CommitPush ###########################################
 
 	@Override
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
-		return this.commitAndPushit(objConfig, null);	
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+		return this.commitPushit(objConfig, null);	
 	}
 	
 	@Override
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 			try {

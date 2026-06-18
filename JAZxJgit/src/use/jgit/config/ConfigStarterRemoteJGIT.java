@@ -91,7 +91,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 		main:{
 		//Berücksichtige dabei die Paramter aus den "Pattern" Strings
 		//final static String sPATTERN4GIT_REMOTE_DEFAULT="help|h|status|commit|comment:rl:project:" + 
-			//JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL +"|" + "pull|fetch|push|commitAndPush|pat:rrh:rra:rrac:branch:";
+			//JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL +"|" + "pull|fetch|push|commitPush|pat:rrh:rra:rrac:branch:";
 		IKernelConfigHeaderLineZZZ objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + this.getProjectName());
 			
 		IKernelConfigHelpLineZZZ objHelp=null;
@@ -127,7 +127,7 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 		listaReturn.add(objHelp);
 				
 		//Diese sind dann nur fuer RemoteStarter
-		//pull|fetch|push|commitAndPush|pat:rrh:rra:rrac:branch:";
+		//pull|fetch|push|commitPush|pat:rrh:rra:rrac:branch:";
 		objHelp = new KernelConfigHelpLineZZZ("fetch","Fetch","Gleiche den Stand des lokalen Repositories mit dem remote Repository des Projekts ab");
 		listaReturn.add(objHelp);
 		objHelp = new KernelConfigHelpLineZZZ("pull","Pull","Hole den Stand des remote Repositories in das lokale Repository des Projekts");
@@ -190,14 +190,14 @@ public class ConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT impl
 	}
 	
 	@Override
-	public String readActionCommitAndPush() throws ExceptionZZZ {
+	public String readActionCommitPush() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("commitAndPush");			
+			sReturn = objOpt.readValue("commitPush");			
 		}//end main:		
 		return sReturn;
 	}

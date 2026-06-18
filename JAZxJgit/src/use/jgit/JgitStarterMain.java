@@ -244,7 +244,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				sAction = objConfig.readActionPush();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
-				sAction = objConfig.readActionCommitAndPush();
+				sAction = objConfig.readActionCommitPush();
 				if(!StringZZZ.isEmpty(sAction)) {
 					listasAction.add(sAction);
 					
@@ -360,8 +360,8 @@ public class JgitStarterMain implements IConstantZZZ{
 						case "push":
 							bReturn = objStarterGIT.pushit(objConfig);						
 							break;
-						case "commitAndPush":
-							bReturn = objStarterGIT.commitAndPushit(objConfig, sComment);						
+						case "commitPush":
+							bReturn = objStarterGIT.commitPushit(objConfig, sComment);						
 							break;
 						default:
 							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -429,8 +429,8 @@ public class JgitStarterMain implements IConstantZZZ{
 						case "push":
 							bReturn = objStarterSSH.pushit(objConfig);						
 							break;
-						case "commitAndPush":
-							bReturn = objStarterSSH.commitAndPushit(objConfig, sComment);						
+						case "commitPush":
+							bReturn = objStarterSSH.commitPushit(objConfig, sComment);						
 							break;
 						default:
 							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -499,8 +499,8 @@ public class JgitStarterMain implements IConstantZZZ{
 						case "push":
 							bReturn = objStarterHTTPS.pushit(objConfig);						
 							break;
-						case "commitAndPush":
-							bReturn = objStarterHTTPS.commitAndPushit(objConfig, sComment);						
+						case "commitPush":
+							bReturn = objStarterHTTPS.commitPushit(objConfig, sComment);						
 							break;
 						default:
 							ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());

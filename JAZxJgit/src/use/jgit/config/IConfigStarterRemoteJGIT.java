@@ -14,9 +14,9 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.	
-	final static String sPATTERN4GIT_REMOTE_DEFAULT="help|h|status|commit|comment:rl:project:" + JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL +"|" + "pull|fetch|push|commitAndPush|pat:rrh:rra:rrac:branch:";	
+	final static String sPATTERN4GIT_REMOTE_DEFAULT="help|h|status|commit|comment:rl:project:" + JgitStarterSSH.sPROTOCOL +"|" + JgitStarterHTTPS.sPROTOCOL + "|" + JgitStarterGIT.sPROTOCOL +"|" + "pull|fetch|push|commitPush|pat:rrh:rra:rrac:branch:";	
 													  //Aktionen, ggfs. kombinierbar, aber meist nur 1 pro start:
-	                                                  //                pull, commit, fetch, push, commitAndPush 
+	                                                  //                pull, commit, fetch, push, commitPush 
 													  //ConnectionType: HTTPS oder SSH oder GIT, damit kann man die angegebene URL übersteuern
 	
 													  //gefolgt jeweils von einer URL
@@ -39,7 +39,7 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	public String readActionCommit() throws ExceptionZZZ;
 	public String readActionFetch() throws ExceptionZZZ;
 	public String readActionPush() throws ExceptionZZZ;
-	public String readActionCommitAndPush() throws ExceptionZZZ;
+	public String readActionCommitPush() throws ExceptionZZZ;
 	
 	public String getConnectionTypeDefault() throws ExceptionZZZ;
 	public String readConnectionType() throws ExceptionZZZ;	

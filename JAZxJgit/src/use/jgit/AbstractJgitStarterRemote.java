@@ -174,9 +174,13 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			
 			//+++ Zugriff sicherstellen
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
-			JGitSshConfigZZZ.configure();
-			System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
-			
+			//Das müsste eigentlich für HTTPS nicht gemacht werden.
+			if(!sConnectionTypeIn.equalsIgnoreCase("https")) {
+				JGitSshConfigZZZ.configure();
+				System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			}else {
+				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
+			}
 			
 			
 			//######################################
@@ -656,10 +660,10 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 	
 	
 	@Override
-	public abstract boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
+	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 
 	@Override
-	public abstract boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
+	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
 
 	
 	@Override

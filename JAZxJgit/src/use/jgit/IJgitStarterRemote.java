@@ -49,8 +49,8 @@ public interface IJgitStarterRemote extends IJgitStarterLocal {
 	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
 	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
 	
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
 	
 	public boolean fetchit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;	
 	public boolean fetchit(Git git) throws ExceptionZZZ;

@@ -468,15 +468,15 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	}
 	
 	//##########################################################################
-	//### CommitAndPushit
+	//### CommitPushit
 	@Override
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
-		return commitAndPushit(objConfig, null);
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+		return commitPushit(objConfig, null);
 	}
 	
 	
 	@Override
-	public boolean commitAndPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
+	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sCommentIn) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
 		try {
