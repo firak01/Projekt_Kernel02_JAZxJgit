@@ -45,7 +45,14 @@ import use.jgit.protocol.ssh.JgitStarterSSH;
  */
 public class JgitStarterMain implements IConstantZZZ{
 
-	/**
+	//#######################################
+	//### Eintragen von github.com in die C:\Users\<User>\.ssh\known_hosts Datei
+	//### Die notwendigen Einträge können hier gefunden werden.
+	//### https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints?utm_source=chatgpt.com
+	//###
+	//### Es sollte aber mit der JschConfigSessionFactoryZZZ diese Prüfung verhindert werden.
+	//######################################
+
 	//#######################################
 	//### Pfad zum certifier - store, je nach Arbeitsumgebung ist das ein anderer.
 	//### Diesen in der Startkonfiguration der JVM setzen
@@ -130,8 +137,6 @@ public class JgitStarterMain implements IConstantZZZ{
 	//PULL SSH	: -pull -ssh -rra origin -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy -z {'IGNORE_CHECKOUT_CONFLICTS':true}
 	//PUSH HTTPS: -push -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy 
 	//PUSH SSH	: -push -ssh -rra origin -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy 
-	
-	 */
 	
 	/*
 	Kommandozeilenparamater fuer den Einsatz:

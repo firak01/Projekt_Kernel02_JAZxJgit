@@ -6,14 +6,9 @@ import java.util.List;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.config.ConfigUtilZZZ;
 import basic.zBasic.util.abstractList.ListUtilZZZ;
-import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
-import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
-import basic.zKernel.IKernelConfigZZZ;
-import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
-import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.

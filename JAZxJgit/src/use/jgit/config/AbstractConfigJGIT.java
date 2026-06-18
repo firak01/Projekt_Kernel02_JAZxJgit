@@ -1,16 +1,10 @@
 package use.jgit.config;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.config.AbstractConfigZZZ;
-import basic.zBasic.util.abstractList.ListUtilZZZ;
-import basic.zBasic.util.datatype.string.StringZZZ;
-import basic.zKernel.AbstractKernelConfigZZZ;
-import basic.zKernel.GetOptZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
-import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
 
 public abstract class AbstractConfigJGIT extends AbstractConfigZZZ implements IConfigJGIT{
 

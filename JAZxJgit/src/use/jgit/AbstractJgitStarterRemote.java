@@ -20,6 +20,7 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
@@ -34,6 +35,7 @@ import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.protocol.ssh.JGitSshConfigZZZ;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
@@ -162,6 +164,21 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			}
 			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 
+			//#######################################
+			//### Eintragen von github.com in die C:\Users\<User>\.ssh\known_hosts Datei
+			//### Die notwendigen Einträge können hier gefunden werden.
+			//### https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints?utm_source=chatgpt.com
+			//###
+			//### Es sollte aber mit der JschConfigSessionFactoryZZZ diese Prüfung verhindert werden.
+			//######################################
+			
+			//+++ Zugriff sicherstellen
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
+			JGitSshConfigZZZ.configure();
+			System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			
+			
+			
 			//######################################
 		}//end main:
 		return bReturn;

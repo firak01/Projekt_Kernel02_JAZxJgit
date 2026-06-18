@@ -4,17 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.config.IConfigConstantZZZ;
-import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
-import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
-import basic.zKernel.IKernelConfigZZZ;
 import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
 import basic.zKernel.config.help.KernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
-import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.
@@ -124,7 +119,7 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	//### aus IConfigJGIT
 	@Override
 	public String getCommentDefault() throws ExceptionZZZ {
-		return "Konflikt manuel aufgelöst.";
+		return "Konflikt-Resolver.";
 	}
 		
 	//### aus IConfigResolverGIT
