@@ -173,16 +173,14 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 			//hilfsaktion
 			sAction = objConfig.readActionHelp();
-			if(!StringZZZ.isEmpty(sAction)) {
-				System.out.println("TODO: Ausgabe zentraler hilfe");
+			if(!StringZZZ.isEmpty(sAction)) {				
 				String sHelp = objConfig.createHelp();
 				System.out.println(sHelp);
 				break main;
 			}
 			
 			sAction = objConfig.readActionH();
-			if(!StringZZZ.isEmpty(sAction)) {
-				System.out.println("TODO: Ausgabe zentraler hilfe2");
+			if(!StringZZZ.isEmpty(sAction)) {				
 				String sHelp = objConfig.createHelp();
 				System.out.println(sHelp);
 				break main;

@@ -88,6 +88,7 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 		objHelp.setHeaderLine(objHeaderLine);
 		listaReturn.add(objHelp);
 		
+		//Diese werden auch im Starter genutzt
 		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);				
 		objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");
 		objHelp.setHeaderLine(objHeaderLine);
@@ -98,16 +99,17 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 		listaReturn.add(objHelp);	
 		objHelp = new KernelConfigHelpLineZZZ("conflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
 		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
+		listaReturn.add(objHelp);
 		objHelp = new KernelConfigHelpLineZZZ("rl:","Dateipfad","Pfad zum lokalen Repository");
 		listaReturn.add(objHelp);
 		objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");
 		listaReturn.add(objHelp);
+		
+		//Nur fuer den ConflictResolver
 		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
 		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
-		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
-		listaReturn.add(objHelp);
+		
 //
 //		objHelp = new KernelConfigHelpLineZZZ("zcustom:","Custom Flag","Flagdefinition, berücksichtigen nur direkte Vererbungshierarchie. Es muss ein JSON String folgen, z.B. -zcustom {\"xyz\":false,\"abc\":true}");
 //		listaReturn.add(objHelp);	
