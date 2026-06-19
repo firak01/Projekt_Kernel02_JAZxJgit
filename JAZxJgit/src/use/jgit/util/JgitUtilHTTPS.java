@@ -32,6 +32,8 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.common.IMergeResultResolvedZZZ;
+import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
@@ -282,7 +284,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		//Merke: Bei HTTPS ist der FetchMerge Ansatz der einzig mögliche. Es gibt keine direkte Pull-Lösung. 
 				
 		return JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, true); //true, d.h. kein RepostoryStateCheck notwendig. Also auch kein COMMIT Voraussetzung.
@@ -371,8 +373,8 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	private static MergeResult pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
-		MergeResult objReturn = null;
+	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
 	        	
@@ -386,10 +388,11 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("Pull: Startet");
 				try {
-					objReturn = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);
-	 
+					MergeResult objMergeResult = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);
+					objReturn.setOriginalResult(objMergeResult);
+					
 					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
-					MergeStatus status = objReturn.getMergeStatus();
+					MergeStatus status = objMergeResult.getMergeStatus();
 					System.out.println("Merge: Ergebnis, Status: " + status.toString());
 					
 					boolean bMyAutoResolve=false;
@@ -400,7 +403,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    System.out.println("Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
 						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 											    
-					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+					    Map<String, int[][]> conflicts = objMergeResult.getConflicts();
 
 					    if(conflicts != null) {
 					        for(String path : conflicts.keySet()) {
@@ -431,7 +434,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    System.out.println("Failed: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
 						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 											    
-					    Map<String, ResolveMerger.MergeFailureReason> faileds = objReturn.getFailingPaths();
+					    Map<String, ResolveMerger.MergeFailureReason> faileds = objMergeResult.getFailingPaths();
 
 					    if(faileds != null) {
 					        for(String path : faileds.keySet()) {
@@ -459,26 +462,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					}
 
 					if(bMyAutoResolve) {
-					//Das Problem: Das Merge-Result-Objekt bekommt von der Konflikt Lösung nichts mit.
-					//Es wird davon abgeraten einen neuen Merge zu machen um dies zu aktualisieren.
-					//Vorgeschlagener Lösungsweg:
-					//Eine eigene Rückgabeklasse mit dem ursprünglichen MergeResult Object 
-					//und dem Status conflicsResolved=true 
-					//die Objekte Status und state auch mitgeben
-					//und isClean als Abfrage: mergeCompleted=true; 
-					//und isSafe  als Abfrage: repositoryStateSafe
-					TODOGOON20260619;
 					
-					//Prüfen ob, noch Konflikte vorhanden sind
-					Status statusGit = git.status().call();
-					boolean clean = statusGit.isClean();
-					
-					//Prüfen, ob der State des Repositories SAFE ist.
-					RepositoryState stateRepo = git.getRepository().getRepositoryState();
-					if(stateRepo.equals(RepositoryState.SAFE)){
+						//Prüfen ob, noch Konflikte vorhanden sind
+						Status statusGit = git.status().call();
+						objReturn.setGitStatus(statusGit);
 						
-					}
+						//Prüfen, ob der State des Repositories SAFE ist.
+						RepositoryState stateRepo = git.getRepository().getRepositoryState();
+						objReturn.setRepositoryState(stateRepo);
 					
+						objReturn.isConflictsResolved(bMyAutoResolve);
 					}
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {
@@ -509,8 +502,9 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            }
 		
 		            //Pull erneut versuchen
-		            System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
-		            git.pull().call();
+		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
+		            //git.pull().call();
+		            objReturn = pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, false);
 		        }
 								
 			}catch(InvalidRemoteException ire) {

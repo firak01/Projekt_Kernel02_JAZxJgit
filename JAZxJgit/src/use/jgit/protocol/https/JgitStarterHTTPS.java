@@ -19,6 +19,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
+import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
@@ -272,12 +273,15 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			if(bReturn) break main;
 			
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
 			
@@ -290,25 +294,38 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			MergeResult objMergeResult =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
-			if(objMergeResult==null) {
-				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
+			if(objMergeResultResolved==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
 			}
 			
-			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
-			bReturn = objMergeStatus.isSuccessful();
+			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
+			//MergeStatus objMergeStatus = objMergeResultResolved.getMergeStatusOriginal();
+			//bReturn = objMergeStatus.isSuccessful();
+			
+			bReturn = objMergeResultResolved.isConflictsResolved();
+			bReturn = bReturn & objMergeResultResolved.isGitStatusClean();
+			bReturn = bReturn & objMergeResultResolved.isRepositoryStateSafe();
 			if(bReturn) break main;
 			
 			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
-			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			System.out.println("##### MERGE: GGfs. NICHT ZU BEHEBENDE KONFLIKTE #######");
+			MergeResult objMergeResultOriginal = objMergeResultResolved.getMergeResultOriginal();
+			if(objMergeResultOriginal==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;
+			}
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResultOriginal);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
-			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResultOriginal);
 			objAnalyseResult.printReport();
 			
 		}//end main:
@@ -347,15 +364,17 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			
 			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
-			
 					
 		}//end main:
 		return bReturn;

@@ -329,16 +329,17 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			if(bReturn) break main;
 			
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
-			
-			
 		}//end main:
 		return bReturn;
 	}
@@ -365,16 +366,17 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			if(bReturn) break main;
 			
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
-			
-			
 		}//end main:
 		return bReturn;
 	}
@@ -402,15 +404,17 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			
 			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: NICHT ZU BEHEBENDE KONFLIKTE #######");
+			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			if(!bAnyConflict) {
+System.out.println("* KEINE KONFLIKTE");
+			}
 			bReturn = !bAnyConflict;
 			
 			
-			System.out.println("##### MERGE: ANALYSE UND LOESUNGSVORSCHLAEGE #######");
+			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
 			objAnalyseResult.printReport();
-			
 		}//end main:
 		return bReturn;
 	}

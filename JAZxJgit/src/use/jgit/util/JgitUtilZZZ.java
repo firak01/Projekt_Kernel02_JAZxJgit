@@ -1030,8 +1030,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 	        System.out.println("Unhandled merge status: " + status);
 	        bReturn = true;
 
-	    }//end main:
-	    System.out.println(); //Leerzeile zum optischen Trennen der weiteren Ausgaben.
+	    }//end main:	    
 	    return bReturn;    
 	}
 	
