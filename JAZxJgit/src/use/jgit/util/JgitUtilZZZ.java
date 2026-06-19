@@ -1579,7 +1579,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 			
 			MergeResult objMergeResult = null;
 			if(sBranch.equals("*")) {
-				objMergeResult = JgitUtilZZZ.mergeWithResultFirstBranch(git);
+				objMergeResult = JgitUtilZZZ.mergeWithResultFirstBranch(git, true); //wir hatten noch kein Debug
 			}else {	
 				objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
 			}
@@ -1679,9 +1679,9 @@ Repository existingRepo = new FileRepositoryBuilder()
 //					objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
 //					break;
 //				}
-				objReturn = JgitUtilZZZ.mergeWithResultFirstBranch(git);
+				objReturn = JgitUtilZZZ.mergeWithResultFirstBranch(git, false); //wir hatten schon 1x Debug
 			}else {
-				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch);					
+				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, false);	//wir hatten schon 1x Debug				
 			}					       			
 		}//end main:
 		return objReturn;
@@ -1724,15 +1724,15 @@ Repository existingRepo = new FileRepositoryBuilder()
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 				
 	 */
-	public static MergeResult mergeWithResultFirstBranch(Git git) throws ExceptionZZZ {
+	public static MergeResult mergeWithResultFirstBranch(Git git, boolean bPrintDebug) throws ExceptionZZZ {
 		MergeResult objReturn = null;
-		main:{			
+		main:{	if(bPrintDebug) {		
 			 try {
 					JgitUtilZZZ.debugForMerge(git);
 				} catch (Exception e) {
 					ExceptionZZZ ez = new ExceptionZZZ(e);
 					throw ez;
-				}
+				}               }
 			 
 			//####################################################################
 			//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
@@ -1747,7 +1747,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 			// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
 			List<String> listaBranch = JgitUtilZZZ.getRepositoryBranchesShortName(git);
 			for(String sBranchTemp : listaBranch) {
-				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
+				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp, false); //wir hatten schon 1x Debug
 				break; 	// Aber wir geben nur den ersten zurück
 			}							       		
 		}//end main:
@@ -1790,7 +1790,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 
                   Das ist aber eine RefSpec-Syntax, kein echter Refname.
 	 */
-	public static MergeResult mergeWithResultByBranchShortName(Git git, String sBranchIn) throws ExceptionZZZ {
+	public static MergeResult mergeWithResultByBranchShortName(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 			try {				
@@ -1803,11 +1803,46 @@ Repository existingRepo = new FileRepositoryBuilder()
 					throw ez;
 				}
 				
+				if(bPrintDebug) {		
+					 try {
+							JgitUtilZZZ.debugForMerge(git);
+						} catch (Exception e) {
+							ExceptionZZZ ez = new ExceptionZZZ(e);
+							throw ez;
+						}               }
 				
 				//Merke.. beim Fetch  new RefSpec("+refs/heads/master:refs/remotes/master")
 				//das wäre ein Merge auf den gleichen lokalen Branch String sFetchRefs = "refs/heads/" + sBranch;
 				//aber ich will ja den lokalen Branch auf den gleichen remote Branch mergen. 
 				String sFetchRefs = "refs/remotes/origin/" + sBranch;
+				
+				/*Merke:
+				MergeCommand mergeCommand = git.merge();
+				//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
+				//Also so versuchen.
+				//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+				//Lösungsansatz: direkt den richtigen Branch verwenden
+				//also statt... mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+				//mergeCommand.include(remoteMaster);
+				//mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+				
+				//ABER mit 2 verschiedenen .includes(...) gibt es eine Fehlermeldung wie:
+				//Verwende remoteMaster= '56cabdc4169eeb600177b05b8540f5bde4ca3533'
+				//Verwende remoteMaster= 'AnyObjectId[56cabdc4169eeb600177b05b8540f5bde4ca3533]'
+				//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+				
+				//Die Lösung ist dann nur 1x das .include(...) aufzurufen.
+				//Wenn du nur eine nackte ObjectId übergibst:
+				//mergeCommand.include(objectId);
+				//kennt JGit keinen Branchnamen mehr. Dann fehlen Informationen wie:
+				//welcher Remote? welcher Tracking-Branch? welche Reflog-Namen?
+				//
+				//Darum ist die Ref-Variante sauberer.
+				mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
+				*/
+				
+				
+				
 				
 				Ref objRef = git.getRepository().exactRef(sFetchRefs);
 				//System.out.println("Merge Ref = " + objRef.getName());

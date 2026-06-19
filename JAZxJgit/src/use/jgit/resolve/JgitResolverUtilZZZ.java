@@ -153,7 +153,7 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 			    	
 			    			//Merge result Objekt (ist nur ein Snapshot) neu holen 
 	                		System.out.println("Starte Merge2:");
-	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch);
+	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, true); //true, wir hatten noch kein DEBUG
 	                		
 							MergeStatus status2 = objReturn.getMergeStatus();
 							System.out.println("Merge-Status2:" + status2.toString());

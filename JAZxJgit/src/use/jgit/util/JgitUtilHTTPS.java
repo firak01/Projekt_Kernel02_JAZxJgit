@@ -11,6 +11,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -18,7 +19,9 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.merge.MergeStrategy;
+import org.eclipse.jgit.merge.ResolveMerger;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -282,7 +285,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	public static MergeResult pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		//Merke: Bei HTTPS ist der FetchMerge Ansatz der einzig mögliche. Es gibt keine direkte Pull-Lösung. 
 				
-		return JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy);
+		return JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, true); //true, d.h. kein RepostoryStateCheck notwendig. Also auch kein COMMIT Voraussetzung.
 	}
 	
 	
@@ -368,100 +371,35 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	private static MergeResult pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	private static MergeResult pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
-	        try {									
-				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
-				//Darum versuchen dies ohne sPAT in URL zu realisieren
-				//                  //Variante A) mit sPAT in URL
-				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
-				//
-				//                  //Variante B) ohne sPAT in URL
-				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-	        
-				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				
-				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
-							
-				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				System.out.println("Url fuer Fetch: '" + sUrl + "'");
-				
-				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider, sBranch);
-				if(fetchResult==null) break main;
-					
-				//+++ Auswerten eines Fetch
-				String sFetchResultMessages = fetchResult.getMessages();
-				if(sFetchResultMessages!=null) {				
-					System.out.println("Fetch-Result: " + sFetchResultMessages);
-				}
-					
-				
-				//++++++++++++++++++++++++++++++++
-				//den richtigen Branch ansteuern
-				String branch = "master"; // oder dynamisch
-				String sFetchRefs = "refs/heads/" + branch;
-				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-				System.out.println("Merge Ref = " + objRef.getName());
-				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
-				
-				
-				
-				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-									
+	        try {
+	        	
+	        	//bSuppressExceptionOnMergeFail: wir wollen die Exception auf jeden Fall bekommen und dann mit der Strategie auflösen.
+	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	
+	        	boolean bSuppressExceptionOnMergeFail = false;
+	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
+	        								
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
-				System.out.println("Starte Merge:");
+				System.out.println("Pull: Startet");
 				try {
-					String localRef = "refs/remotes/origin/" + branch;
-					String remoteRef = "refs/heads/" + branch;
-					
-					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
-					System.out.println("Verwende objRef. Nicht Verwender remoteMaster= '" + remoteMaster.getName() + "'");
-										
-					MergeCommand mergeCommand = git.merge();
-					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
-					//Also so versuchen.
-					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
-					//Lösungsansatz: direkt den richtigen Branch verwenden
-					//also statt... mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
-					//mergeCommand.include(remoteMaster);
-					//mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-					
-					//ABER mit 2 verschiedenen .includes(...) gibt es eine Fehlermeldung wie:
-					//Verwende remoteMaster= '56cabdc4169eeb600177b05b8540f5bde4ca3533'
-					//Verwende remoteMaster= 'AnyObjectId[56cabdc4169eeb600177b05b8540f5bde4ca3533]'
-					//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
-					
-					//Die Lösung ist dann nur 1x das .include(...) aufzurufen.
-					//Wenn du nur eine nackte ObjectId übergibst:
-					//mergeCommand.include(objectId);
-					//kennt JGit keinen Branchnamen mehr. Dann fehlen Informationen wie:
-					//welcher Remote?
-					//welcher Tracking-Branch?
-					//welche Reflog-Namen?
-					//
-					//Darum ist die Ref-Variante sauberer.
-					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-					
-					
-					//Folgender DEBUG Code geht nur mit neueren JGIT Versionen:
-					//System.out.println("Merge includes:");
-					//for(Ref r : mergeCommand.getRefsToMerge()) {
-					//    System.out.println(r.getName());
-					//}
-					
-					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
-					 
-					objReturn = mergeCommand.call();
-					
+					objReturn = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);
+	 
 					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
 					MergeStatus status = objReturn.getMergeStatus();
-					System.out.println("Merge-Status:" + status.toString());
+					System.out.println("Merge: Ergebnis, Status: " + status.toString());
+					
+					boolean bMyAutoResolve=false;
 					if(status.equals(MergeStatus.CONFLICTING)) {
-					    System.out.println("Konflikte erkannt.");
+					    System.out.println("Konflikte: Erkannt.");
 
+					    //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					    System.out.println("Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+											    
 					    Map<String, int[][]> conflicts = objReturn.getConflicts();
 
 					    if(conflicts != null) {
@@ -481,234 +419,28 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    git.add().addFilepattern(".").call();
 
 					    git.commit()
-					       .setMessage("Konflikte automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
+					       .setMessage("Konflikte: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
 					       .call();
-					}
-	
-					
-					//###############################################################
-		        } catch (CheckoutConflictException cce) {
-		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
-		        	
-		            Collection<String> conflictingPaths = cce.getConflictingPaths();
-		
-		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
-		                // Kein konkreter Pfad bekannt → weiterwerfen
-		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
-		    			throw ez;
-		            }
-	
-		            //Konfliktdateien gezielt zurücksetzen
-		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
-		            for (String path : conflictingPaths) {
-		                git.checkout()
-		                	.setStage(objStage)
-		                   .addPath(path)
-		                   .call();
-		                System.out.println("* " + path);			        	
-		            }
-		
-		            //Pull erneut versuchen
-		            System.out.println("Konflikte: Pull erneut versuchen.");
-		            git.pull().call();
-		        }
-								
-	        }catch(IOException ioe) {
-	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
-	        	throw ez;
-			}catch(InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			}catch(TransportException te) {
-				ExceptionZZZ ez = new ExceptionZZZ(te);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}       
-	    }//end main:
-	    return objReturn;
-	}
-	
-	/** Für den HTTPS Weg:
-	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt
-		nur die konfliktbehafteten Dateien zurücksetzt
-		danach den Pull automatisch erneut versucht
-		
-		s. ChatGPT 20260323
-	 * @param git
-	 * @throws GitAPIException
-	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
-	 * @throws ExceptionZZZ 
-	 */
-	public static MergeResult pullIgnoreCheckoutConflictsHTTPS_BACKUP_GGFS_LOESCHEN(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-	        try {
-	
-				/*
-				Frage:
-				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
-				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
-				
-				Antwort:
-				Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
-				VARIANTE 1. setRemote(...) erwartet keine URL
-	
-				In JGit ist:
-				git.pull().setRemote("origin")
-	
-				👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
-	
-				Also z. B.:
-				[remote "origin"]
-					url = https://github.com/user/repo.git
-	
-				➡️ setRemote("origin") = Referenz auf diesen Eintrag
-				➡️ Direkte URL ist hier nicht vorgesehen
-	
-				VARIANTE 2. URL direkt übergeben? → Nur über fetch()
-	
-				Wenn du eine URL direkt verwenden willst, musst du den Pull zerlegen:
-				👉 pull = fetch + merge
-	
-				Beispiel (HTTPS mit URL + Token)
-				FetchResult fetchResult = git.fetch()
-				.setRemote("https://<token>@github.com/user/repo.git")
-				.call();
-	
-				git.merge()
-				.include(fetchResult.getAdvertisedRef("refs/heads/main"))
-				.call();
-				 */
-				
-	        									
-				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
-				//Darum versuchen dies ohne sPAT in URL zu realisieren
-				//                  //Variante A) mit sPAT in URL
-				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
-				//
-				//                  //Variante B) ohne sPAT in URL
-				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-	        
-				PullCommand pullCommand = git.pull();
-				String sUrlPartFromRepo = JgitUtilZZZ.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				
-				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
-							
-				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				System.out.println("Url fuer Fetch: '" + sUrl + "'");
-				
-				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
-				if(fetchResult==null) break main;
-		        GitPostFetchAnalyse.logFetchResult(fetchResult);
-				
-				//++++++++++++++++++++++++++++++++
-				//den richtigen Branch ansteuern
-				String branch = "master"; // oder dynamisch
-				String sFetchRefs = "refs/heads/" + branch;
-				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-				System.out.println("Merge Ref = " + objRef.getName());
-				System.out.println("ObjectId  = " + objRef.getObjectId().getName());
-				
-				/*Minierklaerung:
-				siehe .git\config Datei, entsprechende Zeile.
-				 
-				Das ist ein sogenannter RefSpec (Reference Specification).
-				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
-				
-				Aufbau allgemein:
-				[+]<Quelle>:<Ziel>
-				
-				Also:
-				Quelle (Remote-Seite)
-				refs/heads/ = alle Branches im Remote-Repository
-				 * = Wildcard → alle Branch-Namen
-	
-				➡️ Bedeutet:
-				Hole alle Branches vom Remote
-				
-				
-				Ziel (lokal)
-				refs/remotes/origin/ = Remote-Tracking-Branches
-				* = gleicher Name wie Quelle
-	
-				➡️ Bedeutet:
-				Speichere sie lokal als origin/branchname
-				
-				------------
-				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-				Mit + sagst du:
-				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-				 */
-				
-					
-				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
-				System.out.println("Starte Merge:");
-				try {
-					String localRef = "refs/remotes/origin/" + branch;
-					String remoteRef = "refs/heads/" + branch;
-					
-					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
-					System.out.println("Verwende objRef. Nicht Verwender remoteMaster= '" + remoteMaster.getName() + "'");
-										
-					MergeCommand mergeCommand = git.merge();
-					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
-					//Also so versuchen.
-					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
-					//Lösungsansatz: direkt den richtigen Branch verwenden
-					//also statt... mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
-					//mergeCommand.include(remoteMaster);
-					//mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-					
-					//ABER mit 2 verschiedenen .includes(...) gibt es eine Fehlermeldung wie:
-					//Verwende remoteMaster= '56cabdc4169eeb600177b05b8540f5bde4ca3533'
-					//Verwende remoteMaster= 'AnyObjectId[56cabdc4169eeb600177b05b8540f5bde4ca3533]'
-					//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
-					
-					//Die Lösung ist dann nur 1x das .include(...) aufzurufen.
-					//Wenn du nur eine nackte ObjectId übergibst:
-					//mergeCommand.include(objectId);
-					//kennt JGit keinen Branchnamen mehr. Dann fehlen Informationen wie:
-					//welcher Remote?
-					//welcher Tracking-Branch?
-					//welche Reflog-Namen?
-					//
-					//Darum ist die Ref-Variante sauberer.
-					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-					
-					
-					//Folgender DEBUG Code geht nur mit neueren JGIT Versionen:
-					//System.out.println("Merge includes:");
-					//for(Ref r : mergeCommand.getRefsToMerge()) {
-					//    System.out.println(r.getName());
-					//}
-					
-					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
-					 
-					objReturn = mergeCommand.call();
-					
-					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
-					MergeStatus status = objReturn.getMergeStatus();
-					System.out.println("Merge-Status:" + status.toString());
-					if(status.equals(MergeStatus.CONFLICTING)) {
-					    System.out.println("Konflikte erkannt.");
+					    					
+					    bMyAutoResolve=true;
+					} else if(status.equals(MergeStatus.FAILED)) {
+						System.out.println("Failed: Erkannt.");
+						//... kann man hier das gleiche machen wie bei Konflikten? Nein ... es gibt keine Liste von Conflicts.
+						
+						//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					    System.out.println("Failed: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+											    
+					    Map<String, ResolveMerger.MergeFailureReason> faileds = objReturn.getFailingPaths();
 
-					    Map<String, int[][]> conflicts = objReturn.getConflicts();
+					    if(faileds != null) {
+					        for(String path : faileds.keySet()) {
 
-					    if(conflicts != null) {
-					        for(String path : conflicts.keySet()) {
+					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
 
-					        	System.out.println("Datei: " + path);
-
-					            // Lokale Version wiederherstellen (= OURS)
+					            // Lokale Version wiederherstellen (z.B. OURS)
 					            git.checkout()
+					            	.setStage(objStage) //z.B. OURS
 					               .addPath(path)
 					               .call();
 					        }
@@ -718,40 +450,69 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 					    git.add().addFilepattern(".").call();
 
 					    git.commit()
-					       .setMessage("Konflikte automatisch mit OURS aufgelöst")
+					       .setMessage("Failed: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
 					       .call();
+					    
+					    bMyAutoResolve=true;
+					}else {
+						//mache nix
 					}
-	
+
+					if(bMyAutoResolve) {
+					//Das Problem: Das Merge-Result-Objekt bekommt von der Konflikt Lösung nichts mit.
+					//Es wird davon abgeraten einen neuen Merge zu machen um dies zu aktualisieren.
+					//Vorgeschlagener Lösungsweg:
+					//Eine eigene Rückgabeklasse mit dem ursprünglichen MergeResult Object 
+					//und dem Status conflicsResolved=true 
+					//die Objekte Status und state auch mitgeben
+					//und isClean als Abfrage: mergeCompleted=true; 
+					//und isSafe  als Abfrage: repositoryStateSafe
+					TODOGOON20260619;
 					
+					//Prüfen ob, noch Konflikte vorhanden sind
+					Status statusGit = git.status().call();
+					boolean clean = statusGit.isClean();
+					
+					//Prüfen, ob der State des Repositories SAFE ist.
+					RepositoryState stateRepo = git.getRepository().getRepositoryState();
+					if(stateRepo.equals(RepositoryState.SAFE)){
+						
+					}
+					
+					}
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {
-		        	System.out.println("Konflikte: CheckoutConflictException... Meine gewaehlte Konfliktstrategie 'ignorieren'");
+		        	System.out.println("Pull PreMerge Konflikte: CheckoutConflictException...");
+		            System.out.println("Pull PreMerge Konflikte: Können mit MergeStrategy nicht aufgeloest werden. Wg. 'ignorieren' Strategy über STAGE trotzdem versuchen.");
 		        	
 		            Collection<String> conflictingPaths = cce.getConflictingPaths();
 		
 		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
 		                // Kein konkreter Pfad bekannt → weiterwerfen
+		            	System.out.println("Pull PreMerge Konflikte: Problem: Keine konkreten Dateien erkannt.");
 		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
 		    			throw ez;
 		            }
 	
+		          //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					System.out.println("Pull PreMerge Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+					CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+					
 		            //Konfliktdateien gezielt zurücksetzen
-		            System.out.println("Konflikte: Setze Pfade gezielt zurueck:");		        	
+		            System.out.println("Pull PreMerge Konflikte: Setze Dateien gezielt zurueck:");		        	
 		            for (String path : conflictingPaths) {
 		                git.checkout()
+		                	.setStage(objStage)
 		                   .addPath(path)
 		                   .call();
 		                System.out.println("* " + path);			        	
 		            }
 		
 		            //Pull erneut versuchen
-		            System.out.println("Konflikte: Pull erneut versuchen.");
+		            System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 		            git.pull().call();
 		        }
 								
-	        }catch(IOException ioe) {
-	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
-	        	throw ez;
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
 				throw ez;
@@ -767,32 +528,39 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	}
 	
 	
+	
+	
 	//++++++++++++++++++++++++++++++++++++++++
 	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
-		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, true);
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, true, true);
 	}
 	
 	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
-		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail);
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail, true);
     }
 	
-	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail, boolean bCheckRepositoryState) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 		        if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
 		        }
 		        
-		        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
-		        //             ohne eine Exception durchlaufen kann
-		        //Vorprüfung per eigener, gekapselter Routine
-		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
-		        if (!check.isClean()) {
-		            check.printReport();
-		            break main; // Merge abbrechen
-		        }
+		        //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
+	        	if(bCheckRepositoryState) {
+				    //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+				    //             ohne eine Exception durchlaufen kann
+				    //Vorprüfung per eigener, gekapselter Routine
+				    ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+				    if (!check.isClean()) {
+				        check.printReport();
+				        break main; // Merge abbrechen
+				    }
+	        	}
 		        
-		        
+		      
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		    	/*
 				Frage:
@@ -865,7 +633,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		        // =========================		
 		        //Aber wenn nichts zu fetchen ist, gibt es einen Fehler, darum
 				FetchResult fetchResult = JgitUtilZZZ.fetchIgnoreNothingToFetch(git, sUrlRepoRemote, credentialsProvider, sBranch);
-				if(fetchResult==null) break main;
+				if(fetchResult==null) { System.out.println("Fetch-Result: Nicht vorhanden. Abbruch!!!"); break main; }
 		        GitPostFetchAnalyse.logFetchResult(fetchResult);
 		
 		        // =========================
@@ -878,107 +646,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return objReturn;
     }
 	
-	private static MergeResult pullHTTPS_BACKUP_GGFS_LOESCHEN_(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-	        try {
 	
-		        if (git == null) {
-		            throw new IllegalArgumentException("git must not be null");
-		        }
-		        
-		        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
-		        //             ohne eine Exception durchlaufen kann
-		        //Vorprüfung per eigener, gekapselter Routine
-		        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
-		        if (!check.isClean()) {
-		            check.printReport();
-		            break main; // Merge abbrechen
-		        }
-		       
-		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		        if (remoteUrl == null || remoteUrl.trim().isEmpty()) {
-		            throw new IllegalArgumentException("remoteUrl must not be empty");
-		        }
-		        if (branch == null || branch.trim().isEmpty()) {
-		            branch = "master"; // Default für Java 1.7 Projekte 😉
-		        }
-		
-		        Repository repo = git.getRepository();
-		
-		        String remoteRef = "refs/heads/" + branch;
-		        String localTrackingRef = "refs/remotes/origin/" + branch;
-		
-		        // =========================
-		        // 1. FETCH (nur ein Branch!)
-		        // =========================
-		        FetchCommand fetchCommand = git.fetch();
-		        fetchCommand.setRemote(remoteUrl);
-		        fetchCommand.setRefSpecs(new RefSpec(remoteRef + ":" + localTrackingRef));
-		
-		        if (credentialsProvider != null) {
-		            fetchCommand.setCredentialsProvider(credentialsProvider);
-		        }
-		
-		        fetchCommand.call();
-		
-		        // =========================
-		        // 2. MERGE (gezielt!)
-		        // =========================
-		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
-		
-		        if (remoteBranchObjectId == null) {
-		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
-		        }
-		 
-		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
-		        MergeCommand mergeCommand = git.merge();
-		        mergeCommand.include(remoteBranchObjectId);
-		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
-		
-		        objReturn = mergeCommand.call();
-		
-		        // =========================
-		        // 3. Ergebnis prüfen
-		        // =========================
-		        if (!objReturn.getMergeStatus().isSuccessful()) {
-		
-		            switch (objReturn.getMergeStatus()) {
-		
-		                case CONFLICTING:
-		                    System.out.println("Merge conflicts detected!");		                    
-		                    break;
-		
-		                case FAILED:
-		                	System.out.println("Merge conflicts detected!");	
-		                    if(!bSuppressExceptionOnMergeFail) throw new IllegalStateException("Merge failed: " + objReturn.toString());
-		                    break;
-		
-		                case ALREADY_UP_TO_DATE:
-		                    System.out.println("Already up-to-date.");
-		                    break;
-		
-		                default:
-		                    System.out.println("Merge status: " + objReturn.getMergeStatus());
-		            }
-		        }
-
-	        }catch(IOException ioe) {
-	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
-	        	throw ez;
-			}catch(InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			}catch(TransportException te) {
-				ExceptionZZZ ez = new ExceptionZZZ(te);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}       
-		}//end main:
-		return objReturn;
-    }
 	
 	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		MergeResult objReturn = null;

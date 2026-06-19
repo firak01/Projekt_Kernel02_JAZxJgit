@@ -219,54 +219,9 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				}
 				
 				//#####################################################################################
-				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//Merke: Einige Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
 				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
 				//######################################################################################				
-				
-//				//################################################
-//				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-//				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
-//				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote Host und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//															
-//				String sRepositoryRemoteAccountIn = objConfig.readRepositoryRemoteAccount();
-//				if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
-//					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}	
-//				
-//				//######################################################################################
-//				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
-//				String sConnectionTypeIn = objConfig.readConnectionType();
-//				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-//					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
-//					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
-//					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-//						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//						throw ez;
-//					}
-//					
-//					sConnectionTypeIn = JgitUtilZZZ.computeRepositoryConnectionTypeFromUrlRepo(sDirectoryRepositoryLocalRemote);					
-//				}
-//				//Falls immer noch leer, Fehler!
-//				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {
-//					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//			
-//				//+++++++++++++++++++++++				
-//				this.setConnectionType(sConnectionTypeIn);
-//				this.setRepositoryRemoteHost(sRepositoryRemoteHostIn);
-//				this.setRepositoryRemoteAccount(sRepositoryRemoteAccountIn);
-//				
-//				String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
-//				if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-//				this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 				
 				//################## 
 				//Besonderheit HTTPS

@@ -70,14 +70,15 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			}
 													
 			//#######################################################
-			//### Remote Konfigurationen wiederverwenden
+			//### Remote Konfigurationsdaten aus der Lokalen Konfiguration wiederverwenden
 			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
 			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden für Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			//### Remote Konfigurationen erstmalig auslesen
+			//#######################################################
+			//### Remote Konfigurationen erstmalig in der Remote Konfiguration auslesen
 			String sRepositoryRemoteHost = objConfig.readRepositoryRemoteHost();
 			if(StringZZZ.isEmpty(sRepositoryRemoteHost)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Host nicht vorhanden für Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -93,7 +94,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
 			
 			//########################################################
-			//### Remote Konfigurationen ausrechnen, wichtig, da wir sie ja neu in die Konfiguration schreiben wollen.
+			//### Remote Konfigurationswerte ausrechnen, wichtig, da wir sie ja neu in die Konfiguration schreiben wollen.
 			//Problem: Wenn hier die GesamtRepositoryURL nur ausgelesen wird, dann passt das Protokol ggfs. nicht (https URL geht nicht beim ssh Weg.
 //			//         Darum hier die remote Repository URL neu ausrechnen... 
 			//  Merke: Für HTTPS ist hier auch ein URL ohne SPAT erlaubt: url = https://github.com/firak01/1fgl_Test_repo_readwrite.git
@@ -112,7 +113,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Branch nicht vorhanden für Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			//Lokal soll nun unbedingt der passende Eintrag in der GIT-Konfiguration gemacht werden
+			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
 			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
 			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, sRepositoryRemoteBranch, true);
 			
@@ -165,21 +166,22 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			this.setRepositoryBaseRemote(sRepositoryRemoteIn);
 
 			//#######################################
-			//### Eintragen von github.com in die C:\Users\<User>\.ssh\known_hosts Datei
-			//### Die notwendigen Einträge können hier gefunden werden.
+			//### Eintragen von github.com in die C:\Users\<User>\.ssh\known_hosts Datei ist normalerweise notwendig.
+			//### Es sollte aber mit der JschConfigSessionFactoryZZZ diese Prüfung verhindert werden.
+			//### 
+			//### Falls das nicht klappt oder doch eingetragen werden soll, können die notwendigen Einträge hier gefunden werden:
 			//### https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints?utm_source=chatgpt.com
 			//###
-			//### Es sollte aber mit der JschConfigSessionFactoryZZZ diese Prüfung verhindert werden.
 			//######################################
 			
 			//+++ Zugriff sicherstellen
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
 			//Das müsste eigentlich für HTTPS nicht gemacht werden.
-			if(!sConnectionTypeIn.equalsIgnoreCase("https")) {
+			if(sConnectionTypeIn.equalsIgnoreCase("https")) {
+				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
+			}else {
 				JGitSshConfigZZZ.configure();
 				System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
-			}else {
-				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
 			}
 			
 			
