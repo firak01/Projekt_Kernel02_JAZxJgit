@@ -963,7 +963,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 				System.out.println("\nErgebnis der Konfliktbehandlung:");
 				if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 					//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-				    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltene lokale Version muss noch gepusht werden, damit sie im Remote ist.");
+					System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
 				}else {
 					System.out.println(objEnumStrategy.getDescriptionShort());
 				}
@@ -1065,7 +1065,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 					System.out.println("\nErgebnis der Konfliktbehandlung:");
 					if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 						//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-					    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltene lokale Version muss noch gepusht werden, damit sie im Remote ist.");
+						System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
 					}else {
 						System.out.println(objEnumStrategy.getDescriptionShort());
 					}

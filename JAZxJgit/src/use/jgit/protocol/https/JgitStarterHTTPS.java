@@ -276,10 +276,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
 			if(!bAnyConflict) {
-System.out.println("* KEINE KONFLIKTE");
+				System.out.println("* KEINE KONFLIKTE");
 			}
+			System.out.println();//Trennzeile zwischen den Ausgaben
 			bReturn = !bAnyConflict;
-			
+			if(bReturn) break main;
 			
 			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
@@ -319,14 +320,17 @@ System.out.println("* KEINE KONFLIKTE");
 			}
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResultOriginal);
 			if(!bAnyConflict) {
-System.out.println("* KEINE KONFLIKTE");
+				System.out.println("* KEINE KONFLIKTE");
 			}
+			System.out.println();//Trennzeile zwischen den Ausgaben
 			bReturn = !bAnyConflict;
+			if(bReturn) break main;
 			
 			
 			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResultOriginal);
 			objAnalyseResult.printReport();
+			System.out.println();//Trennzeile zwischen den Ausgaben
 			
 		}//end main:
 		return bReturn;
@@ -367,10 +371,11 @@ System.out.println("* KEINE KONFLIKTE");
 			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
 			if(!bAnyConflict) {
-System.out.println("* KEINE KONFLIKTE");
+				System.out.println("* KEINE KONFLIKTE");
 			}
+			System.out.println();//Trennzeile zwischen den Ausgaben
 			bReturn = !bAnyConflict;
-			
+			if(bReturn) break main;
 			
 			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
 			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);

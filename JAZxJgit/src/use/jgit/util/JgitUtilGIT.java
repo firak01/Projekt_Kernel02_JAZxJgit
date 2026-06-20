@@ -10,12 +10,14 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -26,6 +28,7 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
+import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
@@ -871,7 +874,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
+	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
 		if(bUseFetchMerge) {
 			//das soll eigentlich verwendet werden
 			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);
@@ -905,81 +908,147 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static MergeResult pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{	        
-        	 String sBranch = "master";
-		     if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+		IMergeResultResolvedZZZ objReturn = null;
+		main:{	    
+			try {
+				//bSuppressExceptionOnMergeFail: wir wollen die Exception auf jeden Fall bekommen und dann mit der Strategie auflösen.
+	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	
+	        	boolean bSuppressExceptionOnMergeFail = false;
+	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
+	        									
+	        	String sBranch = "master";
+	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 		       
+	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+				System.out.println("Pull: Startet");
+				try {
+					//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
+					MergeResult objMergeResult = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, true, bCheckRepositoryState);
+					objReturn.setOriginalResult(objMergeResult);
+					
         	
-        	//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
-        	objReturn = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, true);
-        	
-        	
-        	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-			if(objReturn==null) {					
-				System.out.println("MergeResult: Null.");
-				break main;
-			}
+		        	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+					if(objMergeResult==null) {					
+						System.out.println("MergeResult: Null.");
+						break main;
+					}
 
-			//TODOGOON20260514: Momentan wird noch jedes Mal in den Aufrufen innerhalb der Schleife die Stage geholt
-			//                  Also hier holen und resolveConflicts als Methode mit Stage anbieten:
-			//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-			CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-			
-			//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
-			//Mache eine Schleife um diese Fehler zu beheben, statt eine verschachtelte if Struktur...						
-			boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
-			
-			MergeStatus status = objReturn.getMergeStatus();
-			System.out.println("Merge-Status ("+iCount+"): " + status.toString());
-			if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
-			
-			while((status.equals(MergeStatus.CONFLICTING)
-					| status.equals(MergeStatus.FAILED))
-					& bGoon){
-				
-				iCount++; bAnyResolved=false;
-				if(status.equals(MergeStatus.CONFLICTING)) {
-				    System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
-				    
-				    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-				    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);					    
-				}//end STATUS "CONFLICTING"
-			
-			
-				if(status.equals(MergeStatus.FAILED)) {
-				    System.out.println("Failed erkannt ("+iCount+")");
-
-				    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objReturn);
-
-				}//end status FAILED 
-				
-				if(bAnyResolved) {
-				    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
-				    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
-				    objReturn = JgitUtilZZZ.mergeWithResult(git, sBranch);
-				    
-				    status = objReturn.getMergeStatus();
+					//Die Stage ausserhalb der Schleife holen
+					//resolveConflicts als Methode mit Stage anbieten:
+					//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+					
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					//Mache eine Schleife um diese Fehler zu beheben, statt eine verschachtelte if Struktur...						
+					boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
+					
+					MergeStatus status = objMergeResult.getMergeStatus();
 					System.out.println("Merge-Status ("+iCount+"): " + status.toString());
-			    }else {
-			    	bGoon=false;
-			    }
-			}//end while
+					if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
+					
+					while((status.equals(MergeStatus.CONFLICTING)
+							| status.equals(MergeStatus.FAILED))
+							& bGoon){
+						
+						iCount++; bAnyResolved=false;
+						
+						if(status.equals(MergeStatus.CONFLICTING)) {
+						    System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
+						    
+						    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+						    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);					    
+						}//end STATUS "CONFLICTING"
+					
+					
+						if(status.equals(MergeStatus.FAILED)) {
+						    System.out.println("Failed erkannt ("+iCount+")");
+		
+						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
+		
+						}//end status FAILED 
+				
+						if(bAnyResolved) {
+						    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
+						    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
+							objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
+						    
+						    status = objMergeResult.getMergeStatus();
+							System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+					    }else {
+					    	bGoon=false;
+					    }
+					}//end while
 			
-			if(iCount>=1) {
-				System.out.println("\nErgebnis der Konfliktbehandlung:");
-				if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-					//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-				    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltene lokale Version muss noch gepusht werden, damit sie im Remote ist.");
-				}else {
-					System.out.println(objEnumStrategy.getDescriptionShort());
-				}
-			}
+					if(iCount>=1) {
+						System.out.println("\nErgebnis der Konfliktbehandlung:");
+						if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
+							//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
+						    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
+						}else {
+							System.out.println(objEnumStrategy.getDescriptionShort());
+						}
+					}
 											
-
-		}//end main:
-		return objReturn;
+					if(bMyAutoResolve) {
+						
+						//Prüfen ob, noch Konflikte vorhanden sind
+						Status statusGit = git.status().call();
+						objReturn.setGitStatus(statusGit);
+						
+						//Prüfen, ob der State des Repositories SAFE ist.
+						RepositoryState stateRepo = git.getRepository().getRepositoryState();
+						objReturn.setRepositoryState(stateRepo);
+					
+						objReturn.isConflictsResolved(bMyAutoResolve);
+					}
+					//###############################################################
+		        } catch (CheckoutConflictException cce) {
+		        	System.out.println("Pull PreMerge Konflikte: CheckoutConflictException...");
+		            System.out.println("Pull PreMerge Konflikte: Können mit MergeStrategy nicht aufgeloest werden. Wg. 'ignorieren' Strategy über STAGE trotzdem versuchen.");
+		        	
+		            Collection<String> conflictingPaths = cce.getConflictingPaths();
+		
+		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
+		                // Kein konkreter Pfad bekannt → weiterwerfen
+		            	System.out.println("Pull PreMerge Konflikte: Problem: Keine konkreten Dateien erkannt.");
+		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
+		    			throw ez;
+		            }
+	
+		          //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					System.out.println("Pull PreMerge Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+					CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+					
+		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("Pull PreMerge Konflikte: Setze Dateien gezielt zurueck:");		        	
+		            for (String path : conflictingPaths) {
+		                git.checkout()
+		                	.setStage(objStage)
+		                   .addPath(path)
+		                   .call();
+		                System.out.println("* " + path);			        	
+		            }
+		
+		            //Pull erneut versuchen
+		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
+		            //git.pull().call();
+		            objReturn = pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, false);
+		        }
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}       
+	    }//end main:
+	    return objReturn;
 	}
 	
 	
@@ -1073,7 +1142,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 					System.out.println("\nErgebnis der Konfliktbehandlung:");
 					if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 						//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-					    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltene lokale Version muss noch gepusht werden, damit sie im Remote ist.");
+						System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
 					}else {
 						System.out.println(objEnumStrategy.getDescriptionShort());
 					}

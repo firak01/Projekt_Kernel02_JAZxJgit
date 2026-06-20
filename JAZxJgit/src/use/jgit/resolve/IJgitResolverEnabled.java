@@ -7,9 +7,9 @@ import basic.zBasic.ExceptionZZZ;
 public interface IJgitResolverEnabled {
 	
 	public enum STRATEGYMERGECONFLICT implements IEnumSetMappedStrategyMergeConflictZZZ{
-		OURS("isours","ZZZ: Strategy - Lokale Datei bleibt erhalten","Behalte lokale Datei",""),
-		THEIRS("istheirs","ZZZ: Strategy - Remote Datei bleibt erhalten","Behalte remote Datei",""),		
-		NEWEST("isnewest","ZZZ: Strategy - neueste Datei bleibt erhalten","","noch nicht implementiert");
+		OURS("isours","ZZZ: Strategy - Lokale Dateien bleiben erhalten","Behalte lokale Dateien",""),
+		THEIRS("istheirs","ZZZ: Strategy - Remote Dateien bleiben erhalten","Behalte remote Dateien",""),		
+		NEWEST("isnewest","ZZZ: Strategy - neueste Dateien bleiben erhalten","","noch nicht implementiert");
 
 		private String sAbbreviation,sStrategyMessage,sDescriptionShort,sDescription;
 	

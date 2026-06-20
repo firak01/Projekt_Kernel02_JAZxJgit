@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.MergeStrategy;
+import org.eclipse.jgit.merge.ResolveMerger;
 import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 
 import basic.zBasic.ExceptionZZZ;
@@ -83,6 +84,12 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 		return bReturn;
 	}
 	
+	/** Variante ohne eine Strategie die Failed-Dateien auf den HEAD zurückzusetzen.
+	 * @param git
+	 * @param objMergeResult
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
 	public static boolean resolveFailed(Git git, MergeResult objMergeResult) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
@@ -138,7 +145,7 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 	    return bReturn;
 	}
 	
-	public static boolean resolveFailed(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy, String sBranch) throws Exception {
+	public static boolean resolveFailed(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -148,52 +155,81 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 				}
 				
 				
-				boolean bAnyFailingResolved = JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
-			    if(bAnyFailingResolved) {     
-			    	
-			    			//Merge result Objekt (ist nur ein Snapshot) neu holen 
-	                		System.out.println("Starte Merge2:");
-	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, true); //true, wir hatten noch kein DEBUG
-	                		
-							MergeStatus status2 = objReturn.getMergeStatus();
-							System.out.println("Merge-Status2:" + status2.toString());
-							
-							//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
-			                //Aber nun gibt es den Merge-Status.CONFLICTING
-			                if(status2.equals(MergeStatus.CONFLICTING)) {
-							    System.out.println("Konflikte2 erkannt.");
-
-							    Map<String, int[][]> conflicts = objReturn.getConflicts();
-
-							    if(conflicts != null) {
-							    	
-							    	//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-									CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-									
-							    	
-							        for(String path2 : conflicts.keySet()) {
-
-							        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path2);
-
-							            // Lokale Version wiederherstellen (= OURS)
-							            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
-							            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
-							            //
-							            //Darum ist ein normaler Checkout nicht erlaubt.
-							            //Es braucht noch die explizite Angabe OURS oder THEIRS
-							            
-							            
-							            git.checkout()
-							               .setStage(objStage)//z.B. CheckoutCommand.Stage.OURS
-							               .addPath(path2)
-							               .call();
-							        }
-							    }
-			    
-			                }
-			
-			    }
+//				boolean bAnyFailingResolved = JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
+//			    if(bAnyFailingResolved) {     
+//			    	
+//			    			//Merge result Objekt (ist nur ein Snapshot) neu holen 
+//	                		System.out.println("Starte Merge2:");
+//	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, true); //true, wir hatten noch kein DEBUG
+//	                		
+//							MergeStatus status2 = objReturn.getMergeStatus();
+//							System.out.println("Merge-Status2:" + status2.toString());
+//							
+//							//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
+//			                //Aber nun gibt es den Merge-Status.CONFLICTING
+//			                if(status2.equals(MergeStatus.CONFLICTING)) {
+//							    System.out.println("Konflikte2 erkannt.");
+//
+//							    Map<String, int[][]> conflicts = objReturn.getConflicts();
+//
+//							    if(conflicts != null) {
+//							    	
+//							    	//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+//									CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+//									
+//							    	
+//							        for(String path2 : conflicts.keySet()) {
+//
+//							        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path2);
+//
+//							            // Lokale Version wiederherstellen (= OURS)
+//							            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
+//							            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
+//							            //
+//							            //Darum ist ein normaler Checkout nicht erlaubt.
+//							            //Es braucht noch die explizite Angabe OURS oder THEIRS
+//							            
+//							            
+//							            git.checkout()
+//							               .setStage(objStage)//z.B. CheckoutCommand.Stage.OURS
+//							               .addPath(path2)
+//							               .call();
+//							        }
+//							    }
+//			    
+//			                }
+//			
+//			    }
 	    
+				//... kann man hier das gleiche machen wie bei Konflikten? Nein ... es gibt keine Liste von Conflicts.
+				
+				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+			    System.out.println("Failed: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+									    
+			    Map<String, ResolveMerger.MergeFailureReason> faileds = objMergeResult.getFailingPaths();
+
+			    if(faileds != null) {
+			        for(String path : faileds.keySet()) {
+
+			        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
+
+			            // Lokale Version wiederherstellen (z.B. OURS)
+			            git.checkout()
+			            	.setStage(objStage) //z.B. OURS
+			               .addPath(path)
+			               .call();
+			        }
+			    }
+
+			    // Konfliktzustand beenden:
+			    git.add().addFilepattern(".").call();
+
+			    git.commit()
+			       .setMessage("Failed: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
+			       .call();
+			    
+			    bReturn = true;				
 		}catch(InvalidRemoteException ire) {
 			ExceptionZZZ ez = new ExceptionZZZ(ire);
 			throw ez;

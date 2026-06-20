@@ -37,6 +37,7 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
@@ -373,7 +374,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
@@ -384,85 +385,154 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	
 	        	boolean bSuppressExceptionOnMergeFail = false;
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
-	        								
+	        				
+	        	String sBranch = "master";
+	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+		       
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("Pull: Startet");
 				try {
-					MergeResult objMergeResult = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);
+					MergeResult objMergeResult = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);								
+					if(objMergeResult==null) { System.out.println("MergeResult: Null."); break main; }
+
+					
+					
+					
+					//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
 					objReturn.setOriginalResult(objMergeResult);
+										
+					//TODO: Die Stage ausserhalb der Schleife holen und dann übergeben.
+					//resolveConflicts als Methode mit Stage anbieten:
+					//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					//CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 					
 					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					//Mache eine Schleife um diese Fehler zu beheben, statt eine verschachtelte if Struktur...						
+					boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
+					
 					MergeStatus status = objMergeResult.getMergeStatus();
-					System.out.println("Merge: Ergebnis, Status: " + status.toString());
+					System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+					if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
 					
-					boolean bMyAutoResolve=false;
-					if(status.equals(MergeStatus.CONFLICTING)) {
-					    System.out.println("Konflikte: Erkannt.");
-
-					    //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-					    System.out.println("Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
-						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-											    
-					    Map<String, int[][]> conflicts = objMergeResult.getConflicts();
-
-					    if(conflicts != null) {
-					        for(String path : conflicts.keySet()) {
-
-					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
-
-					            // Lokale Version wiederherstellen (z.B. OURS)
-					            git.checkout()
-					            	.setStage(objStage) //z.B. OURS
-					               .addPath(path)
-					               .call();
-					        }
-					    }
-
-					    // Konfliktzustand beenden:
-					    git.add().addFilepattern(".").call();
-
-					    git.commit()
-					       .setMessage("Konflikte: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
-					       .call();
-					    					
-					    bMyAutoResolve=true;
-					} else if(status.equals(MergeStatus.FAILED)) {
-						System.out.println("Failed: Erkannt.");
-						//... kann man hier das gleiche machen wie bei Konflikten? Nein ... es gibt keine Liste von Conflicts.
+					while((status.equals(MergeStatus.CONFLICTING)
+							| status.equals(MergeStatus.FAILED))
+							& bGoon){
+						boolean bMyAutoResolve=false;
+						iCount++; 					
 						
-						//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-					    System.out.println("Failed: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
-						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-											    
-					    Map<String, ResolveMerger.MergeFailureReason> faileds = objMergeResult.getFailingPaths();
+						if(status.equals(MergeStatus.CONFLICTING)) {
+							 System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
+							
+							 //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+							 bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							 bMyAutoResolve = true;
+							 
+						}//end STATUS "CONFLICTING"
+						
+						if(status.equals(MergeStatus.FAILED)) {
+						    System.out.println("Failed erkannt ("+iCount+")");
 
-					    if(faileds != null) {
-					        for(String path : faileds.keySet()) {
+						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
+						    bMyAutoResolve = true;
+						}//end status FAILED 
+						
+					  					    
+//					    Map<String, int[][]> conflicts = objMergeResult.getConflicts();
+//
+//					    if(conflicts != null) {
+//					        for(String path : conflicts.keySet()) {
+//
+//					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
+//
+//					            // Lokale Version wiederherstellen (z.B. OURS)
+//					            git.checkout()
+//					            	.setStage(objStage) //z.B. OURS
+//					               .addPath(path)
+//					               .call();
+//					        }
+//					    }
+//
+//					    // Konfliktzustand beenden:
+//					    git.add().addFilepattern(".").call();
+//
+//					    git.commit()
+//					       .setMessage("Konflikte: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
+//					       .call();
+//					    					
+//					    bMyAutoResolve=true;
+//					} else if(status.equals(MergeStatus.FAILED)) {
+//						System.out.println("Failed: Erkannt.");
+//						//... kann man hier das gleiche machen wie bei Konflikten? Nein ... es gibt keine Liste von Conflicts.
+//						
+//						//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+//					    System.out.println("Failed: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+//						CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+//											    
+//					    Map<String, ResolveMerger.MergeFailureReason> faileds = objMergeResult.getFailingPaths();
+//
+//					    if(faileds != null) {
+//					        for(String path : faileds.keySet()) {
+//
+//					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
+//
+//					            // Lokale Version wiederherstellen (z.B. OURS)
+//					            git.checkout()
+//					            	.setStage(objStage) //z.B. OURS
+//					               .addPath(path)
+//					               .call();
+//					        }
+//					    }
+//
+//					    // Konfliktzustand beenden:
+//					    git.add().addFilepattern(".").call();
+//
+//					    git.commit()
+//					       .setMessage("Failed: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
+//					       .call();
+//					    
+//					    bMyAutoResolve=true;
+//					}else {
+//						//mache nix
+//					}
 
-					        	System.out.println(objEnumStrategy.getDescriptionShort() + ": " + path);
-
-					            // Lokale Version wiederherstellen (z.B. OURS)
-					            git.checkout()
-					            	.setStage(objStage) //z.B. OURS
-					               .addPath(path)
-					               .call();
-					        }
+//						if(bMyAutoResolve) {
+//						
+//							//Prüfen ob, noch Konflikte vorhanden sind
+//							Status statusGit = git.status().call();
+//							objReturn.setGitStatus(statusGit);
+//							
+//							//Prüfen, ob der State des Repositories SAFE ist.
+//							RepositoryState stateRepo = git.getRepository().getRepositoryState();
+//							objReturn.setRepositoryState(stateRepo);
+//						
+//							objReturn.isConflictsResolved(bMyAutoResolve);
+//						}
+						
+						if(bAnyResolved) {
+						    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
+						    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
+							MergeResult objMergeResult02 = JgitUtilZZZ.mergeWithResult(git, sBranch, false); //also den 2ten Merge nicht debuggen
+						    
+						    status = objMergeResult02.getMergeStatus();
+							System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+					    }else {
+					    	bGoon=false;
 					    }
-
-					    // Konfliktzustand beenden:
-					    git.add().addFilepattern(".").call();
-
-					    git.commit()
-					       .setMessage("Failed: Automatisch mit '" + objEnumStrategy.getName() + "' aufgelöst")
-					       .call();
-					    
-					    bMyAutoResolve=true;
-					}else {
-						//mache nix
-					}
-
-					if(bMyAutoResolve) {
+					}//end while
 					
+					if(iCount>=1) {
+						System.out.println("\nErgebnis der Konfliktbehandlung:");
+						if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
+							//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
+							System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
+						}else {
+							System.out.println(objEnumStrategy.getDescriptionShort());
+						}
+						
+						objReturn.isConflictsResolved(true);
+					}
+					
+					if(bAnyResolved) {					
 						//Prüfen ob, noch Konflikte vorhanden sind
 						Status statusGit = git.status().call();
 						objReturn.setGitStatus(statusGit);
@@ -470,8 +540,6 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 						//Prüfen, ob der State des Repositories SAFE ist.
 						RepositoryState stateRepo = git.getRepository().getRepositoryState();
 						objReturn.setRepositoryState(stateRepo);
-					
-						objReturn.isConflictsResolved(bMyAutoResolve);
 					}
 					//###############################################################
 		        } catch (CheckoutConflictException cce) {

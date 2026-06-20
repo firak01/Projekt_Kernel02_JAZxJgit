@@ -24,6 +24,7 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -1628,14 +1629,19 @@ Repository existingRepo = new FileRepositoryBuilder()
 				
 	 */
 	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
+		return mergeWithResult(git, sBranchIn, true);
+	}
+	public static MergeResult mergeWithResult(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ {
 		MergeResult objReturn = null;
-		main:{			
-			 try {
+		main:{		
+			if(bPrintDebug) {
+				try {
 					JgitUtilZZZ.debugForMerge(git);
 				} catch (Exception e) {
 					ExceptionZZZ ez = new ExceptionZZZ(e);
 					throw ez;
 				}
+			}
 			 
 			//####################################################################
 			//Hole das Ref-Objekt (jetzt direkt statt über das FetchResult-Objekt)
@@ -1648,13 +1654,6 @@ Repository existingRepo = new FileRepositoryBuilder()
 			//den richtigen Branch ansteuern
 			String sBranch = "master"; // oder dynamisch
 			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
-					
-			//!!! Hier sollen nur echte Branchnamen verwendet werden, also kein "*"
-//			if(sBranch.equals("*")) {
-//				ExceptionZZZ ez = new ExceptionZZZ("Not a valid branchname '*'", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-			
 			
 			//Problem: java.nio.file.InvalidPathException: Illegal char <*> 
 			/*refs/remotes/origin/*
@@ -1673,11 +1672,6 @@ Repository existingRepo = new FileRepositoryBuilder()
 			// In einer Schleife alle echten, vorhandenen, lokalen Branches ermitteln.
 			// Aber wir geben nur den ersten zurück
 			if(sBranch.equals("*")) {
-//				List<String> listaBranch = JgitUtilZZZ.getRepositoryBranchesShortName(git);
-//				for(String sBranchTemp : listaBranch) {
-//					objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranchTemp);
-//					break;
-//				}
 				objReturn = JgitUtilZZZ.mergeWithResultFirstBranch(git, false); //wir hatten schon 1x Debug
 			}else {
 				objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, false);	//wir hatten schon 1x Debug				
@@ -1851,6 +1845,8 @@ Repository existingRepo = new FileRepositoryBuilder()
 		        mergeCommand.include(objRef);
 		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
 				objReturn = mergeCommand.call();
+			} catch (CheckoutConflictException coce) {
+				//Mache nix... in der Erwartung, dass das im Status des MergeResult steht.
 			 }catch (IOException ioe) {
 					ExceptionZZZ ez = new ExceptionZZZ(ioe);
 					throw ez;
