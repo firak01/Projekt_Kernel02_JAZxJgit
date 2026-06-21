@@ -1571,7 +1571,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 	
 	//########################################
 	//### MERGE
-	public static boolean merge(Git git, String sBranchIn) throws ExceptionZZZ{
+	public static boolean merge(Git git, String sBranchIn) throws ExceptionZZZ, TransportException, CheckoutConflictException{
 		boolean bReturn = false;
 		main:{
 			String sBranch = "master"; // oder dynamisch
@@ -1626,12 +1626,14 @@ Repository existingRepo = new FileRepositoryBuilder()
 				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
 				Mit + sagst du:
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 				
 	 */
-	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ {
+	public static MergeResult mergeWithResult(Git git, String sBranchIn) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return mergeWithResult(git, sBranchIn, true);
 	}
-	public static MergeResult mergeWithResult(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ {
+	public static MergeResult mergeWithResult(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{		
 			if(bPrintDebug) {
@@ -1715,9 +1717,11 @@ Repository existingRepo = new FileRepositoryBuilder()
 				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
 				Mit + sagst du:
 				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 				
 	 */
-	public static MergeResult mergeWithResultFirstBranch(Git git, boolean bPrintDebug) throws ExceptionZZZ {
+	public static MergeResult mergeWithResultFirstBranch(Git git, boolean bPrintDebug) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{	if(bPrintDebug) {		
 			 try {
@@ -1747,7 +1751,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 		return objReturn;
 	}
 	
-	public static MergeResult mergeWithResult(File objFileDir, String sBranch) throws ExceptionZZZ {
+	public static MergeResult mergeWithResult(File objFileDir, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{
 			 try {
@@ -1782,8 +1786,10 @@ Repository existingRepo = new FileRepositoryBuilder()
 				  Alle Branches unter refs/heads/ nach refs/remotes/origin/ spiegeln.
 
                   Das ist aber eine RefSpec-Syntax, kein echter Refname.
+	 * @throws TransportException 
+	 * @throws CheckoutConflictException 
 	 */
-	public static MergeResult mergeWithResultByBranchShortName(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ {
+	public static MergeResult mergeWithResultByBranchShortName(Git git, String sBranchIn, boolean bPrintDebug) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{
 			try {				
@@ -1845,7 +1851,14 @@ Repository existingRepo = new FileRepositoryBuilder()
 		        mergeCommand.include(objRef);
 		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);									 
 				objReturn = mergeCommand.call();
+			} catch (TransportException te) {
+				throw te;
 			} catch (CheckoutConflictException coce) {
+				throw coce;
+				//!!! Diese Exception ist wie eine TransportExcpetion von vor dem Merge. 
+				//    Die Dateien müssen also anders behandelt werden.
+				//System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": CheckoutConflictException... soll dann später verarbeitet werden.");
+				//System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": " + coce.getMessage());
 				//Mache nix... in der Erwartung, dass das im Status des MergeResult steht.
 			 }catch (IOException ioe) {
 					ExceptionZZZ ez = new ExceptionZZZ(ioe);

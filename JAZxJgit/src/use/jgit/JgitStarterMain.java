@@ -7,7 +7,9 @@ import javax.ws.rs.NotSupportedException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.api.errors.TransportException;
 
 import com.google.gson.Gson;
 
@@ -528,6 +530,12 @@ public class JgitStarterMain implements IConstantZZZ{
 			} catch (JGitInternalException e) {
 				e.printStackTrace();
 			} catch (NotSupportedException e) {
+				e.printStackTrace();
+			} catch (TransportException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CheckoutConflictException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}//end main:

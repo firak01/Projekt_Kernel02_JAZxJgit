@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -20,6 +21,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitEnabledZZZ;
 import use.jgit.JgitStarterMain;
+import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
@@ -157,7 +159,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	//##################################################
 	//###### PULL ######################################
 	@Override 
-	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -253,7 +255,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 		
 	@Override
-	public boolean pullit(Git git) throws ExceptionZZZ {
+	public boolean pullit(Git git) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
@@ -315,7 +317,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = JgitUtilGIT.pullGIT(git, credentialsProvider, sRepoRemote);
@@ -348,7 +350,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = null;
@@ -356,7 +358,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			//anders als bei HTTPS gibt es hier auch die Möglichkeite direkt zu pull
 			//Was aber eigentlich technisch umständlicher ist.
 			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
-			objMergeResult = JgitUtilGIT.pullGIT(git, credentialsProvider, sRepoRemote, sBranch, !bUsePullDirect, true);
+			objMergeResult = JgitUtilGIT.pullGIT(git, credentialsProvider, sRepoRemote, sBranch, !bUsePullDirect);
 			
 			
 			if(objMergeResult==null) {
@@ -396,22 +398,23 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			//Der Weg ist über FLAGZ konfigurierbar
 			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
 			
-			
-			
-			MergeResult objMergeResult =  JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);
-			if(objMergeResult==null) {
-				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
+			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);			
+			if(objMergeResultResolved==null) {
+				System.out.println("Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
 			}
 			
-			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
-			bReturn = objMergeStatus.isSuccessful();
+			bReturn = objMergeResultResolved.isConflictsResolved();
+			bReturn = bReturn & objMergeResultResolved.isGitStatusClean();
+			bReturn = bReturn & objMergeResultResolved.isRepositoryStateSafe();
 			if(bReturn) break main;
-			
+						
 			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
 			System.out.println("##### MERGE: GGFS. NICHT ZU BEHEBENDE KONFLIKTE #######");
-			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResult);
+			MergeResult objMergeResultOriginal = objMergeResultResolved.getMergeResultOriginal();
+			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResultOriginal);
 			if(!bAnyConflict) {
 				System.out.println("* KEINE KONFLIKTE");
 			}
@@ -420,8 +423,9 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			if(bReturn) break main;
 			
 			System.out.println("##### MERGE: ANALYSE UND GGFS. LOESUNGSVORSCHLAEGE #######");
-			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResult);
+			ResultPostMergeAnalysis objAnalyseResult = GitPostMergeAnalyse.analyzeMergeResult(objMergeResultOriginal);
 			objAnalyseResult.printReport();
+			System.out.println();//Trennzeile zwischen den Ausgaben
 			
 		}//end main:
 		return bReturn;

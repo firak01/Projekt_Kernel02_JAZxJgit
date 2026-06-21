@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -294,17 +295,14 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	@Override
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
-		main:{			
+		main:{
+			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
 			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
 			if(objMergeResultResolved==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
 			}
-			
-			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
-			//MergeStatus objMergeStatus = objMergeResultResolved.getMergeStatusOriginal();
-			//bReturn = objMergeStatus.isSuccessful();
-			
+						
 			bReturn = objMergeResultResolved.isConflictsResolved();
 			bReturn = bReturn & objMergeResultResolved.isGitStatusClean();
 			bReturn = bReturn & objMergeResultResolved.isRepositoryStateSafe();
@@ -353,7 +351,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = JgitUtilHTTPS.pullHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);//JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
@@ -388,7 +386,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	//#############################################################
 	//### PULL ####################################################
 	@Override
-	public boolean pullit(Git git) throws ExceptionZZZ {
+	public boolean pullit(Git git) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();

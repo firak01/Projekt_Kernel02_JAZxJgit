@@ -500,8 +500,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ {
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, null, true);
 	}
 	
@@ -521,21 +523,23 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ {
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, true, true);
 	}
 	
-	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, true, bSuppressExceptionOnMergeFail);
 	}
 	
-	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	public static MergeResult pullSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return pullSSH_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bByFetchMerge, bSuppressExceptionOnMergeFail);
 		
 	}
 	
-	public static MergeResult pullSSH_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	public static MergeResult pullSSH_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bByFetchMerge, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		if(bByFetchMerge) {
 			return JgitUtilSSH.pullSSH_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bSuppressExceptionOnMergeFail);
 		}else {
@@ -680,8 +684,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param bSuppressExceptionOnMergeFail
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	private static MergeResult pullSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
+	private static MergeResult pullSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{	      
 		        if (git == null) {
@@ -807,7 +813,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		return bReturn;
 	}
 	
-	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {		
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ, TransportException, CheckoutConflictException {		
 		return pullIgnoreCheckoutConflictsSSH(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 	}
 	
@@ -830,8 +836,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		if(bUseFetchMerge) {
 			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict);
 		}else {
@@ -839,7 +847,7 @@ public class JgitUtilSSH implements IConstantZZZ{
 		}
 	}
 				
-	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		return pullIgnoreCheckoutConflictsSSH(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
 	}
 	
@@ -862,8 +870,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
+	public static MergeResult pullIgnoreCheckoutConflictsSSH(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		if(bUseFetchMerge) {
 			//das soll eigentlich verwendet werden
 			return JgitUtilSSH.pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy);
@@ -896,8 +906,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{	        
         	 String sBranch = "master";
@@ -998,8 +1010,10 @@ public class JgitUtilSSH implements IConstantZZZ{
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
 	 */
-	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	private static MergeResult pullIgnoreCheckoutConflictsSSH_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		MergeResult objReturn = null;
 		main:{
 	        //try {

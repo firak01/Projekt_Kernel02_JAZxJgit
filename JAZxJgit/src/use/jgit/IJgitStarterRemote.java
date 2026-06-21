@@ -1,6 +1,8 @@
 package use.jgit;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
@@ -58,6 +60,6 @@ public interface IJgitStarterRemote extends IJgitStarterLocal {
 	public boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 	public boolean pushit(Git git) throws ExceptionZZZ;
 	
-	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
-	public boolean pullit(Git git) throws ExceptionZZZ;	
+	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
+	public boolean pullit(Git git) throws ExceptionZZZ, TransportException, CheckoutConflictException;	
 }

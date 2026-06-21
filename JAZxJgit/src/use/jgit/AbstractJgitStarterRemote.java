@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.StatusCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -669,7 +670,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 
 	
 	@Override
-	public abstract boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
+	public abstract boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 
 	
 	

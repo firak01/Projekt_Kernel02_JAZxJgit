@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -157,7 +158,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	//##################################################
 	//###### PULL ######################################
 	@Override 
-	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -253,7 +254,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 		
 	@Override
-	public boolean pullit(Git git) throws ExceptionZZZ {
+	public boolean pullit(Git git) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{
 			CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();			
@@ -315,7 +316,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = JgitUtilSSH.pullSSH(git, credentialsProvider, sRepoRemote);
@@ -346,7 +347,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{			
 			MergeResult objMergeResult = null;
@@ -384,7 +385,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ, TransportException, CheckoutConflictException {
 		boolean bReturn = false;
 		main:{		
 			//Merke: Bei SSH gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE

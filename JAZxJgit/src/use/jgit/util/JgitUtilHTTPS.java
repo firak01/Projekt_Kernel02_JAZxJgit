@@ -374,30 +374,47 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
+	        	if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
 	        	
-	        	//bSuppressExceptionOnMergeFail: wir wollen die Exception auf jeden Fall bekommen und dann mit der Strategie auflösen.
 	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
 	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	
-	        	boolean bSuppressExceptionOnMergeFail = false;
+	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.		        	
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
-	        				
+	        		
+	        	 //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
+	        	if(bCheckRepositoryState) {
+					//!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+			        //             ohne eine Exception durchlaufen kann
+			        //Vorprüfung per eigener, gekapselter Routine
+			        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+			        if (!check.isClean()) {
+			            check.printReport();
+			            break main; // Merge abbrechen
+			        }
+	        	}
+	        	
+	        	  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+		            throw new IllegalArgumentException("remoteUrl must not be empty");
+		        }
+		        
 	        	String sBranch = "master";
 	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 		       
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("Pull: Startet");
 				try {
-					MergeResult objMergeResult = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, bSuppressExceptionOnMergeFail, bCheckRepositoryState);								
+					MergeResult objMergeResult = pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);								
 					if(objMergeResult==null) { System.out.println("MergeResult: Null."); break main; }
 
-					
-					
-					
 					//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
 					objReturn.setOriginalResult(objMergeResult);
 										
@@ -572,7 +589,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            //Pull erneut versuchen
 		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 		            //git.pull().call();
-		            objReturn = pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, false);
+		            objReturn = pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 		        }
 								
 			}catch(InvalidRemoteException ire) {
@@ -593,38 +610,16 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	
 	
 	//++++++++++++++++++++++++++++++++++++++++
-	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
-		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, true, true);
+	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ, TransportException, CheckoutConflictException {
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, true);
 	}
 	
-	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bSuppressExceptionOnMergeFail) throws ExceptionZZZ {
-		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, bSuppressExceptionOnMergeFail, true);
+	public static MergeResult pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, boolean bCheckRepositoryState) throws ExceptionZZZ, TransportException, CheckoutConflictException {
+		return pullHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, remoteUrl, branch, bCheckRepositoryState);
     }
 	
-	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bSuppressExceptionOnMergeFail, boolean bCheckRepositoryState) throws ExceptionZZZ {
-		MergeResult objReturn = null;
-		main:{
-		        if (git == null) {
-		            throw new IllegalArgumentException("git must not be null");
-		        }
-		        
-		        //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
-	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
-	        	if(bCheckRepositoryState) {
-				    //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
-				    //             ohne eine Exception durchlaufen kann
-				    //Vorprüfung per eigener, gekapselter Routine
-				    ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
-				    if (!check.isClean()) {
-				        check.printReport();
-				        break main; // Merge abbrechen
-				    }
-	        	}
-		        
-		      
-		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		    	/*
+	/** Merke:
+	  
 				Frage:
 				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte.
 				Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
@@ -658,8 +653,39 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 				git.merge()
 				.include(fetchResult.getAdvertisedRef("refs/heads/main"))
 				.call();
-				 */
 				
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sPAT
+	 * @param sUrlRepoRemoteIn
+	 * @param sBranchIn
+	 * @param bSuppressExceptionOnMergeFail
+	 * @param bCheckRepositoryState
+	 * @return
+	 * @throws ExceptionZZZ
+	 * @throws CheckoutConflictException 
+	 * @throws TransportException 
+	 */
+	private static MergeResult pullHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, boolean bCheckRepositoryState) throws ExceptionZZZ, TransportException, CheckoutConflictException {
+		MergeResult objReturn = null;
+		main:{
+		        if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+		        
+		        //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
+	        	if(bCheckRepositoryState) {
+				    //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+				    //             ohne eine Exception durchlaufen kann
+				    //Vorprüfung per eigener, gekapselter Routine
+				    ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+				    if (!check.isClean()) {
+				        check.printReport();
+				        break main; // Merge abbrechen
+				    }
+	        	}
 	        									
 				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
 				//Darum versuchen dies ohne sPAT in URL zu realisieren
@@ -714,6 +740,10 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		MergeResult objReturn = null;
 		main:{
 	        try {
+	        	if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+	        	
 		        if (branch == null || branch.trim().isEmpty()) {
 		            branch = "master";
 		        }
@@ -843,6 +873,10 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		MergeResult objReturn = null;
 		main:{
 			try {	
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				// aber mal explizit als pullCommand
 				PullCommand pullCommand = git.pull();
 					

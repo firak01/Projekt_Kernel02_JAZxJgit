@@ -1,6 +1,8 @@
 package use.jgit.protocol.https;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
@@ -24,7 +26,7 @@ public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarte
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
 	
 	//b) pull ohne MergeKonflikte abzufangen, über einen ganz konkreten Branch
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 	
 	//c) pull, die Konfliktdateien werden gezielt zurückgesetzt
 	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;
