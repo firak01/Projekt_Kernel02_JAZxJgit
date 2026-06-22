@@ -299,7 +299,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
 			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
 			if(objMergeResultResolved==null) {
-				System.out.println("Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
 			}
 						
@@ -314,13 +314,19 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				break main;	
 			}
 			
-			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
-			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten			
-			System.out.println("##### MERGE: GGfs. NICHT ZU BEHEBENDE KONFLIKTE #######");			
 			if(objMergeResultOriginal==null) {
-				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
 			}
+			if(objMergeResultOriginal.getMergeStatus().equals(MergeResult.MergeStatus.FAST_FORWARD)){
+				System.out.println("PULL: Fast-Forward.");
+				bReturn = true;
+				break main;	
+			}
+			
+			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten			
+			System.out.println("##### MERGE: GGfs. NICHT ZU BEHEBENDE KONFLIKTE #######");						
 			boolean bAnyConflict = JgitUtilZZZ.logConflicts(objMergeResultOriginal);
 			if(!bAnyConflict) {
 				System.out.println("* KEINE KONFLIKTE");

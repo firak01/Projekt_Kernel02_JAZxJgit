@@ -415,6 +415,11 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResultOriginal-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;	
 			}
+			if(objMergeResultOriginal.getMergeStatus().equals(MergeResult.MergeStatus.FAST_FORWARD)){
+				System.out.println("PULL: Fast-Forward.");
+				bReturn = true;
+				break main;	
+			}
 			
 			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
 			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
