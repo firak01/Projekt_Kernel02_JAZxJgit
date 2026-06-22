@@ -33,6 +33,7 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
@@ -705,8 +706,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @param git
 	 * @param credentialsProvider
 	 * @param remoteUrl
-	 * @param branch
-	 * @param bSuppressExceptionOnMergeFail
+	 * @param branch	
 	 * @return
 	 * @throws ExceptionZZZ
 	 * @throws CheckoutConflictException 
@@ -952,22 +952,88 @@ public class JgitUtilGIT implements IConstantZZZ{
 			try {				
 	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
 	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	
-	        	boolean bSuppressExceptionOnMergeFail = false;
+	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.								
+				//
+				//ABER ohne einen commit gibt es im Bedarfsfall keinen Conflict, etc. 
+				
+				
+				/*s. Merke: ChatGPT vom 2026-622:
+				Ein Konflikt entsteht nur, wenn dieselben Zeilen bzw. überlappende Bereiche geändert wurden.
+
+				Dein Szenario sieht dann vermutlich so aus:
+				
+				Rechner 1:
+				Datei A wird geändert.
+				Änderung wird committet und ins Remote-Repository gepusht.
+				Rechner 2:
+				Dieselbe Datei A wurde lokal geändert, aber noch nicht committet.
+				Die Änderung betrifft jedoch andere Zeilen.
+				git pull auf Rechner 2:
+				Der lokale Branch hat keine eigenen Commits → Fast-Forward ist möglich.
+				JGit aktualisiert den Branch-Zeiger.
+				Anschließend versucht Git, die Änderungen des Fast-Forward-Commits mit den lokalen Änderungen im Arbeitsverzeichnis zusammenzuführen.
+				
+				Da sich die Änderungen nicht überschneiden, kann Git beide Änderungen automatisch kombinieren.
+				
+				Deshalb erhältst du:
+				
+				keinen MergeResult
+				keine CheckoutConflictException
+				keinen Konfliktmarker (<<<<<<<)
+				weiterhin einen FAST_FORWARD-Status
+				
+				Das ist normales Git-Verhalten.
+				
+				Wichtig zu verstehen:
+				
+				Fast-Forward bezieht sich nur auf die Commit-Historie.
+				Konflikte beziehen sich auf den Dateiinhalt.
+				
+				Beides sind unabhängige Aspekte.
+				
+				Obwohl ein Fast-Forward stattfindet, prüft Git anschließend trotzdem, ob die lokalen, nicht committeten Änderungen erhalten bleiben können.
+				
+				Wenn du möchtest, dass bei jeglicher lokaler Änderung deine Strategie OURS gewinnt, reicht die Merge-Strategie nicht aus. Sie greift nur bei Konflikten zwischen Commits.
+				
+				Dann musst du vor dem Pull selbst entscheiden, wie mit lokalen Änderungen umgegangen werden soll, zum Beispiel:
+				
+				lokale Änderungen verwerfen (reset --hard)
+				lokale Änderungen stashen und später wieder anwenden
+				lokale Änderungen automatisch committen
+				den Pull abbrechen, sobald status.getUncommittedChanges() nicht leer ist
+				
+				Eine automatische "immer OURS"-Behandlung für uncommittete Änderungen im Arbeitsverzeichnis gibt es in Git und JGit nicht.
+				 */	        	
+				
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
 	        									
 	        	String sBranch = "master";
 	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 		       
 	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
-				System.out.println("Pull: Startet");
-				try {
+				System.out.println("PULL: Startet");
+				try {					
+					MergeResult objMergeResult = null;
+					
+					//wg. der fast-forward Problematik (s. ChatGPT vom 20260622) kann es eine immer "OURS" Behandlung nicht geben.
+					//Will man, dass die lokale Änderung auf jeden Fall überlebt, muss erste ein commit erzwungen werden.
+					if(objEnumStrategy!=null){
+						System.out.println("PULL: Verwendete Strategie: '" + objEnumStrategy.name() + "'");
+					}
+					if(objEnumStrategy.equals(STRATEGYMERGECONFLICT.OURS)){					
+						System.out.println("PULL: Wg. OURS, soll zwingend ein fast-forward vermieden werden, damit die lokale Datei bleibt. Daher bCheckRepositoryState=true und somit ggf. den commit erzwingen. ");
+						bCheckRepositoryState = true;
+					}else {
+						System.out.println("PULL: bCheckRepositoryState=" + bCheckRepositoryState);
+					}
+					
 					//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE
-					MergeResult objMergeResult = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
-					if(objMergeResult==null) { System.out.println("MergeResult: Null."); break main; }
+					objMergeResult = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
+					if(objMergeResult==null) { System.out.println("PULL: MergeResult: Null."); break main; }
 
 					objReturn.setOriginalResult(objMergeResult);
 				
+					//############################################
 		        	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
 					
 					//TODO: Die Stage ausserhalb der Schleife holen
@@ -980,7 +1046,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 					boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
 					
 					MergeStatus status = objMergeResult.getMergeStatus();
-					System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+					System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 					if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
 					
 					while((status.equals(MergeStatus.CONFLICTING)
@@ -990,7 +1056,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 						iCount++;
 						
 						if(status.equals(MergeStatus.CONFLICTING)) {
-						    System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
+						    System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 						    
 						    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
 						    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
@@ -999,7 +1065,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 					
 					
 						if(status.equals(MergeStatus.FAILED)) {
-						    System.out.println("Failed erkannt ("+iCount+")");
+						    System.out.println("PULL: Failed erkannt ("+iCount+")");
 		
 						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
 						    bMyAutoResolve = true;
@@ -1011,17 +1077,17 @@ public class JgitUtilGIT implements IConstantZZZ{
 							objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
 						    
 						    status = objMergeResult.getMergeStatus();
-							System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+							System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 					    }else {
 					    	bGoon=false;
 					    }
 					}//end while
 			
 					if(iCount>=1) {
-						System.out.println("\nErgebnis der Konfliktbehandlung:");
+						System.out.println("\nPULL: Ergebnis der Konfliktbehandlung:");
 						if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 							//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-						    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
+						    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
 						}else {
 							System.out.println(objEnumStrategy.getDescriptionShort());
 						}
@@ -1104,10 +1170,13 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
 	 *        Darum eher pullIgnoreCheckoutConflictsGIT_by_FetchMerge_ verwenden.
 		
-		s. ChatGPT 20260323, 20260508ff
+		s. ChatGPT 20260323, 20260508ff	 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
+	 * @param sBranchIn
+	 * @param objEnumStrategy
+	 * @param bIgnoreRepositoryState
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
@@ -1117,23 +1186,84 @@ public class JgitUtilGIT implements IConstantZZZ{
 	        try {
 	        	if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
-		        }
-	        
-				//bSuppressExceptionOnMergeFail: wir wollen die Exception auf jeden Fall bekommen und dann mit der Strategie auflösen.
+		        }	        
 	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
 	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.		        	
+	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.
+	        	
+	        	/*s. Merke: ChatGPT vom 2026-622:
+				Ein Konflikt entsteht nur, wenn dieselben Zeilen bzw. überlappende Bereiche geändert wurden.
+
+				Dein Szenario sieht dann vermutlich so aus:
+				
+				Rechner 1:
+				Datei A wird geändert.
+				Änderung wird committet und ins Remote-Repository gepusht.
+				Rechner 2:
+				Dieselbe Datei A wurde lokal geändert, aber noch nicht committet.
+				Die Änderung betrifft jedoch andere Zeilen.
+				git pull auf Rechner 2:
+				Der lokale Branch hat keine eigenen Commits → Fast-Forward ist möglich.
+				JGit aktualisiert den Branch-Zeiger.
+				Anschließend versucht Git, die Änderungen des Fast-Forward-Commits mit den lokalen Änderungen im Arbeitsverzeichnis zusammenzuführen.
+				
+				Da sich die Änderungen nicht überschneiden, kann Git beide Änderungen automatisch kombinieren.
+				
+				Deshalb erhältst du:
+				
+				keinen MergeResult
+				keine CheckoutConflictException
+				keinen Konfliktmarker (<<<<<<<)
+				weiterhin einen FAST_FORWARD-Status
+				
+				Das ist normales Git-Verhalten.
+				
+				Wichtig zu verstehen:
+				
+				Fast-Forward bezieht sich nur auf die Commit-Historie.
+				Konflikte beziehen sich auf den Dateiinhalt.
+				
+				Beides sind unabhängige Aspekte.
+				
+				Obwohl ein Fast-Forward stattfindet, prüft Git anschließend trotzdem, ob die lokalen, nicht committeten Änderungen erhalten bleiben können.
+				
+				Wenn du möchtest, dass bei jeglicher lokaler Änderung deine Strategie OURS gewinnt, reicht die Merge-Strategie nicht aus. Sie greift nur bei Konflikten zwischen Commits.
+				
+				Dann musst du vor dem Pull selbst entscheiden, wie mit lokalen Änderungen umgegangen werden soll, zum Beispiel:
+				
+				lokale Änderungen verwerfen (reset --hard)
+				lokale Änderungen stashen und später wieder anwenden
+				lokale Änderungen automatisch committen
+				den Pull abbrechen, sobald status.getUncommittedChanges() nicht leer ist
+				
+				Eine automatische "immer OURS"-Behandlung für uncommittete Änderungen im Arbeitsverzeichnis gibt es in Git und JGit nicht.
+				 */	       
+	        	
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
         	
 	        	 String sBranch = "master";
 			     if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 			     
 			     //+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
-				System.out.println("Pull: Startet");
-				try {
+				System.out.println("PULL: Startet");
+				try {					
+					MergeResult objMergeResult = null;
+					
+					//wg. der fast-forward Problematik (s. ChatGPT vom 20260622) kann es eine immer "OURS" Behandlung nicht geben.
+					//Will man, dass die lokale Änderung auf jeden Fall überlebt, muss erste ein commit erzwungen werden.
+					if(objEnumStrategy!=null){
+						System.out.println("PULL: Verwendete Strategie: '" + objEnumStrategy.getAbbreviation() + "'");
+					}
+					if(objEnumStrategy.equals(STRATEGYMERGECONFLICT.OURS)){					
+						System.out.println("PULL: Wg. OURS, soll zwingend ein fast-forward vermieden werden, damit die lokale Datei bleibt. Daher bCheckRepositoryState=true und somit ggf. den commit erzwingen. ");
+						bCheckRepositoryState = true;
+					}else {
+						System.out.println("PULL: bCheckRepositoryState=" + bCheckRepositoryState);
+					}
+										
 					//Mache hier den Pull direkt durch PullCommand
-					MergeResult objMergeResult = pullGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
-					if(objMergeResult==null) { System.out.println("MergeResult: Null."); break main; }
+					objMergeResult = pullGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
+					if(objMergeResult==null) { System.out.println("PULL: MergeResult: Null."); break main; }
 
 					objReturn.setOriginalResult(objMergeResult);
 		      
@@ -1147,7 +1277,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 					boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
 				
 					MergeStatus status = objMergeResult.getMergeStatus();
-					System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+					System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 					if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
 				
 					while((status.equals(MergeStatus.CONFLICTING)
@@ -1157,7 +1287,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 						iCount++; 
 						
 						if(status.equals(MergeStatus.CONFLICTING)) {
-							System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
+							System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 					    
 							//Mit dem Merge - Ergebnis weiterarbeiten.
 							bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
@@ -1166,7 +1296,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 				
 				
 						if(status.equals(MergeStatus.FAILED)) {
-							System.out.println("Failed erkannt ("+iCount+")");
+							System.out.println("PULL: Failed erkannt ("+iCount+")");
 
 							bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
 							bMyAutoResolved = true;
@@ -1178,17 +1308,17 @@ public class JgitUtilGIT implements IConstantZZZ{
 					    objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
 					    
 					    status = objMergeResult.getMergeStatus();
-						System.out.println("Merge-Status ("+iCount+"): " + status.toString());
+						System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 				    }else {
 				    	bGoon=false;
 				    }
 				}//end while
 				
 				if(iCount>=1) {
-					System.out.println("\nErgebnis der Konfliktbehandlung:");
+					System.out.println("\nPULL: Ergebnis der Konfliktbehandlung:");
 					if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 						//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-						System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionn müssen noch gepusht werden, damit sie im Remote ist.");
+						System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
 					}else {
 						System.out.println(objEnumStrategy.getDescriptionShort());
 					}

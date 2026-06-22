@@ -308,10 +308,15 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			bReturn = bReturn & objMergeResultResolved.isRepositoryStateSafe();
 			if(bReturn) break main;
 			
-			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
-			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten
-			System.out.println("##### MERGE: GGfs. NICHT ZU BEHEBENDE KONFLIKTE #######");
 			MergeResult objMergeResultOriginal = objMergeResultResolved.getMergeResultOriginal();
+			if(objMergeResultOriginal==null) {
+				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResultOriginal-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
+				break main;	
+			}
+			
+			//+++ Eigentlich gehe ich davon aus, das beim Ignorieren von Konflikten hier 
+			//Falls Merge nicht erfolgreich ist, hier am Schluss die Dateien mit den Konflikten auflisten			
+			System.out.println("##### MERGE: GGfs. NICHT ZU BEHEBENDE KONFLIKTE #######");			
 			if(objMergeResultOriginal==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
