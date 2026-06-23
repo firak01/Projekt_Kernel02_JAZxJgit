@@ -237,9 +237,9 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				Git git = this.getGitObject();
 		        boolean bSuccessPull = this.pullit(git);
 		        if(bSuccessPull) {
-					System.out.println("pull erfolgreich");
+					System.out.println("pullit erfolgreich");
 				}else {
-					System.out.println("pull NICHT erfolgreich");
+					System.out.println("pullit NICHT erfolgreich");
 					break main;
 				}
 		        git.close();
@@ -278,17 +278,10 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				
 			} else if(bIgnoreConflicts & !bAutosolveConflicts) {
 
-				//Statt so etwas zu machen, das Flag übergeben:
-				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 				
-			
 				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-				
-				//Nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
-				///1) hier THEIRS oder OURS übergeben als Strategie
-
+				TODOGOON20260623;//Hier wird keine Strategie mehr berücksichtig.
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);				
 				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
 				
 								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
@@ -298,15 +291,19 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 								
 			} else if(!bIgnoreConflicts & bAutosolveConflicts) {
 				
-				//Statt so etwas zu machen, das Flag übergeben:
+				//Statt so etwas zu machen, das Enum für das entsprechende Flag übergeben:
 				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
 				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-				//TODOGOON20260622
 				
-				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL				
-				//HTTPS VERSION 
-				//bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
+				//Konflikte nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
+				///1) hier THEIRS oder OURS übergeben als Strategie
+
+				
+				TODOGOON20260623;//Hier pullitIgnoreCheckoutConflicts hin
+				                 //anschliessend umbenennen nach
+				                 //pullitResolveCheckoutConflicts
+				bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
 			
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
