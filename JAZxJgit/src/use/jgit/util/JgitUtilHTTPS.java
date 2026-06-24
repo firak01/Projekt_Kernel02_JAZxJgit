@@ -285,10 +285,10 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		//Merke: Bei HTTPS ist der FetchMerge Ansatz der einzig mögliche. Es gibt keine direkte Pull-Lösung. 
 				
-		return JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, true); //true, d.h. kein RepostoryStateCheck notwendig. Also auch kein COMMIT Voraussetzung.
+		return JgitUtilHTTPS.pullResolveCheckoutConflictsHTTPS_by_FetchMerge_(git,credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy, true); //true, d.h. kein RepostoryStateCheck notwendig. Also auch kein COMMIT Voraussetzung.
 	}
 	
 	
@@ -374,7 +374,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsHTTPS_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sPAT, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
@@ -589,7 +589,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 		            //Pull erneut versuchen
 		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 		            //git.pull().call();
-		            objReturn = pullIgnoreCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
+		            objReturn = pullResolveCheckoutConflictsHTTPS_by_FetchMerge_(git, credentialsProvider, sPAT, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 		        }
 								
 			}catch(InvalidRemoteException ire) {
@@ -736,7 +736,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 	
 	
 	
-	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
+	public static MergeResult pullIgnoresSingleBranchHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 	        try {

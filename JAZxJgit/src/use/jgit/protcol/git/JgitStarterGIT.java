@@ -276,14 +276,16 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);				
 				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
 				
-			} else if(bIgnoreConflicts & !bAutosolveConflicts) {
-
+			} else if(bIgnoreConflicts) { // & !bAutosolveConflicts
 				
 				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-				TODOGOON20260623;//Hier wird keine Strategie mehr berücksichtig.
-				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);				
-				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
-				
+				//TODOGOON20260623;//Hier wird keine Strategie mehr berücksichtig.
+				//STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+				//TODOGOON 20260624;//Entwickle die Methode - s. JgitUtilHTTPS.pullIgnoresSingleBranchHTTPS
+				//                                          rufe also auf JgitUtilGIT.pullIgnoreSingleBranchGTI   ... Mit Agumenten
+				//                                          analog zu JgitUtilGit.pullIgnoreCheckoutConflictsGIT_ConflictsOnlySimple , was kaum Argumente hat.
+				bReturn = this.pullIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
+
 								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
 				                //   in der erst versucht wird zu und danach 
 				                //   nur Konflikte per THEIRS oder OURS aufgelöst werden.
@@ -299,11 +301,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//Konflikte nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
 				///1) hier THEIRS oder OURS übergeben als Strategie
 
-				
-				TODOGOON20260623;//Hier pullitIgnoreCheckoutConflicts hin
-				                 //anschliessend umbenennen nach
-				                 //pullitResolveCheckoutConflicts
-				bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
+				bReturn = this.pullitResolveCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
 			
 			}else {
 				ExceptionZZZ ez = new ExceptionZZZ("Unerwartet FlagKombination beim PULL.", iERROR_PARAMETER_VALUE, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -387,7 +385,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
+	public boolean pullitResolveCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{		
 			//Merke: Bei GIT gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
@@ -396,7 +394,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			boolean bUsePullDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
 			
 			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
-			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);			
+			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilGIT.pullResolveCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, objEnumStrategyMergeConflict);			
 			if(objMergeResultResolved==null) {
 				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;

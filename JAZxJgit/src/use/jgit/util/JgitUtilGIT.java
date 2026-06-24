@@ -856,8 +856,8 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {		
-		return pullIgnoreCheckoutConflictsGIT(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
+	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {		
+		return pullResolveCheckoutConflictsGIT(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 	}
 	
 	/** Für den GIT Weg:
@@ -880,16 +880,16 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ {
+	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ {
 		if(bUseFetchMerge) {
-			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 		}else {
-			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 		}
 	}
 				
-	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
-		return pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
+	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ {
+		return pullResolveCheckoutConflictsGIT(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
 	}
 	
 	/** Für den GIT Weg:
@@ -912,13 +912,13 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
+	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy, boolean bUseFetchMerge) throws ExceptionZZZ {
 		if(bUseFetchMerge) {
 			//das soll eigentlich verwendet werden
-			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
 		}else {
 			//das ist dann irgendwie ein doppelter Merge
-			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);			
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);			
 		}				
 	}
 	
@@ -946,7 +946,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{	    
 			try {				
@@ -1136,7 +1136,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		            //Pull erneut versuchen
 		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 		            //git.pull().call();
-		            objReturn = pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
+		            objReturn = pullResolveCheckoutConflictsGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 		        }
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -1180,7 +1180,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static IMergeResultResolvedZZZ pullIgnoreCheckoutConflictsGIT_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
@@ -1365,7 +1365,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	            //Pull erneut versuchen
 	            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 	            //git.pull().call();
-	            objReturn = pullIgnoreCheckoutConflictsGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
+	            objReturn = pullResolveCheckoutConflictsGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 	        }
 		}catch(InvalidRemoteException ire) {
 			ExceptionZZZ ez = new ExceptionZZZ(ire);

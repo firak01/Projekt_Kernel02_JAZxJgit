@@ -297,7 +297,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 		boolean bReturn = false;
 		main:{
 			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
-			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
+			IMergeResultResolvedZZZ objMergeResultResolved =  JgitUtilHTTPS.pullResolveCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumstrategy);
 			if(objMergeResultResolved==null) {
 				System.out.println("PULL: Kein Merge durchgeführt/Kein MergeResultResolve-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
@@ -349,7 +349,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{					
-			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy);
+			MergeResult objMergeResult = JgitUtilHTTPS.pullIgnoresSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch, objEnumStrategy);
 			if(objMergeResult==null) {
 				System.out.println("Kein Merge durchgeführt/Kein MergeResult-Objekt. Vorbedingungen für ein sauberes Repository nicht erfüllt. Bitte (wenn vorhanden) Lösungsvorschläge probieren.");
 				break main;
