@@ -234,20 +234,32 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
 				Git git = this.getGitObject();
-		        boolean bSuccessPull = this.pullit(git);
-		        if(bSuccessPull) {
-					System.out.println("pull erfolgreich");
+		        boolean bSuccessPull = this.pullit(git);		        
+				if(bSuccessPull) {
+					System.out.println("pullit erfolgreich");
 				}else {
-					System.out.println("pull NICHT erfolgreich");
+					System.out.println("pullit NICHT erfolgreich");
 					break main;
+				}			
+				bReturn = true;
+				
+		        if(bReturn) {
+		        	System.out.println("STATUS AFTER PULL: SUCCESSFULL");
+		        	this.printStatus(git);					
+				}else {
+					System.out.println("STATUS AFTER PULL: FAILED");
+		        	this.printStatus(git);
 				}
-		        git.close();
-		        bReturn = true;
+		        
+				git.close();
 		        //#######################################################	  
 			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;			
+			} catch (GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;	
 			}
 		}//end main:
 		return bReturn;
@@ -647,7 +659,16 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 		        
 		        //b) Mache den push	
 				Git git = this.getGitObject();				
-		        bReturn = this.pushit(git);
+		        boolean bSuccessPush = this.pushit(git);
+		        if(bSuccessPush) {
+					System.out.println("pushit erfolgreich");
+				}else {
+					System.out.println("pushit NICHT erfolgreich");
+					break main;
+				}			
+				bReturn = true;
+		        
+		        
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
 		        	this.printStatus(git);

@@ -22,15 +22,15 @@ public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarte
 	
 	
 	//+++++++ PULL: Welche Methode verwendet wird, wird über ein Flag gesteuert
-	//a) pull ohne Mergekonflikte abzufangen, über alle Branches (wird aber nicht verwendet)
+	//a) pull ohne Mergekonflikte abzufangen
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
 	
 	//b) pull ohne MergeKonflikte abzufangen, über einen ganz konkreten Branch
 	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 	
-	//c) pull, die Konfliktdateien werden gezielt zurückgesetzt
-	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;
+	//c)
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ;
 	
 	//d) pull mit dem Automatischen auflösen von Mergekonflikten, ggfs. mit Strategie, die auch per Flag gesteuert wird
-	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;	               
+	public boolean pullitResolveCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumstrategy) throws ExceptionZZZ;
 }

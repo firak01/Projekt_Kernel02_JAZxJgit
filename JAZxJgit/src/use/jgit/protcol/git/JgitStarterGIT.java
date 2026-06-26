@@ -276,21 +276,12 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//wir wollen aber immer den bestimmten Branch... this.pullit(git, credentialsProvider, sPAT, sRepoRemote);				
 				bReturn = this.pullit(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
 				
-			} else if(bIgnoreConflicts) { // & !bAutosolveConflicts
+			} else if(bIgnoreConflicts) { 
 				
 				//Konflikte Ignorieren. Die Konfliktdateien werden gezielt zurückgesetzt
-				//TODOGOON20260623;//Hier wird keine Strategie mehr berücksichtig.
-				//STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-				//TODOGOON 20260624;//Entwickle die Methode - s. JgitUtilHTTPS.pullIgnoresSingleBranchHTTPS
-				//                                          rufe also auf JgitUtilGIT.pullIgnoreSingleBranchGTI   ... Mit Agumenten
-				//                                          analog zu JgitUtilGit.pullIgnoreCheckoutConflictsGIT_ConflictsOnlySimple , was kaum Argumente hat.
-				bReturn = this.pullIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
-
-								//2) es muss aber wie beim HTTPS Weg eine Methode geben, 
-				                //   in der erst versucht wird zu und danach 
-				                //   nur Konflikte per THEIRS oder OURS aufgelöst werden.
-				
-								
+				//Hier wird keine Strategie mehr berücksichtig.				
+				bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch);
+		
 			} else if(!bIgnoreConflicts & bAutosolveConflicts) {
 				
 				//Statt so etwas zu machen, das Enum für das entsprechende Flag übergeben:
@@ -298,9 +289,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 				
-				//Konflikte nicht nur einfach komplett ignorieren, sondern per Strategie auflösen
-				///1) hier THEIRS oder OURS übergeben als Strategie
-
+				//Versuchen die Konflikte aufzulösen, ggfs. noch per Strategie, gesteuert durch weitere FLAGZLOCAL
 				bReturn = this.pullitResolveCheckoutConflicts(git, credentialsProvider, sRepositoryRemoteTotal, sBranch, objEnumStrategyMergeConflict);
 			
 			}else {
@@ -385,6 +374,27 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{		
+			//Merke: Bei GIT gibt es einen direkten PULL-Befehl oder die Kombination aus FETCH + MERGE
+			//       FETCH + MERGE ist eigentlich optimaler als direkt.
+			//Der Weg ist über FLAGZ konfigurierbar
+			boolean bUseDirect = this.getFlagLocal(IJgitStarterGITEnabled.FLAGZLOCAL.USE_PULL_DIRECT);
+			boolean bUseFetchMerge = !bUseDirect;
+			
+			//Das Problem: Der originale MergeStatus bekommt nix von der Auflösung der Konflikte mit.
+			bReturn =  JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sRepoRemote, sBranch, bUseFetchMerge);			
+			if(!bReturn) {
+				System.out.println("PULL: Nicht durchgeführt. Falls vorhanden Lösungshinweis beachten. Wahrscheinlich Vorbedingungen für ein sauberes Repository nicht erfüllt, z.B. COMMIT.");
+				break main;
+			}						
+		}//end main:
+		return bReturn;
+	}
+	
+//++++++++++++++++++++++++++++++++++++++++
+	@Override
 	public boolean pullitResolveCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sRepoRemote, String sBranch, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{		
@@ -436,7 +446,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		return bReturn;
 	}
 
-		
+			
 	//################################################################
 	//###### CommitPush ###########################################
 
@@ -660,7 +670,15 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        
 		        //b) Mache den push	
 				Git git = this.getGitObject();				
-		        bReturn = this.pushit(git);
+		        boolean bSuccessPush = this.pushit(git);
+		        if(bSuccessPush) {
+					System.out.println("pushit erfolgreich");
+				}else {
+					System.out.println("pushit NICHT erfolgreich");
+					break main;
+				}
+		        bReturn = true;
+		        
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
 		        	this.printStatus(git);
@@ -669,7 +687,6 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        	this.printStatus(git);
 		        }
 		       
-		        
 		        //s. ChatGPT vom 20260313
 		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
 		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.

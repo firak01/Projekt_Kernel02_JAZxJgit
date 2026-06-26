@@ -1855,7 +1855,7 @@ Repository existingRepo = new FileRepositoryBuilder()
 				throw te;
 			} catch (CheckoutConflictException coce) {
 				throw coce;
-				//!!! Diese Exception ist wie eine TransportExcpetion von vor dem Merge. 
+				//!!! Diese Exception ist wie eine TransportException von vor dem Merge. 
 				//    Die Dateien müssen also anders behandelt werden.
 				//System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": CheckoutConflictException... soll dann später verarbeitet werden.");
 				//System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": " + coce.getMessage());

@@ -54,7 +54,7 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 			            //ohne setStage... Fehler: org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
 			            git.checkout()
 			               .setStage(objStage) //z.B. CheckoutCommand.Stage.OURS
-			               .addPath(path)
+			               .addPath(path)      //hier erst einmal weggelassen: .setForce(true)   // wichtig!
 			               .call();
 			            bAnyConflictsResolved=true;
 			        }	        	        

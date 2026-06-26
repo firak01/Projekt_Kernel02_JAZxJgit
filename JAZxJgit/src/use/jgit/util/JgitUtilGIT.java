@@ -18,6 +18,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -33,12 +34,97 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.JgitResolverLocal;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
 
+/** Für den GIT Weg:
+	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
+	 *         Hier ist ein fetch nicht notwendig.
+	 * 
+	 *  Eine robuste Utility-Methode, die:
+	
+		pull() ausführt
+		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
+		oder
+		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
+		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
+		
+		
+		s. ChatGPT 20260323, 20260508ff
+		
+		
+		Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
+	 * 
+	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
+	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
+	 *        
+	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
+	 * 
+	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
+  	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
+  	 *        Darum eher pullGIT_by_FetchMerge verwenden.
+  	     
+  	Für die Konfliktauflösung:
+  				bCheckRepositoryState        : AUCH BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG WICHTIG, 
+	        	                               - Es ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL keine "CheckoutException".
+	        	                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.								
+				
+				ABER ohne einen commit gibt es im Bedarfsfall keinen Conflict, etc. 
+				
+				
+				* s. Merke: ChatGPT vom 2026-622:
+				Ein Konflikt entsteht nur, wenn dieselben Zeilen bzw. überlappende Bereiche geändert wurden.
+
+				Dein Szenario sieht dann vermutlich so aus:
+				
+				Rechner 1:
+				Datei A wird geändert.
+				Änderung wird committet und ins Remote-Repository gepusht.
+				Rechner 2:
+				Dieselbe Datei A wurde lokal geändert, aber noch nicht committet.
+				Die Änderung betrifft jedoch andere Zeilen.
+				git pull auf Rechner 2:
+				Der lokale Branch hat keine eigenen Commits → Fast-Forward ist möglich.
+				JGit aktualisiert den Branch-Zeiger.
+				Anschließend versucht Git, die Änderungen des Fast-Forward-Commits mit den lokalen Änderungen im Arbeitsverzeichnis zusammenzuführen.
+				
+				Da sich die Änderungen nicht überschneiden, kann Git beide Änderungen automatisch kombinieren.
+				
+				Deshalb erhältst du:
+				
+				keinen MergeResult
+				keine CheckoutConflictException
+				keinen Konfliktmarker (<<<<<<<)
+				weiterhin einen FAST_FORWARD-Status
+				
+				Das ist normales Git-Verhalten.
+				
+				Wichtig zu verstehen:
+				
+				Fast-Forward bezieht sich nur auf die Commit-Historie.
+				Konflikte beziehen sich auf den Dateiinhalt.
+				
+				Beides sind unabhängige Aspekte.
+				
+				Obwohl ein Fast-Forward stattfindet, prüft Git anschließend trotzdem, ob die lokalen, nicht committeten Änderungen erhalten bleiben können.
+				
+				Wenn du möchtest, dass bei jeglicher lokaler Änderung deine Strategie OURS gewinnt, reicht die Merge-Strategie nicht aus. Sie greift nur bei Konflikten zwischen Commits.
+				
+				Dann musst du vor dem Pull selbst entscheiden, wie mit lokalen Änderungen umgegangen werden soll, zum Beispiel:
+				
+				lokale Änderungen verwerfen (reset --hard)
+				lokale Änderungen stashen und später wieder anwenden
+				lokale Änderungen automatisch committen
+				den Pull abbrechen, sobald status.getUncommittedChanges() nicht leer ist
+				
+				Eine automatische "immer OURS"-Behandlung für uncommittete Änderungen im Arbeitsverzeichnis gibt es in Git und JGit nicht.
+ * @author Fritz Lindhauer
+ *
+ */
 public class JgitUtilGIT implements IConstantZZZ{
 	public static final String sPROTOCOL_PART = JgitStarterGIT.sPROTOCOL + "@";
 	public static String addProtocolToUrl(String sUrlRepo) throws ExceptionZZZ {
@@ -91,6 +177,16 @@ public class JgitUtilGIT implements IConstantZZZ{
 	public static String computeRepositoryProjectFromUrlGIT(String sUrlRepo) throws ExceptionZZZ{
 		return JgitUtilGIT.getProjectFromUrl(sUrlRepo);
 	}
+	
+	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+	 * @param sRepositoryRemoteUrlGIT
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static String computeRepositoryUrlPartFromUrlGIT(String sUrlGIT) throws ExceptionZZZ {
+		return JgitUtilGIT.getUrlPartFromUrl(sUrlGIT);
+	}
+
 
 	/** Berechne die RemoteUrl - auch wenn eine ssh Url uebergeben worden ist - passend fuer HTTPS
 	 * @param sUrlRepoRemoteIn
@@ -171,25 +267,6 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return sReturn;
 	}
 	//###########################
-
-//	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-//	 * @param sRepositoryRemoteUrlGIT
-//	 * @return
-//	 * @throws ExceptionZZZ
-//	 */
-//	public static String computeRepositoryUrlPartFromUrlGIT(String sUrlRepoRemoteGITIn) throws ExceptionZZZ{
-//		String sReturn = null;
-//		main:{
-//			if(StringZZZ.isEmpty(sUrlRepoRemoteGITIn)) break main;
-//			
-//			String sUrlGitWithoutProtocol = StringZZZ.right("@" + sUrlRepoRemoteGITIn, "@");
-//			String sUrlWithoutProtocolAndProject = StringZZZ.left(sUrlGitWithoutProtocol + UrlLogicZZZ.sURL_SEPARATOR_PATH,UrlLogicZZZ.sURL_SEPARATOR_PATH );
-//			String sUrlWithoutAccount = StringZZZ.left(sUrlWithoutProtocolAndProject + UrlLogicZZZ.sURL_SEPARATOR_PORT,UrlLogicZZZ.sURL_SEPARATOR_PORT );			
-//			sReturn = sUrlWithoutAccount;			
-//		}//end main:
-//		return sReturn;	
-//	}
-	
 	//Z.B. GIT Version: 	git@github.com:firak01   also ohne das Projekt
 	public static String computeRepositoryUrlBaseGIT(String sHostIn, String sAccountIn) throws ExceptionZZZ{
 		String sReturn = null;
@@ -305,209 +382,10 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return sReturn;
 	}
 	
-	
-	//######################################################
-	//### FETCH
-//	public static FetchResult fetchIgnoreNothingToFetch(
-//	        Git git,	        
-//	        CredentialsProvider credentialsProvider,
-//	        String sBranchIn
-//	) throws ExceptionZZZ {
-//		FetchResult objReturn = null;
-//		main:{
-//		    try {
-//		        // =========================
-//		        // 1. FETCH (nur ein Branch!)
-//		        // =========================
-//		        FetchCommand fetchCommand = git.fetch();
-//
-//		        if (credentialsProvider != null) {
-//		            fetchCommand.setCredentialsProvider(credentialsProvider);
-//		        }
-//		        
-//		        //aus .git\config Datei:
-//		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
-//		        String branch = "master";
-//		        if(!StringZZZ.isEmpty(sBranchIn)) branch = sBranchIn;
-//		        
-//		        String remoteRef = "refs/heads/" + branch;
-//		        String localTrackingRef = "refs/remotes/origin/" + branch;
-//		        
-//		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
-//		        //+ für "fast forward"
-//		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
-//
-//		        objReturn = fetchCommand.call();
-//	
-//		        
-//		        
-//		        // Optional: Logging / Prüfung
-//		        if (objReturn.getTrackingRefUpdates().isEmpty()) {
-//		            System.out.println("Fetch erfolgreich, aber keine Änderungen vorhanden.");
-//		        } else {
-//		            System.out.println("Fetch erfolgreich, Änderungen empfangen.");
-//		        }
-//	
-//		    } catch (TransportException te) {
-//	
-//		        String msg = te.getMessage();
-//	
-//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
-//		            System.out.println("Nothing to fetch - Repository ist aktuell.");
-//		            return null; // bewusst null zurückgeben als Signal
-//		        }
-//	
-//		        // alle anderen Fehler weiterwerfen!
-//		        ExceptionZZZ ez = new ExceptionZZZ(te);
-//		        throw ez;
-//		    }catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			} 
-//		}//end main:
-//		 return objReturn;
-//	}
-//	
-//	/**
-//	 * @param git
-//	 * @param credentialsProvider
-//	 * @param sRemoteRepositoryAlias
-//	 * @param sBranchIn
-//	 * @return
-//	 * @throws ExceptionZZZ
-//	 * 
-//	 * 
-//	 		    Minierklaerung:
-//				siehe .git\config Datei, entsprechende Zeile.
-//				 
-//				Das ist ein sogenannter RefSpec (Reference Specification).
-//				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
-//				
-//				Aufbau allgemein:
-//				[+]<Quelle>:<Ziel>
-//				
-//				Also:
-//				Quelle (Remote-Seite)
-//				refs/heads/ = alle Branches im Remote-Repository
-//				 * = Wildcard → alle Branch-Namen
-//	
-//				➡️ Bedeutet:
-//				Hole alle Branches vom Remote
-//				
-//				
-//				Ziel (lokal)
-//				refs/remotes/origin/ = Remote-Tracking-Branches
-//				* = gleicher Name wie Quelle
-//	
-//				➡️ Bedeutet:
-//				Speichere sie lokal als origin/branchname
-//				
-//				------------
-//				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-//				Mit + sagst du:
-//				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-//				 
-//	 */
-//	public static FetchResult fetchIgnoreNothingToFetch(
-//	        Git git,	        
-//	        CredentialsProvider credentialsProvider,
-//	        String sRemoteRepositoryAlias,
-//	        String sBranchIn
-//	) throws ExceptionZZZ{
-//		FetchResult objReturn = null;
-//		main:{
-//		    try {
-//		    	try {
-//					JgitUtilZZZ.debugForFetch(git);
-//				} catch (URISyntaxException e) {
-//					ExceptionZZZ ez = new ExceptionZZZ(e);
-//					throw ez;
-//				}
-//		    	
-//		    	
-//		        // =========================
-//		        // 1. FETCH (nur ein Branch!)
-//		        // =========================
-//		        FetchCommand gitCommandFetch = git.fetch();
-//		        
-//		        //SSH-Weg: Ohne URL!
-//		        //dafuer mit Alias
-//		        gitCommandFetch.setRemote(sRemoteRepositoryAlias);
-//		        
-//		        if (credentialsProvider != null) {
-//		            gitCommandFetch.setCredentialsProvider(credentialsProvider);
-//		        }
-//		        
-//		        //aus .git\config Datei:
-//		        //      fetch = +refs/heads/*:refs/remotes/origin/*		        		       
-//		        String sBranch = "master";
-//		        if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
-//		        
-//		        String remoteRef = "refs/heads/" + sBranch;
-//		        String localTrackingRef = "refs/remotes/origin/" + sBranch;
-//		        
-//		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
-//		        //+ für "fast forward"
-//		        gitCommandFetch.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
-//
-//		        
-//		        
-////		        //aber: vermutlich wird auf dem falschen Branch gearbeitet.
-////			    gitCommandFetch.setRefSpecs(
-////			    	   //TransportException: Remote does not have refs/heads/main available for fetch.
-////			    		//new RefSpec("+refs/heads/main:refs/remotes/origin/main")
-////
-////			    		//Nach obiger minierklärung ist der erste Teil aber der lokale
-////			    		//der zweite Teil ist remote... 
-////			    		//das Wort orign taucht nur als Section auf
-////			    		//TODOGOON 20260615: Setze diesen String auch korrekt, wie auch die URL
-////			    		//                   Bei der Konfiguration
-////			    		new RefSpec("+refs/heads/" + sBranch + ":refs/remotes/origin/"+sBranch);	
-////			    		
-////			    	);
-//		        
-//		        
-//		        objReturn = gitCommandFetch.call();
-//	
-//		     
-//	
-//		    } catch (TransportException te) {
-//	
-//		        String msg = te.getMessage();
-//	
-//		        if (msg != null && msg.toLowerCase().contains("nothing to fetch")) {
-//		            System.out.println("Nothing to fetch - Lokales Repository ist aktuell bzg. Remore Repository.");
-//		            return null; // bewusst null zurückgeben als Signal
-//		        }
-//	
-//		        // alle anderen Fehler weiterwerfen!
-//		        ExceptionZZZ ez = new ExceptionZZZ(te);
-//		        throw ez;
-//		    }catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			} catch (IOException ioe) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
-//				throw ez;
-//			} 
-//		}//end main:
-//		 return objReturn;
-//	}
-	
 	//######################################################
 	//###  PULL
 	
-	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
-	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
-	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
-	 *        
-	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
-	 * 
-	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
-  	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-  	 *        Darum eher pullGIT_by_FetchMerge verwenden.
-  	 *        
+	/** 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -520,17 +398,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return JgitUtilGIT.pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, null, true);
 	}
 	
-	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
-	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
-	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
-	 *        
-	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
-	 * 
-  	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
-  	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-  	 *        Darum eher pullGIT_by_FetchMerge verwenden.
-  	 *        
+	/** 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -552,29 +420,19 @@ public class JgitUtilGIT implements IConstantZZZ{
 		if(bByFetchMerge) {
 			return JgitUtilGIT.pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bCheckRepositoryState);
 		}else {
-			return JgitUtilGIT.pullGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bCheckRepositoryState);
+			return JgitUtilGIT.pullGIT_by_Direct_(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bCheckRepositoryState);
 		}
 		
 	}
 	
-	/** Anders als bei HTTPS kann hier ein Pull direkt gemacht werden, also ohne Zerlegung in Fetch und Merge.
-	 * 
-	 * ABER: Achtung sUrlRepoRemote ist eine Url. Aber eine Url darf beim GIT Weg nicht direkt 
-	 *       beim PullCommand.setRemote(s) für s verwendet werden. Das geht nur beim HTTPS Weg.
-	 *        
-	 * ERGO: Wir suchen anhand der übergebenen URL den (zuvor konfigurierten) Eintrag und nehmen den "Alias".        
-	 * 
-	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
-	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullGIT_by_FetchMerge_ verwenden.
-	 * 
+	/** 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static MergeResult pullGIT_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bCheckRepositoryState) throws ExceptionZZZ {
+	private static MergeResult pullGIT_by_Direct_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bCheckRepositoryState) throws ExceptionZZZ {
 		MergeResult objReturn = null;
 		main:{
 			try {	
@@ -587,6 +445,10 @@ public class JgitUtilGIT implements IConstantZZZ{
 	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
 	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
 	        	if(bCheckRepositoryState) {
+	        		//wg. der fast-forward Problematik (s. ChatGPT vom 20260622) kann es eine immer "OURS" Behandlung nicht geben.
+					//Will man, dass die lokale Änderung auf jeden Fall überlebt, muss erste ein commit erzwungen werden.
+					System.out.println("PULL: bCheckRepositoryState=" + bCheckRepositoryState);
+	        							
 					//!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
 			        //             ohne eine Exception durchlaufen kann
 			        //Vorprüfung per eigener, gekapselter Routine
@@ -719,10 +581,22 @@ public class JgitUtilGIT implements IConstantZZZ{
 		            throw new IllegalArgumentException("git must not be null");
 		        }
 		        
+		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+		            throw new IllegalArgumentException("remoteUrl must not be empty");
+		        }
+		        
+		        String sBranch="master";
+		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
+		        
 		        //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
 	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
 	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
 	        	if(bCheckRepositoryState) {
+	        		//wg. der fast-forward Problematik (s. ChatGPT vom 20260622) kann es eine immer "OURS" Behandlung nicht geben.
+					//Will man, dass die lokale Änderung auf jeden Fall überlebt, muss erste ein commit erzwungen werden.
+					System.out.println("PULL: bCheckRepositoryState=" + bCheckRepositoryState);
+
+	        			        	
 			        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
 			        //             ohne eine Exception durchlaufen kann
 			        //Vorprüfung per eigener, gekapselter Routine
@@ -735,12 +609,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		        
 		        
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
-		            throw new IllegalArgumentException("remoteUrl must not be empty");
-		        }
-		        
-		        String sBranch="master";
-		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
+		       
 		       		        
 		        //Zwar geht Pull auch direkt, aber: Pull ist eh eine Anwendung von fetch und merge. Wenn ich das mache spart es einen Merge am Schluss.							
 				System.out.println("GIT-Loesung: Spare einen MERGE. Zerlege deshalb PULL in FETCH und MERGE");
@@ -775,36 +644,320 @@ public class JgitUtilGIT implements IConstantZZZ{
 		        // =========================
 		      
 		        //Den Merge durchführen, er sollte nach erfolgreicher Vorprüfung nicht abbrechen.
-		       objReturn = JgitUtilZZZ.mergeWithResult(git, sBranchIn);			       
+		       objReturn = JgitUtilZZZ.mergeWithResult(git, sBranch);			       
 	        
 		}//end main:
 		return objReturn;
     }
 
+	/** 
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static boolean pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bUseFetchMerge, boolean bCheckRepositoryState) throws ExceptionZZZ {
+		if(bUseFetchMerge) {
+			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bCheckRepositoryState);
+		}else {
+			return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT_by_Direct_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, bCheckRepositoryState);
+		}
+	}
+	
+	/**
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	public static boolean pullIgnoreCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bUseFetchMerge) throws ExceptionZZZ {
+		return JgitUtilGIT.pullIgnoreCheckoutConflictsGIT(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn,bUseFetchMerge, true);
+	}
+	
 	
 	
 	/** Für den GIT Weg:
 	 * 
-	 *  Eine robuste Utility-Methode, die:
+		Minierklaerung:
+				siehe .git\config Datei, entsprechende Zeile.
+				 
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
 	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt
-		nur die konfliktbehafteten Dateien zurücksetzt
-		danach den Pull automatisch erneut versucht
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+	
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
 		
-		s. ChatGPT 20260323
 	 * @param git
 	 * @throws GitAPIException
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
 	 * @throws ExceptionZZZ 
 	 */
-	public static boolean pullIgnoreCheckoutConflictsGIT_ConflictsOnlySimple(Git git) throws ExceptionZZZ {
+	private static boolean pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bCheckRepositoryState) throws ExceptionZZZ {
+		boolean bReturn = false;
+		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
+		IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy = IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS;
+		main:{
+	        try {
+	        	if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+	        	
+	        	String sBranch = "master";
+	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+		       
+	        	if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+			           throw new IllegalArgumentException("remoteUrl must not be empty");
+			    }
+	        	    
+	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+	        	//    Weil wir konflikte Ignorieren gibt es hier die Strategie OURS, zwingend.
+				System.out.println("PULL: Startet");
+				try {											        
+					//Mache hier den Pull durch einen FETCH gefolgt von einem MERGE					
+					MergeResult objMergeResult = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);								
+					if(objMergeResult==null) { System.out.println("PULL: MergeResult: Null."); break main; }
+
+					//Mit dem ersten Merge - Ergebnis weiterarbeiten. 
+					//Das ist der Vorteil gegenüber einem "direkten" PULL
+					//Merke: Bei HTTPS gibt es nur FetchMerge, keinen direkten PULL
+					objReturn.setOriginalResult(objMergeResult);
+										
+					//TODO: Die Stage ausserhalb der Schleife holen und dann übergeben.
+					//resolveConflicts als Methode mit Stage anbieten:
+					//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					//CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+					
+					//Wenn aber keine Exception geworfen wird, den Status direkt abfragen
+					//Mache eine Schleife um diese Fehler zu beheben, statt eine verschachtelte if Struktur...						
+					boolean bGoon=true; int iCount=0; boolean bAnyResolved=false;
+					
+					MergeStatus status = objMergeResult.getMergeStatus();
+					System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
+					if(status.equals(MergeStatus.ALREADY_UP_TO_DATE)) bGoon = false;
+					
+					while((status.equals(MergeStatus.CONFLICTING)
+							| status.equals(MergeStatus.FAILED))
+							& bGoon){
+						boolean bMyAutoResolve=false;
+						iCount++; 					
+						
+						if(status.equals(MergeStatus.CONFLICTING)) {
+							 System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
+							
+							 //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
+							 bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							 bMyAutoResolve = true;
+							 
+						}//end STATUS "CONFLICTING"
+						
+						if(status.equals(MergeStatus.FAILED)) {
+						    System.out.println("PULL: Failed erkannt ("+iCount+")");
+
+						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
+						    bMyAutoResolve = true;
+						}//end status FAILED 
+												
+						if(bAnyResolved) {
+						    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
+						    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
+							MergeResult objMergeResult02 = JgitUtilZZZ.mergeWithResult(git, sBranch, false); //also den 2ten Merge nicht debuggen
+						    
+						    status = objMergeResult02.getMergeStatus();
+							System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
+					    }else {
+					    	bGoon=false;
+					    }
+					}//end while
+					
+					if(iCount>=1) {
+						System.out.println("\nPULL: Ergebnis des Konfliktignorierens:");
+						
+						//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
+						System.out.println("PULL: " + objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
+						
+						objReturn.isConflictsResolved(true);
+					}
+					
+					if(bAnyResolved) {					
+						//Prüfen ob, noch Konflikte vorhanden sind
+						Status statusGit = git.status().call();
+						objReturn.setGitStatus(statusGit);
+						
+						//Prüfen, ob der State des Repositories SAFE ist.
+						RepositoryState stateRepo = git.getRepository().getRepositoryState();
+						objReturn.setRepositoryState(stateRepo);
+					}
+			        
+			        bReturn = true;
+					//###############################################################
+		        } catch (CheckoutConflictException cce) {
+		        	System.out.println("Pull PreMerge Konflikte: CheckoutConflictException...");
+		            System.out.println("Pull PreMerge Konflikte: Können mit MergeStrategy nicht aufgeloest werden. Wg. 'ignorieren' Strategy über STAGE trotzdem versuchen.");
+		        	
+		            Collection<String> conflictingPaths = cce.getConflictingPaths();
+		
+		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
+		                // Kein konkreter Pfad bekannt → weiterwerfen
+		            	System.out.println("Pull PreMerge Konflikte: Problem: Keine konkreten Dateien erkannt.");
+		            	ExceptionZZZ ez = new ExceptionZZZ(cce);
+		    			throw ez;
+		            }
+	
+		          //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+					System.out.println("Pull PreMerge Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
+					CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
+					
+		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("Pull PreMerge Konflikte: Setze Dateien gezielt zurueck:");		        	
+		            for (String path : conflictingPaths) {
+		                git.checkout()
+		                	.setStage(objStage)
+		                	.setForce(true)   // wichtig!
+		                	.call();
+		                System.out.println("* " + path);			        	
+		            }
+		
+		            //Pull erneut versuchen
+		            System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");		            
+		            bReturn = pullIgnoreCheckoutConflictsGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, false);
+		        }
+								
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}   
+	    }//end main:
+	    return bReturn;
+	}
+	
+	
+	/**
+	 * @param git
+	 * @param credentialsProvider
+	 * @param sUrlRepoRemoteIn
+	 * @param sBranchIn
+	 * @param bIgnoreRepositoryState
+	 * @return
+	 * @throws ExceptionZZZ
+	 */
+	private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, boolean bCheckRepositoryState) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{	    
+			 if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+		        
+		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		        if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+		            throw new IllegalArgumentException("remoteUrl must not be empty");
+		        }
+		        
+		        String sBranch="master";
+		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
+		       		     
+			
+//			try {				
+	        	
+				       									
+	        	
+	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+				System.out.println("PULL: Startet");
+													
+				//Mache hier den Pull direkt, keine Konfliktbehandlung
+				bReturn = pullIgnoreCheckoutConflictsGIT_by_Direct_(git, bCheckRepositoryState);
+				
+				
+//			}catch(InvalidRemoteException ire) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ire);
+//				throw ez;
+//			}catch(TransportException te) {
+//				ExceptionZZZ ez = new ExceptionZZZ(te);
+//				throw ez;
+//			}catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			}    
+				
+			bReturn = true;
+	    }//end main:
+	    return bReturn;
+	}
+	
+	
+	/** Damit sollte OURS immer gewinnen
+	 * @param git
+	 * @throws GitAPIException
+	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
+	 * @throws ExceptionZZZ 
+	 */	
+private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git) throws ExceptionZZZ {
+	System.out.println("PULL: Wg. OURS, soll zwingend ein fast-forward vermieden werden, damit die lokale Datei bleibt. Daher bCheckRepositoryState=true und somit ggf. den commit erzwingen. ");
+	return pullIgnoreCheckoutConflictsGIT_by_Direct_(git, true);
+}
+	
+	/** Damit sollte OURS immer gewinnen
+	 * @param git
+	 * @throws GitAPIException
+	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
+	 * @throws ExceptionZZZ 
+	 */				
+private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolean bCheckRepositoryState) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
-	
-		        try {
-		            git.pull().call();
+
+				 //!!! Z.B. BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
+	        	//    - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
+	        	//      Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.	        	
+	        	if(bCheckRepositoryState) {
+	        		//wg. der fast-forward Problematik (s. ChatGPT vom 20260622) kann es eine immer "OURS" Behandlung nicht geben.
+					//Will man, dass die lokale Änderung auf jeden Fall überlebt, muss erste ein commit erzwungen werden.
+					System.out.println("PULL: bCheckRepositoryState=" + bCheckRepositoryState);
+
+	        		
+			        //!!! Wichtig: Saubere Vorprüfung, damit der Merge (auch mit ggfs. vorhandenen Konflikten)
+			        //             ohne eine Exception durchlaufen kann
+			        //Vorprüfung per eigener, gekapselter Routine
+			        ResultPreMergeCheck check = GitPreMergeCheck.checkRepositoryState(git);
+ 			        if (!check.isClean()) {
+			            check.printReport();
+			            break main; // VOR dem Merge abbrechen
+			        }
+	        	}
+				
+	        	try {
+	        	    git.pull()
+	        	       .setStrategy(MergeStrategy.OURS)
+	        	       .call();
 		        } catch (CheckoutConflictException e) {
 		
 		            Collection<String> conflictingPaths = e.getConflictingPaths();
@@ -817,12 +970,26 @@ public class JgitUtilGIT implements IConstantZZZ{
 		            //Konfliktdateien gezielt zurücksetzen
 		            for (String path : conflictingPaths) {
 		                git.checkout()
+		                   .setStage(CheckoutCommand.Stage.OURS)
 		                   .addPath(path)
+		                   .setForce(true)   // wichtig!
 		                   .call();
+
+		                git.add().addFilepattern(path).call();
 		            }
 		
-		            //Pull erneut versuchen
-		            git.pull().call();
+		          //Pull erneut versuchen
+		            git.pull()
+		            .setStrategy(MergeStrategy.OURS)
+		            .call();
+		          
+
+		          //!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN				
+		          //Noch haben wir hier keine Strategie...  //+ "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+				  String sLog="Konflikte wurden erfolgreich ignoriert.\n"
+						  + "\tKonfliktdateien wurden gezielt zurückgesetzt."									 
+						  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
+				  System.out.println(sLog);													
 		        }
 		        
 		        bReturn = true;
@@ -839,18 +1006,9 @@ public class JgitUtilGIT implements IConstantZZZ{
 		}//end main
 		return bReturn;
 	}
-	
-	/** Für den GIT Weg:
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
 		
-		s. ChatGPT 20260323, 20260508ff
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	/** 
 	 * @param git
 	 * @throws GitAPIException
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
@@ -860,20 +1018,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return pullResolveCheckoutConflictsGIT(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 	}
 	
-	/** Für den GIT Weg:
-	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 *         Hier ist ein fetch nicht notwendig.
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
-		
-		
-		s. ChatGPT 20260323, 20260508ff
+	/** 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -882,7 +1027,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 */
 	public static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bUseFetchMerge) throws ExceptionZZZ {
 		if(bUseFetchMerge) {
-			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_Direct_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 		}else {
 			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, null, objEnumStrategyMergeConflict, true);
 		}
@@ -892,20 +1037,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		return pullResolveCheckoutConflictsGIT(git, credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
 	}
 	
-	/** Für den GIT Weg:
-	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 *         Hier ist ein fetch nicht notwendig.
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
-		
-		
-		s. ChatGPT 20260323, 20260508ff
+	/**
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -918,28 +1050,12 @@ public class JgitUtilGIT implements IConstantZZZ{
 			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_FetchMerge_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);
 		}else {
 			//das ist dann irgendwie ein doppelter Merge
-			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_PullDirect_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);			
+			return JgitUtilGIT.pullResolveCheckoutConflictsGIT_by_Direct_(git,credentialsProvider, sUrlRepoRemoteIn, sBranchIn, objEnumstrategy, true);			
 		}				
 	}
 	
 	
-	/** Für den GIT Weg:
-	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 *         Hier ist ein fetch nicht notwendig.
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
-		
-	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
-	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullIgnoreCheckoutConflictsGIT_by_FetchMerge_ verwenden.
-		
-		s. ChatGPT 20260323, 20260508ff
+	/** 
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -949,67 +1065,21 @@ public class JgitUtilGIT implements IConstantZZZ{
 	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT_by_FetchMerge_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{	    
-			try {				
-	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
-	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.								
-				//
-				//ABER ohne einen commit gibt es im Bedarfsfall keinen Conflict, etc. 
-				
-				
-				/*s. Merke: ChatGPT vom 2026-622:
-				Ein Konflikt entsteht nur, wenn dieselben Zeilen bzw. überlappende Bereiche geändert wurden.
-
-				Dein Szenario sieht dann vermutlich so aus:
-				
-				Rechner 1:
-				Datei A wird geändert.
-				Änderung wird committet und ins Remote-Repository gepusht.
-				Rechner 2:
-				Dieselbe Datei A wurde lokal geändert, aber noch nicht committet.
-				Die Änderung betrifft jedoch andere Zeilen.
-				git pull auf Rechner 2:
-				Der lokale Branch hat keine eigenen Commits → Fast-Forward ist möglich.
-				JGit aktualisiert den Branch-Zeiger.
-				Anschließend versucht Git, die Änderungen des Fast-Forward-Commits mit den lokalen Änderungen im Arbeitsverzeichnis zusammenzuführen.
-				
-				Da sich die Änderungen nicht überschneiden, kann Git beide Änderungen automatisch kombinieren.
-				
-				Deshalb erhältst du:
-				
-				keinen MergeResult
-				keine CheckoutConflictException
-				keinen Konfliktmarker (<<<<<<<)
-				weiterhin einen FAST_FORWARD-Status
-				
-				Das ist normales Git-Verhalten.
-				
-				Wichtig zu verstehen:
-				
-				Fast-Forward bezieht sich nur auf die Commit-Historie.
-				Konflikte beziehen sich auf den Dateiinhalt.
-				
-				Beides sind unabhängige Aspekte.
-				
-				Obwohl ein Fast-Forward stattfindet, prüft Git anschließend trotzdem, ob die lokalen, nicht committeten Änderungen erhalten bleiben können.
-				
-				Wenn du möchtest, dass bei jeglicher lokaler Änderung deine Strategie OURS gewinnt, reicht die Merge-Strategie nicht aus. Sie greift nur bei Konflikten zwischen Commits.
-				
-				Dann musst du vor dem Pull selbst entscheiden, wie mit lokalen Änderungen umgegangen werden soll, zum Beispiel:
-				
-				lokale Änderungen verwerfen (reset --hard)
-				lokale Änderungen stashen und später wieder anwenden
-				lokale Änderungen automatisch committen
-				den Pull abbrechen, sobald status.getUncommittedChanges() nicht leer ist
-				
-				Eine automatische "immer OURS"-Behandlung für uncommittete Änderungen im Arbeitsverzeichnis gibt es in Git und JGit nicht.
-				 */	        	
+			try {	
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
 				
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
 	        									
 	        	String sBranch = "master";
 	        	if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
 		       
+	        	 if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+			            throw new IllegalArgumentException("remoteUrl must not be empty");
+			     }
+			        
+	        	 
 	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("PULL: Startet");
 				try {					
@@ -1031,11 +1101,11 @@ public class JgitUtilGIT implements IConstantZZZ{
 					objMergeResult = pullGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
 					if(objMergeResult==null) { System.out.println("PULL: MergeResult: Null."); break main; }
 
+					//Mit dem ersten Merge - Ergebnis weiterarbeiten. 
+					//Das ist der Vorteil gegenüber einem "direkten" PULL
+					//Merke: Bei HTTPS gibt es nur FetchMerge, keinen direkten PULL
 					objReturn.setOriginalResult(objMergeResult);
-				
-					//############################################
-		        	//Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-					
+									
 					//TODO: Die Stage ausserhalb der Schleife holen
 					//resolveConflicts als Methode mit Stage anbieten:
 					//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
@@ -1074,9 +1144,9 @@ public class JgitUtilGIT implements IConstantZZZ{
 						if(bAnyResolved) {
 						    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
 						    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
-							objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
+							MergeResult objMergeResult02 = JgitUtilZZZ.mergeWithResult(git, sBranch);
 						    
-						    status = objMergeResult.getMergeStatus();
+						    status = objMergeResult02.getMergeStatus();
 							System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 					    }else {
 					    	bGoon=false;
@@ -1087,9 +1157,9 @@ public class JgitUtilGIT implements IConstantZZZ{
 						System.out.println("\nPULL: Ergebnis der Konfliktbehandlung:");
 						if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 							//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-						    System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
+						    System.out.println("PULL: " + objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
 						}else {
-							System.out.println(objEnumStrategy.getDescriptionShort());
+							System.out.println("PULL: " + objEnumStrategy.getDescriptionShort());
 						}
 						
 						objReturn.isConflictsResolved(true);
@@ -1119,7 +1189,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 		    			throw ez;
 		            }
 	
-		          //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+		            //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
 					System.out.println("Pull PreMerge Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
 					CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 					
@@ -1128,14 +1198,13 @@ public class JgitUtilGIT implements IConstantZZZ{
 		            for (String path : conflictingPaths) {
 		                git.checkout()
 		                	.setStage(objStage)
-		                   .addPath(path)
-		                   .call();
+		                	.addPath(path)
+		                	.call();
 		                System.out.println("* " + path);			        	
 		            }
 		
 		            //Pull erneut versuchen
-		            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
-		            //git.pull().call();
+		            System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
 		            objReturn = pullResolveCheckoutConflictsGIT_by_FetchMerge_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 		        }
 			}catch(InvalidRemoteException ire) {
@@ -1154,23 +1223,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	
 	
 	
-	/** Für den GIT Weg:
-	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
-	 *         Hier ist ein fetch nicht notwendig.
-	 * 
-	 *  Eine robuste Utility-Methode, die:
-	
-		pull() ausführt
-		CheckoutConflictException gezielt abfängt und danach den Pull automatisch erneut versucht
-		oder
-		den Merge-Status analysiert... FAILED ... CONFLICTING bearbeitet		
-		nur die konfliktbehafteten Dateien zurücksetzt: OURS bleibt erhalten
-		
-	 * ABER2: Beim Auflösen eines Konflikts müsste man erneut einen MERGE machen. 
-	 *        Da intern der PULL eh die Verwendung von FETCH und MERGE ist, wäre das ein unnoetiger doppelter MERGE Schritt.
-	 *        Darum eher pullIgnoreCheckoutConflictsGIT_by_FetchMerge_ verwenden.
-		
-		s. ChatGPT 20260323, 20260508ff	 
+	/**
 	 * @param git
 	 * @param credentialsProvider
 	 * @param sUrlRepoRemoteIn
@@ -1180,69 +1233,22 @@ public class JgitUtilGIT implements IConstantZZZ{
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT_by_PullDirect_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
+	private static IMergeResultResolvedZZZ pullResolveCheckoutConflictsGIT_by_Direct_(Git git, CredentialsProvider credentialsProvider, String sUrlRepoRemoteIn, String sBranchIn, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategy, boolean bIgnoreRepositoryState) throws ExceptionZZZ {
 		IMergeResultResolvedZZZ objReturn = new MergeResultResolvedZZZ();
 		main:{
 	        try {
 	        	if (git == null) {
 		            throw new IllegalArgumentException("git must not be null");
 		        }	        
-	        	//bCheckRepositoryState        : BEIM IGNORIEREN WIRD DIESE VORBEDINGUNG NICHT WICHTIG, 
-	        	//                               - Sonst ist immer ein COMMIT notwendig. Ohne diesen bekommen wir beim PULL eine "CheckoutException".
-	        	//                                 Diese können wir wir wg. "Konflikt Ignorieren" aber gezielt behandeln.
-	        	
-	        	/*s. Merke: ChatGPT vom 2026-622:
-				Ein Konflikt entsteht nur, wenn dieselben Zeilen bzw. überlappende Bereiche geändert wurden.
-
-				Dein Szenario sieht dann vermutlich so aus:
-				
-				Rechner 1:
-				Datei A wird geändert.
-				Änderung wird committet und ins Remote-Repository gepusht.
-				Rechner 2:
-				Dieselbe Datei A wurde lokal geändert, aber noch nicht committet.
-				Die Änderung betrifft jedoch andere Zeilen.
-				git pull auf Rechner 2:
-				Der lokale Branch hat keine eigenen Commits → Fast-Forward ist möglich.
-				JGit aktualisiert den Branch-Zeiger.
-				Anschließend versucht Git, die Änderungen des Fast-Forward-Commits mit den lokalen Änderungen im Arbeitsverzeichnis zusammenzuführen.
-				
-				Da sich die Änderungen nicht überschneiden, kann Git beide Änderungen automatisch kombinieren.
-				
-				Deshalb erhältst du:
-				
-				keinen MergeResult
-				keine CheckoutConflictException
-				keinen Konfliktmarker (<<<<<<<)
-				weiterhin einen FAST_FORWARD-Status
-				
-				Das ist normales Git-Verhalten.
-				
-				Wichtig zu verstehen:
-				
-				Fast-Forward bezieht sich nur auf die Commit-Historie.
-				Konflikte beziehen sich auf den Dateiinhalt.
-				
-				Beides sind unabhängige Aspekte.
-				
-				Obwohl ein Fast-Forward stattfindet, prüft Git anschließend trotzdem, ob die lokalen, nicht committeten Änderungen erhalten bleiben können.
-				
-				Wenn du möchtest, dass bei jeglicher lokaler Änderung deine Strategie OURS gewinnt, reicht die Merge-Strategie nicht aus. Sie greift nur bei Konflikten zwischen Commits.
-				
-				Dann musst du vor dem Pull selbst entscheiden, wie mit lokalen Änderungen umgegangen werden soll, zum Beispiel:
-				
-				lokale Änderungen verwerfen (reset --hard)
-				lokale Änderungen stashen und später wieder anwenden
-				lokale Änderungen automatisch committen
-				den Pull abbrechen, sobald status.getUncommittedChanges() nicht leer ist
-				
-				Eine automatische "immer OURS"-Behandlung für uncommittete Änderungen im Arbeitsverzeichnis gibt es in Git und JGit nicht.
-				 */	       
 	        	
 	        	boolean bCheckRepositoryState = !bIgnoreRepositoryState;
         	
 	        	 String sBranch = "master";
 			     if(!StringZZZ.isEmpty(sBranchIn)) sBranch = sBranchIn;
+			     
+			     if (sUrlRepoRemoteIn == null || sUrlRepoRemoteIn.trim().isEmpty()) {
+			            throw new IllegalArgumentException("remoteUrl must not be empty");
+			     }
 			     
 			     //+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("PULL: Startet");
@@ -1262,9 +1268,12 @@ public class JgitUtilGIT implements IConstantZZZ{
 					}
 										
 					//Mache hier den Pull direkt durch PullCommand
-					objMergeResult = pullGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
+					objMergeResult = pullGIT_by_Direct_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, bCheckRepositoryState);
 					if(objMergeResult==null) { System.out.println("PULL: MergeResult: Null."); break main; }
 
+					//Mit dem ersten Merge - Ergebnis weiterarbeiten. 
+					//Das ist der Vorteil gegenüber einem "direkten" PULL
+					//Merke: Bei HTTPS gibt es nur FetchMerge, keinen direkten PULL					
 					objReturn.setOriginalResult(objMergeResult);
 		      
 					//TODO: Die Stage ausserhalb der Schleife holen
@@ -1305,9 +1314,9 @@ public class JgitUtilGIT implements IConstantZZZ{
 					if(bAnyResolved) {
 					    //Der Rückgabewert ist aber immer noch mit dem Status "Konflikte" oder "Fail" behaftet.
 					    //Also noch ein weiteres Mal versuchen einen sauberen Result zu bekommen
-					    objMergeResult = JgitUtilZZZ.mergeWithResult(git, sBranch);
+						MergeResult objMergeResult02 = JgitUtilZZZ.mergeWithResult(git, sBranch);
 					    
-					    status = objMergeResult.getMergeStatus();
+					    status = objMergeResult02.getMergeStatus();
 						System.out.println("PULL: Merge-Status ("+iCount+"): " + status.toString());
 				    }else {
 				    	bGoon=false;
@@ -1318,9 +1327,9 @@ public class JgitUtilGIT implements IConstantZZZ{
 					System.out.println("\nPULL: Ergebnis der Konfliktbehandlung:");
 					if(objEnumStrategy.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 						//Erinnerung ausgeben, das die lokalen Änderungen zwar "ueberlebt" haben, aber noch nicht im Remote sind.
-						System.out.println(objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
+						System.out.println("PULL: " + objEnumStrategy.getDescriptionShort() +". Die behaltenen lokalen Versionen müssen noch gepusht werden, damit sie im Remote ist.");
 					}else {
-						System.out.println(objEnumStrategy.getDescriptionShort());
+						System.out.println("PULL: " + objEnumStrategy.getDescriptionShort());
 					}
 				}
 				
@@ -1348,7 +1357,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	    			throw ez;
 	            }
 
-	          //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
+	            //Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
 				System.out.println("Pull PreMerge Konflikte: Meine Strategy '" + objEnumStrategy.getName() + "' in STAGE umsetzen.");
 				CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
 				
@@ -1357,15 +1366,14 @@ public class JgitUtilGIT implements IConstantZZZ{
 	            for (String path : conflictingPaths) {
 	                git.checkout()
 	                	.setStage(objStage)
-	                   .addPath(path)
-	                   .call();
+	                	.addPath(path)
+	                	.call();
 	                System.out.println("* " + path);			        	
 	            }
 	
 	            //Pull erneut versuchen
-	            //System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
-	            //git.pull().call();
-	            objReturn = pullResolveCheckoutConflictsGIT_by_PullDirect_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
+	            System.out.println("Pull PreMerge Konflikte: Pull erneut versuchen.");
+	            objReturn = pullResolveCheckoutConflictsGIT_by_Direct_(git, credentialsProvider, sUrlRepoRemoteIn, sBranch, objEnumStrategy, false);
 	        }
 		}catch(InvalidRemoteException ire) {
 			ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -1381,13 +1389,5 @@ public class JgitUtilGIT implements IConstantZZZ{
     return objReturn;
 	}
 
-	/** Z.B.  von Z.B. von git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-	 * @param sRepositoryRemoteUrlGIT
-	 * @return
-	 * @throws ExceptionZZZ
-	 */
-	public static String computeRepositoryUrlPartFromUrlGIT(String sUrlGIT) throws ExceptionZZZ {
-		return JgitUtilGIT.getUrlPartFromUrl(sUrlGIT);
-	}
-
+	
 }
