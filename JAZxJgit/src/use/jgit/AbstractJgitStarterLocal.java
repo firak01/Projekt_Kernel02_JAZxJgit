@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
@@ -697,22 +698,37 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	//##################################################
 	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
-		
-		Status status = git.status().call();
-
-        Set<String> added = status.getAdded();
-        for (String add : added) {
-            System.out.println("Added: " + add);
-        }
-        Set<String> uncommittedChanges = status.getUncommittedChanges();
-        for (String uncommitted : uncommittedChanges) {
-            System.out.println("Uncommitted: " + uncommitted);
-        }
-
-        Set<String> untracked = status.getUntracked();
-        for (String untrack : untracked) {
-            System.out.println("Untracked: " + untrack);
-        }
+		main:{
+			if (git == null) {
+	            throw new IllegalArgumentException("git must not be null");
+	        }
+			
+			StatusCommand statusCommand = git.status();
+			if(statusCommand==null) {
+				System.out.println("Kein StatusCommand erzeugt.");
+				break main;
+			}
+			
+			Status status = statusCommand.call();
+			if(status==null) {
+				System.out.println("Kein Status vorhanden.");
+				break main;
+			}
+			
+	        Set<String> added = status.getAdded();
+	        for (String add : added) {
+	            System.out.println("Added: " + add);
+	        }
+	        Set<String> uncommittedChanges = status.getUncommittedChanges();
+	        for (String uncommitted : uncommittedChanges) {
+	            System.out.println("Uncommitted: " + uncommitted);
+	        }
+	
+	        Set<String> untracked = status.getUntracked();
+	        for (String untrack : untracked) {
+	            System.out.println("Untracked: " + untrack);
+	        }
+		}//end main:
 	}
 	
 	

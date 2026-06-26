@@ -71,7 +71,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	//##################################################
 	//###### CONFLICT ######################################
 	@Override
-	public boolean conflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			//try {
@@ -100,7 +100,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				String sComment = objConfig.readComment();
 				this.setCommentCommit(sComment);
 				
-				boolean bSuccessConflict = this.conflictit(sFilePath, sComment);
+				boolean bSuccessConflict = this.resolveit(sFilePath, sComment);
 				if(bSuccessConflict) {
 					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePath + "')");					
 					bReturn = true;
@@ -114,12 +114,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 	
 	@Override
-	public boolean conflictit(String sFilePathTotal) throws ExceptionZZZ {
-		return this.conflictit(sFilePathTotal, null);
+	public boolean resolveit(String sFilePathTotal) throws ExceptionZZZ {
+		return this.resolveit(sFilePathTotal, null);
 	}
 	
 	@Override
-	public boolean conflictit(String sFilePathTotalIn, String sComment) throws ExceptionZZZ {
+	public boolean resolveit(String sFilePathTotalIn, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
@@ -207,7 +207,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	//Normalerweise reicht ein einfacher commit nicht. Anschliessend muss aber ein Commit gemacht werden... 
 	//Damit Eclipse das Aufloesen des Konflikts auch merkt.
 	@Override
-	public boolean conflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+	public boolean resolveConflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			//try {
@@ -217,7 +217,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}
 				
 				//+++++++++++++++++++++++++++++++
-				//Konfiguriere JGit für HTTPS
+				//Konfiguriere JGit lokal							
 				boolean bSuccess = this.configureGit(objConfig);
 				if(bSuccess) {
 					System.out.println("Git erfolgreich konfiguriert");
@@ -231,26 +231,6 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-//				
-//				String sRepositoryLocalBase = objConfig.readRepositoryLocal();//darf theoretisch leer sein
-//				this.setRepositoryLocalBase(sRepositoryLocalBase);
-//				String sRepositoryProject = objConfig.readRepositoryProjectName(); //darf theoretisch leer sein
-//				this.setRepositoryProject(sRepositoryProject);
-//				
-//				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
-//				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
-//				String sComment = objConfig.readComment();
-//				this.setCommentCommit(sComment);
-				
-				
-				//Konfiguriere JGit						
-//				boolean bSuccess = this.configureGit(objConfig);
-//				if(bSuccess) {
-//					System.out.println("Git erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Git NICHT erfolgreich konfiguriert");
-//					break main;
-//				}
 				
 				//Finde geaenderte und neue Dateien fuer den commit
 //				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
@@ -260,7 +240,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				this.setCommentCommit(sComment);
 				
 				Git git = this.getGitObject();				
-				boolean bSuccessConflict = this.conflictCommitit(git, sFilePathTotal, sComment);
+				boolean bSuccessConflict = this.resolveCommitit(git, sFilePathTotal, sComment);
 				if(bSuccessConflict) {
 					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePathTotal + "')");					
 					bReturn = true;
@@ -274,12 +254,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 	
 	@Override
-	public boolean conflictCommitit(Git git, String sFilePath) throws ExceptionZZZ {
-		return this.conflictCommitit(git, sFilePath, null);
+	public boolean resolveCommitit(Git git, String sFilePath) throws ExceptionZZZ {
+		return this.resolveCommitit(git, sFilePath, null);
 	}
 	
 	@Override
-	public boolean conflictCommitit(Git git, String sFilePathTotal, String sComment) throws ExceptionZZZ {
+	public boolean resolveCommitit(Git git, String sFilePathTotal, String sComment) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 		try {

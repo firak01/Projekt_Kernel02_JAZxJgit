@@ -194,13 +194,13 @@ public class JgitResolverMain implements IConstantZZZ{
 			sAction = objConfig.readActionStatus();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
-			sAction = objConfig.readActionConflict();
+			sAction = objConfig.readActionResolveConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			sAction = objConfig.readActionCommit();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
-			sAction = objConfig.readActionConflictCommit();
+			sAction = objConfig.readActionResolveConflictCommit();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			
@@ -284,14 +284,14 @@ public class JgitResolverMain implements IConstantZZZ{
 				case "status":
 					bReturn = objResolver.statusit(objConfig);
 					break;
-				case "conflict":
-					bReturn = objResolver.conflictit(objConfig);					
+				case "resolveConflict":
+					bReturn = objResolver.resolveConflictit(objConfig);					
 					break;
 				case "commit":
 					bReturn = objResolver.commitit(objConfig);					
 					break;
-				case "conflictCommit":
-					bReturn = objResolver.conflictCommitit(objConfig);
+				case "resolveConflictCommit":
+					bReturn = objResolver.resolveConflictCommitit(objConfig);
 					break;										
 				default:
 					ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
