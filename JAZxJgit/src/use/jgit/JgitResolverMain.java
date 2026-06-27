@@ -194,6 +194,9 @@ public class JgitResolverMain implements IConstantZZZ{
 			sAction = objConfig.readActionStatus();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionSearchConflictFiles();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionResolveConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
@@ -202,6 +205,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 			sAction = objConfig.readActionResolveConflictCommit();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			
 			
 			if(listasAction.isEmpty()) {
@@ -280,19 +284,22 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 			boolean bReturn = false;
 			for(String sActionTemp : listasAction) {				
-				switch(sActionTemp) {
-				case "status":
-					bReturn = objResolver.statusit(objConfig);
+				switch(sActionTemp) {				
+				case "commit":
+					bReturn = objResolver.commitit(objConfig);					
 					break;
 				case "resolveConflict":
 					bReturn = objResolver.resolveConflictit(objConfig);					
 					break;
-				case "commit":
-					bReturn = objResolver.commitit(objConfig);					
-					break;
 				case "resolveConflictCommit":
 					bReturn = objResolver.resolveConflictCommitit(objConfig);
-					break;										
+					break;
+				case "searchConflictFiles":
+					bReturn = objResolver.searchConflictFilesit(objConfig);
+					break;
+				case "status":
+					bReturn = objResolver.statusit(objConfig);
+					break;				
 				default:
 					ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;

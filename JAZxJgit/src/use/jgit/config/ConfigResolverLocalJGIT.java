@@ -76,7 +76,7 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 		//Berücksichtige dabei die Paramter aus den "Pattern" Strings
 		//final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|conflict|commit|conflictCommit|rl:project:filepath:comment.";	
 		IKernelConfigHeaderLineZZZ objHeaderLine=null;
-		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente für: " + this.getProjectName());
+		objHeaderLine= new KernelConfigHeaderLineZZZ(1, "Argumente für: " + this.getProjectName());
 		
 		IKernelConfigHelpLineZZZ objHelp=null;
 		objHelp = new KernelConfigHelpLineZZZ();
@@ -84,22 +84,28 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 		listaReturn.add(objHelp);
 		
 		//Diese werden auch im Starter genutzt
-		objHeaderLine= new KernelConfigHeaderLineZZZ("Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);				
-		objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");
+		objHeaderLine= new KernelConfigHeaderLineZZZ("Allgemeine Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);						
+		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
 		objHelp.setHeaderLine(objHeaderLine);
 		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("conflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
-		listaReturn.add(objHelp);	
-		objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");
-		listaReturn.add(objHelp);	
-		objHelp = new KernelConfigHelpLineZZZ("conflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
-		listaReturn.add(objHelp);	
-		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
+		objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");		
 		listaReturn.add(objHelp);
 		objHelp = new KernelConfigHelpLineZZZ("rl:","Dateipfad","Pfad zum lokalen Repository");
 		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");
+		
+		objHeaderLine= new KernelConfigHeaderLineZZZ(1,"Aktionen aus: " + IConfigResolverJGIT.sPROJECT_NAME);
+		objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");		
+		objHelp.setHeaderLine(objHeaderLine);
 		listaReturn.add(objHelp);
+		objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
+		listaReturn.add(objHelp);			
+		objHelp = new KernelConfigHelpLineZZZ("resolveConflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("searcConflictFiles","Suche nach Konfliktdateien","Suche nach Dateien, die Konfliktmarkierungen enthalten");
+		listaReturn.add(objHelp);	
+		objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
+		listaReturn.add(objHelp);
+		
 		
 		//Nur fuer den ConflictResolver
 		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
@@ -145,6 +151,19 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("resolveConflictCommit");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionSearchConflictFiles() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("searchConflictFiles");			
 		}//end main:		
 		return sReturn;
 	}	

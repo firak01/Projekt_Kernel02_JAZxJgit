@@ -1,5 +1,8 @@
 package use.jgit.resolve;
 
+import java.io.File;
+import java.util.List;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
@@ -19,6 +22,12 @@ public interface IJgitResolver {
 	public boolean resolveConflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
 	public boolean resolveCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
 	public boolean resolveCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	
+	
+	//Suche in dem Repository nach Dateien, die Konflikmarker haben
+	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public List<File>getFiles() throws ExceptionZZZ;
+	public void setFiles(List<File>listFile) throws ExceptionZZZ;
 	
 	//IDEE 20260506;
 	//Wurde die Strategie "OURS" umgesetzt, dann wurde der Konflikt zwar aufgelöst, 

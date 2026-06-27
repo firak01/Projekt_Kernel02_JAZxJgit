@@ -1,6 +1,8 @@
 package use.jgit.resolve;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -30,14 +32,29 @@ import use.jgit.util.JgitUtilZZZ;
 
 //Also nutze daraus alles was für den Commit wichtig ist.
 public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements IJgitResolver, IJgitResolverEnabled{
-	private static final long serialVersionUID = 521157607363069534L;
+	private static final long serialVersionUID = 521157607363069534L;	
+	private List<File> listFile=null; //Liste von Dateien, hier die Dateien mit Konfliktmarker
 	
 	//### Konstruktor
 	public JgitResolverLocal() {	
 		super();			
 	}
 	
+	//#########################################################################
 	//### aus IJgitResolver
+	@Override
+	public List<File> getFiles() throws ExceptionZZZ{
+		if(this.listFile == null) {
+			this.listFile = new ArrayList<File>();
+		}
+		return listFile;
+	}
+	
+	@Override
+	public void setFiles(List<File>listFile) throws ExceptionZZZ{
+		this.listFile = listFile;
+	}
+	
 	@Override 
 	public String getCommentCommitDefault() throws ExceptionZZZ{
 		String sReturn="";
@@ -69,7 +86,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 	
 	//##################################################
-	//###### CONFLICT ######################################
+	//###### RESOLVECONFLICT ######################################
 	@Override
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -360,6 +377,54 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		return bReturn;
 	}
 
+	
+	//##############################################################################
+	@Override
+	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.configureGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+						
+			//+++++++++++++++++++++++++++++++
+			//Finde Dateien mit Konfliktmarker
+			Git git = this.getGitObject();
+			boolean bSuccessSearch = this.searchConflictFilesit(git);
+			if(bSuccessSearch) {
+				List<File>listaFile=this.getFiles();
+				System.out.println("Dateien mit Konfliktmarker:");
+				if(listaFile==null || listaFile.size()==0) {					
+					System.out.println("* Keine Dateien gefunden");
+				}else {
+					System.out.println("Dateien mit Konfliktmarker:");
+					for(File objFile : listaFile) {
+						System.out.println("* " + objFile.getAbsolutePath());
+					}
+				}
+				bReturn = true;
+			}else {
+				System.out.println("Suche nach Dateien mit Konfliktmarker: FAILED");
+				this.printStatus(git);	
+				bReturn = false;
+			}
+		
+		    git.close();		
+	}//end main:
+	return bReturn;
+	}
+	
 	//##############################################################################
 	//### aus IJgitStarterCommit
 	@Override
