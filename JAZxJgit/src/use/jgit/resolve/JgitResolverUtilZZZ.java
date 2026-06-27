@@ -261,6 +261,7 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 	}
 	
 	private static boolean containsConflictMarkersByRegEx(File file) throws ExceptionZZZ {
+		boolean bReturn = false;
 		main:{
 			try {
 				//Das kann nur bei reinen Textdateien klappen.
@@ -287,12 +288,13 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 			        Files.readAllBytes(file.toPath()),
 			        StandardCharsets.UTF_8);
 		
-			    return pattern.matcher(content).find();
+			    bReturn = pattern.matcher(content).find();
 			}catch(IOException ioe) {
 				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
 			}
 		}//end main:
+		return bReturn;
 	}
 	
 	private static boolean containsConflictMarkersByLinesParsed(File file) throws ExceptionZZZ{
