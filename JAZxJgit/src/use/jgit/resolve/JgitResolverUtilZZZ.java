@@ -1,7 +1,14 @@
 package use.jgit.resolve;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
@@ -19,6 +26,7 @@ import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.util.JgitUtilZZZ;
@@ -27,7 +35,11 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 	public static boolean resolveConflicts(Git git, MergeResult objMergeResult, STRATEGYMERGECONFLICT objEnumStrategy) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {				
+			try {	
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				if(objMergeResult==null) {
 					ExceptionZZZ ez = new ExceptionZZZ("MergeResult-Object", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -94,6 +106,10 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 		boolean bReturn = false;
 		main:{
 			try {
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				if(objMergeResult==null) {
 					ExceptionZZZ ez = new ExceptionZZZ("MergeResult-Object", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -149,58 +165,15 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 		boolean bReturn = false;
 		main:{
 			try {
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				if(objMergeResult==null) {
 					ExceptionZZZ ez = new ExceptionZZZ("MergeResult-Object", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				
-				
-//				boolean bAnyFailingResolved = JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
-//			    if(bAnyFailingResolved) {     
-//			    	
-//			    			//Merge result Objekt (ist nur ein Snapshot) neu holen 
-//	                		System.out.println("Starte Merge2:");
-//	                		MergeResult objReturn = JgitUtilZZZ.mergeWithResultByBranchShortName(git, sBranch, true); //true, wir hatten noch kein DEBUG
-//	                		
-//							MergeStatus status2 = objReturn.getMergeStatus();
-//							System.out.println("Merge-Status2:" + status2.toString());
-//							
-//							//Wenn aber keine Exception geworfen wird, den Status direkt abfragen									
-//			                //Aber nun gibt es den Merge-Status.CONFLICTING
-//			                if(status2.equals(MergeStatus.CONFLICTING)) {
-//							    System.out.println("Konflikte2 erkannt.");
-//
-//							    Map<String, int[][]> conflicts = objReturn.getConflicts();
-//
-//							    if(conflicts != null) {
-//							    	
-//							    	//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
-//									CheckoutCommand.Stage objStage = EnumSetMappedStrategyMergeConflictUtilZZZ.getJgitStageAccordingStrategy(objEnumStrategy);
-//									
-//							    	
-//							        for(String path2 : conflicts.keySet()) {
-//
-//							        	System.out.println(objEnumStrategy.getDescriptionShort() + "2: " + path2);
-//
-//							            // Lokale Version wiederherstellen (= OURS)
-//							            //Besonderheit, nun ist man wirklich im UNMERGED Staus und bekommt folgenden Fehler
-//							            //org.eclipse.jgit.api.errors.JGitInternalException: Unmerged path: JAZDummy/Arbeit_mit_Git/test.txt
-//							            //
-//							            //Darum ist ein normaler Checkout nicht erlaubt.
-//							            //Es braucht noch die explizite Angabe OURS oder THEIRS
-//							            
-//							            
-//							            git.checkout()
-//							               .setStage(objStage)//z.B. CheckoutCommand.Stage.OURS
-//							               .addPath(path2)
-//							               .call();
-//							        }
-//							    }
-//			    
-//			                }
-//			
-//			    }
-	    
+					    
 				//... kann man hier das gleiche machen wie bei Konflikten? Nein ... es gibt keine Liste von Conflicts.
 				
 				//Unabhängig vom Status... hole die Jgit-Konfliktstrategie, abhängig von der ZKernel-Konfliktstartegie (, die durch FLAGZLOCAL definiert worden ist)
@@ -217,8 +190,8 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 			            // Lokale Version wiederherstellen (z.B. OURS)
 			            git.checkout()
 			            	.setStage(objStage) //z.B. OURS
-			               .addPath(path)
-			               .call();
+			            	.addPath(path)
+			            	.call();
 			        }
 			    }
 
@@ -242,5 +215,115 @@ public class JgitResolverUtilZZZ implements IConstantZZZ{
 		}
 		}//end main:
 	    return bReturn;
+	}
+	
+	
+	//#############################
+	public static List<File> findFilesWithConflictMarkers(File objFileDirectory) throws ExceptionZZZ {
+	    List<File> result = new ArrayList<File>();
+	    main:{
+	    		boolean bFileExists = FileEasyZZZ.exists(objFileDirectory);
+	    		if(!bFileExists) {
+	    			ExceptionZZZ ez = new ExceptionZZZ("Directory does not exist: '" + objFileDirectory.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+	    		}
+	    		
+	    		boolean bFileIsDirectory = FileEasyZZZ.isDirectory(objFileDirectory);
+	    		if(!bFileIsDirectory) {
+	    			ExceptionZZZ ez = new ExceptionZZZ("File is no directory: '" + objFileDirectory.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+	    		}
+	    		
+	    		//++++++++++++++++++++++++++++++++++++++++++++++++++++
+			    File[] files = objFileDirectory.listFiles();
+		
+			    if (files == null) {
+			        return result;
+			    }
+		
+			    for (File file : files) {
+		
+			        if (".git".equals(file.getName())) {
+			            continue;
+			        }
+		
+			        if (file.isDirectory()) {
+			            result.addAll(findFilesWithConflictMarkers(file));
+			        } else {
+			            //if (containsConflictMarkersByRegEx(file)) {
+			        	if (containsConflictMarkersByLinesParsed(file)) {
+			                result.add(file);
+			            }
+			        }
+			    }
+	    }//end main:
+	    return result;
+	}
+	
+	private static boolean containsConflictMarkersByRegEx(File file) throws ExceptionZZZ {
+		main:{
+			try {
+				//Das kann nur bei reinen Textdateien klappen.
+				//Aber nicht nur nach der Endung gehen
+				boolean bFileText = FileEasyZZZ.isFileText(file);
+				if(!bFileText) break main;
+				
+				//#######################################################
+	//	    Pattern pattern = Pattern.compile(
+	//	        "^(<<<<<<<|=======|>>>>>>>)",
+	//	        Pattern.MULTILINE);
+	
+			//bei nur einer Zeile dazwischen ...
+	//	    Pattern pattern = Pattern.compile(
+	//	    "^<<<<<<< .*\\R.*\\R^=======\\R.*\\R^>>>>>>> .*",
+	//	    Pattern.MULTILINE);
+		    
+		    //da mehrere Zeilen dazwischen stehen können
+		    Pattern pattern = Pattern.compile(
+		    	    "^<<<<<<< .*\\R([\\s\\S]*?)^=======\\R([\\s\\S]*?)^>>>>>>> .*$",
+		    	    Pattern.MULTILINE);
+		    
+			    String content = new String(
+			        Files.readAllBytes(file.toPath()),
+			        StandardCharsets.UTF_8);
+		
+			    return pattern.matcher(content).find();
+			}catch(IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			}
+		}//end main:
+	}
+	
+	private static boolean containsConflictMarkersByLinesParsed(File file) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			//Das kann nur bei reinen Textdateien klappen.
+			//Aber nicht nur nach der Endung gehen
+			boolean bFileText = FileEasyZZZ.isFileText(file);
+			if(!bFileText) break main;
+			
+			//#######################################################
+			boolean start = false;
+			boolean middle = false;
+			boolean end = false;
+			
+			try {				
+				Path path = file.toPath();
+				for(String line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
+				    if(line.startsWith("<<<<<<< ")) start = true;
+				    if(line.equals("=======")) middle = true;
+				    if(line.startsWith(">>>>>>> ")) end = true;
+				    bReturn = start && middle && end;
+				    if(bReturn) break;
+				}
+			}catch(IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+	    	}
+			
+			
+		}//end main:
+		return bReturn;
 	}
 }

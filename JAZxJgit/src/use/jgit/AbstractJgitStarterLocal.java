@@ -356,6 +356,10 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		boolean bReturn = false;
 		main:{
 			try {
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				//Finde geaenderte und neue Dateien fuer den Commit			
 				System.out.println("STATUS: ");		
 				this.printStatus(git);
@@ -459,6 +463,10 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		boolean bReturn = false;
 		main:{
 			try {
+				if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+				
 				//Finde geaenderte und neue Dateien fuer den Commit			
 				System.out.println("STATUS BEFORE COMMIT");		
 				this.printStatus(git);

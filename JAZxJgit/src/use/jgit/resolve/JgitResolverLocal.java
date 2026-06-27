@@ -1,9 +1,11 @@
 package use.jgit.resolve;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -280,6 +282,10 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		boolean bReturn = false;
 		main:{
 		try {
+			if (git == null) {
+	            throw new IllegalArgumentException("git must not be null");
+	        }
+			
 			if(StringZZZ.isEmpty(sFilePathTotal)) {
 				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -383,46 +389,84 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			try {
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				//+++++++++++++++++++++++++++++++
+				//Konfiguriere JGit für HTTPS
+				boolean bSuccess = this.configureGit(objConfig);
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+							
+				//+++++++++++++++++++++++++++++++
+				//Finde Dateien mit Konfliktmarker
+				String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
+				Git git = this.getGitObject();
+				boolean bSuccessSearch = this.searchConflictFilesit(git, sProjectName);
+				if(bSuccessSearch) {
+					List<File>listaFile=this.getFiles();
+					System.out.println("Dateien mit Konfliktmarker:");
+					if(listaFile==null || listaFile.size()==0) {					
+						System.out.println("* Keine Dateien gefunden");
+					}else {
+						for(File objFile : listaFile) {
+							System.out.println("* " + objFile.getAbsolutePath());
+						}
+					}
+					bReturn = true;
+				}else {
+					System.out.println("Suche nach Dateien mit Konfliktmarker: FAILED");
+					this.printStatus(git);	
+					bReturn = false;
+				}
+			
+			    git.close();
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+	return bReturn;
+	}
+	
+	@Override
+	public boolean searchConflictFilesit(Git git, String sProjectName) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			if (git == null) {
+	            throw new IllegalArgumentException("git must not be null");
+	        }
+			
+			if(StringZZZ.isEmptyTrimmed(sProjectName)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			//+++++++++++++++++++++++++++++++
-			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit(objConfig);
-			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+			File objFileRepository = git.getRepository().getDirectory();
+			File objFileDirectory = objFileRepository.getParentFile();
+			
+			String sFileDirectoryName = FileEasyZZZ.getNameOnly(objFileDirectory);
+			
+			List<File> listFile = null; File objFileProject = null;
+			if(sProjectName.equals(sFileDirectoryName) | sProjectName.equals("*")) {
+				objFileProject = objFileDirectory;
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
-				break main;
+				String sFileDirectory = FileEasyZZZ.joinFilePathName(objFileDirectory, sProjectName);
+				objFileProject = new File(sFileDirectory);				
 			}
-						
-			//+++++++++++++++++++++++++++++++
-			//Finde Dateien mit Konfliktmarker
-			Git git = this.getGitObject();
-			boolean bSuccessSearch = this.searchConflictFilesit(git);
-			if(bSuccessSearch) {
-				List<File>listaFile=this.getFiles();
-				System.out.println("Dateien mit Konfliktmarker:");
-				if(listaFile==null || listaFile.size()==0) {					
-					System.out.println("* Keine Dateien gefunden");
-				}else {
-					System.out.println("Dateien mit Konfliktmarker:");
-					for(File objFile : listaFile) {
-						System.out.println("* " + objFile.getAbsolutePath());
-					}
-				}
-				bReturn = true;
-			}else {
-				System.out.println("Suche nach Dateien mit Konfliktmarker: FAILED");
-				this.printStatus(git);	
-				bReturn = false;
-			}
-		
-		    git.close();		
-	}//end main:
-	return bReturn;
+			listFile = JgitResolverUtilZZZ.findFilesWithConflictMarkers(objFileProject);
+	        this.setFiles(listFile);
+			
+	        bReturn = true;							
+		}//end main:
+		return bReturn;
 	}
 	
 	//##############################################################################

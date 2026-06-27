@@ -26,6 +26,8 @@ public interface IJgitResolver {
 	
 	//Suche in dem Repository nach Dateien, die Konflikmarker haben
 	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesit(Git git, String sProjectName) throws ExceptionZZZ;
+	
 	public List<File>getFiles() throws ExceptionZZZ;
 	public void setFiles(List<File>listFile) throws ExceptionZZZ;
 	
