@@ -209,6 +209,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
 				System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
 				
+				//++++++++++++++++++++++++++++++++++++++
 				//hilfsaktion
 				sAction = objConfig.readActionHelp();
 				if(!StringZZZ.isEmpty(sAction)) {					
@@ -225,13 +226,9 @@ public class JgitStarterMain implements IConstantZZZ{
 				}
 				
 				//+++++++++++++++++++++++++++++++++
-				//actions
-				sAction = objConfig.readActionStatus();
-				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-				
-				sAction = objConfig.readActionPull();
-				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-				
+				//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
+				//Darum ist commt z.B. vor pull oder push. 
+				//TODO: Die erstellte ArrayList sortieren nach einem Schema....
 				sAction = objConfig.readActionCommit();
 				if(!StringZZZ.isEmpty(sAction)) {
 					listasAction.add(sAction);
@@ -240,7 +237,12 @@ public class JgitStarterMain implements IConstantZZZ{
 					sComment = objConfig.readComment();
 				}
 				
+				
+				//++++++++++
 				sAction = objConfig.readActionFetch();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionPull();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
 				sAction = objConfig.readActionPush();
@@ -253,6 +255,10 @@ public class JgitStarterMain implements IConstantZZZ{
 					//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
 					sComment = objConfig.readComment();
 				}
+				
+				sAction = objConfig.readActionStatus();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
 				
 				if(listasAction.isEmpty()) {
 					ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
