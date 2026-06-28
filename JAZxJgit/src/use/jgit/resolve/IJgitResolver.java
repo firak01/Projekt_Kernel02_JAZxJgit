@@ -13,9 +13,8 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitResolver {
 	
-	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean resolveit(String sFilepathTotal, String sComment) throws ExceptionZZZ;	
-	public boolean resolveit(String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveConflictit(String sFilepathTotal) throws ExceptionZZZ;
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.

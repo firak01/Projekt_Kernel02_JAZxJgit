@@ -468,7 +468,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		        }
 				
 				//Finde geaenderte und neue Dateien fuer den Commit			
-				System.out.println("STATUS BEFORE COMMIT");		
+				System.out.println("\nSTATUS BEFORE COMMIT");		
 				this.printStatus(git);
 		        //##################################################################
 		        
@@ -514,21 +514,36 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			StatusCommand gitCommandStatus = git.status();
 			Status status = gitCommandStatus.call();
 	
+			//DEBUG
+	        System.out.println("Removed  : " + status.getRemoved());
+	        System.out.println("Missing  : " + status.getMissing());
+	        System.out.println("Changed  : " + status.getChanged());
+	        System.out.println("Modified : " + status.getModified());
+	        System.out.println("Untracked: " + status.getUntracked());
+	        System.out.println("Uncommitted: " + status.getUncommittedChanges());
+	        
+			
+			
 			Set<String> uncommittedChanges = status.getUncommittedChanges();
 			Set<String> untracked          = status.getUntracked();
 			ArrayList<String> listasUncommitedChanges = new ArrayList<String>();
 			
-			AddCommand gitCommandAdd = git.add();		
+				
 	        for (String uncommitted : uncommittedChanges) {
 	        	if(!untracked.contains(uncommitted)) {
 	        		listasUncommitedChanges.add(uncommitted);
 	        	}
 	        }
 	        
+	       
+	        
 	        // run the add-call 
 	        for(String uncommitted : listasUncommitedChanges) {
 	        	System.out.println("uncommitted to add: '" + uncommitted + "'");
 	        	try {
+	        		//JGit-Commands sind One-Shot-Objekte. Nach... ist es verbraucht. 
+	    			//Darum in der Schleife mehrmals erstellen. Das ist wichtig bei mehreren Dateien.
+	        		AddCommand gitCommandAdd = git.add();
 	        		gitCommandAdd.addFilepattern(uncommitted);
 	        		gitCommandAdd.call();
 	        	}catch(java.lang.IllegalStateException isex) {

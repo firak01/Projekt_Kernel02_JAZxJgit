@@ -192,19 +192,12 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 			//+++++++++++++++++++++++++++++++++
 			//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
-			//Darum ist commt z.B. vor pull oder push. 
-			//          searchConflictFiles vor den resolve Actions
+			//Darum ist searchConflictFiles vor den resolve Actions 
+			//          commit hinter den resolve Actions und (woanders) z.B. vor pull oder push.
 			//          status immer hinten.
 			//TODO: Die erstellte ArrayList sortieren nach einem Schema....
-			sAction = objConfig.readActionCommit();
-			if(!StringZZZ.isEmpty(sAction)) {
-				listasAction.add(sAction);
-				
-				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
-				sComment = objConfig.readComment();
-			}
 			
-			//nur lokales Repository berücksichtigen, also kein fetch...
+			//Hier: Nur lokales Repository berücksichtigen, also kein fetch...
 						
 			sAction = objConfig.readActionSearchConflictFiles();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
@@ -220,6 +213,14 @@ public class JgitResolverMain implements IConstantZZZ{
 				sComment = objConfig.readComment();
 			}
 			
+			sAction = objConfig.readActionCommit();
+			if(!StringZZZ.isEmpty(sAction)) {
+				listasAction.add(sAction);
+				
+				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+				sComment = objConfig.readComment();
+			}
+						
 			sAction = objConfig.readActionStatus();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 						
