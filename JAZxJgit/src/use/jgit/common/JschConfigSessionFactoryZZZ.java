@@ -1,4 +1,4 @@
-package use.jgit.protocol.ssh;
+package use.jgit.common;
 
 import java.io.File;
 import java.io.FilenameFilter;

@@ -2,6 +2,8 @@ package use.jgit.protocol.ssh;
 
 import org.eclipse.jgit.transport.SshSessionFactory;
 
+import use.jgit.common.JschConfigSessionFactoryZZZ;
+
 /**Erstellt von ChatGPT 2026-03-16
  * @author fl86kyvo
  *
