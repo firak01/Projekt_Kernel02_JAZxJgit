@@ -8,8 +8,4 @@ public interface IEnumSetMappedStrategyMergeConflictZZZ extends IEnumSetMappedZZ
 	//weitere Erweiterungen, speziell für STRATEGYMERGECONFLICT
 	public String getStrategyMessage();
 	String getDescriptionShort();
-	
-	//public int getStatusGroupId();
-
-	
 }

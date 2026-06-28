@@ -490,19 +490,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				break main;
 			}
 			
-			
-			
-//			//################################################
-//			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen						
-//			boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-//			if(bLocalRepositoryConfigured) {
-//				System.out.println("Lokales Repository erfolgreich konfiguriert");
-//			}else {
-//				System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-//				//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//			}
-				
-			
+
 			//#####################################################################################
 			//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
 			//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH)				
@@ -714,16 +702,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
 				
-//wird in configureGit schon gemacht						
-//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-//				if(bLocalRepositoryConfigured) {
-//					System.out.println("Lokales Repository erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//				}
-				
-				
+				//#####################################################################################
+				//Merke: Die Remote-Repository-Daten können nicht hier in der abstrakten Klasse gemacht werden,
+				//       sondern müssen in der zum Protokoll passenden Klasse gemacht werden (HTTPS / SSH / GIT)				
+				//######################################################################################
+								
 				//######################################################################################
 				String sRepositoryRemoteHostIn = objConfig.readRepositoryRemoteHost();
 				if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
@@ -736,8 +719,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 					ExceptionZZZ ez = new ExceptionZZZ("Kein Account für ConnectionType '"+sConnectionType+"'", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				
-				
+								
 				//+++ Folgende Konfiguration könnten aus dem Alias und dem Repository geholt werden
 				String sConnectionTypeIn = objConfig.readConnectionType();
 				if(StringZZZ.isEmpty(sConnectionTypeIn) ) {

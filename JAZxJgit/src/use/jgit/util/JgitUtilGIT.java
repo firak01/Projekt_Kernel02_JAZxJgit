@@ -678,38 +678,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 	
 	
 	
-	/** Für den GIT Weg:
-	 * 
-		Minierklaerung:
-				siehe .git\config Datei, entsprechende Zeile.
-				 
-				Das ist ein sogenannter RefSpec (Reference Specification).
-				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
-				
-				Aufbau allgemein:
-				[+]<Quelle>:<Ziel>
-				
-				Also:
-				Quelle (Remote-Seite)
-				refs/heads/ = alle Branches im Remote-Repository
-				 * = Wildcard → alle Branch-Namen
-	
-				➡️ Bedeutet:
-				Hole alle Branches vom Remote
-				
-				
-				Ziel (lokal)
-				refs/remotes/origin/ = Remote-Tracking-Branches
-				* = gleicher Name wie Quelle
-	
-				➡️ Bedeutet:
-				Speichere sie lokal als origin/branchname
-				
-				------------
-				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-				Mit + sagst du:
-				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-		
+	/** 
 	 * @param git
 	 * @throws GitAPIException
 	 * @author Fritz Lindhauer, 23.03.2026, 18:17:59
@@ -884,11 +853,6 @@ public class JgitUtilGIT implements IConstantZZZ{
 		        String sBranch="master";
 		        if(!StringZZZ.isEmptyNull(sBranchIn)) sBranch = sBranchIn;
 		       		     
-			
-//			try {				
-	        	
-				       									
-	        	
 	        	//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("PULL: Startet");
 													
@@ -991,8 +955,7 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 						  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 				  System.out.println(sLog);													
 		        }
-		        
-		        bReturn = true;
+		        		       
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
 				throw ez;
@@ -1003,6 +966,8 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			} 
+			
+			 bReturn = true;
 		}//end main
 		return bReturn;
 	}

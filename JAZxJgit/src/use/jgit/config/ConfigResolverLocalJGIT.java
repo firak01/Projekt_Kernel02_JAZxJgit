@@ -73,51 +73,43 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	public List<IKernelConfigHelpLineZZZ>getHelpList() throws ExceptionZZZ{
 		ArrayList<IKernelConfigHelpLineZZZ>listaReturn=new ArrayList<IKernelConfigHelpLineZZZ>();
 		main:{
-		//Berücksichtige dabei die Paramter aus den "Pattern" Strings
-		//final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|conflict|commit|conflictCommit|rl:project:filepath:comment.";	
-		IKernelConfigHeaderLineZZZ objHeaderLine=null;
-		objHeaderLine= new KernelConfigHeaderLineZZZ(1, "Argumente für: " + this.getProjectName());
-		
-		IKernelConfigHelpLineZZZ objHelp=null;
-		objHelp = new KernelConfigHelpLineZZZ();
-		objHelp.setHeaderLine(objHeaderLine);
-		listaReturn.add(objHelp);
-		
-		//Diese werden auch im Starter genutzt
-		objHeaderLine= new KernelConfigHeaderLineZZZ("Allgemeine Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);						
-		objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
-		objHelp.setHeaderLine(objHeaderLine);
-		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");		
-		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("rl:","Dateipfad","Pfad zum lokalen Repository");
-		listaReturn.add(objHelp);
-		
-		objHeaderLine= new KernelConfigHeaderLineZZZ(1,"Aktionen aus: " + IConfigResolverJGIT.sPROJECT_NAME);
-		objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");		
-		objHelp.setHeaderLine(objHeaderLine);
-		listaReturn.add(objHelp);
-		objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
-		listaReturn.add(objHelp);			
-		objHelp = new KernelConfigHelpLineZZZ("resolveConflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
-		listaReturn.add(objHelp);	
-		objHelp = new KernelConfigHelpLineZZZ("searcConflictFiles","Suche nach Konfliktdateien","Suche nach Dateien, die Konfliktmarkierungen enthalten");
-		listaReturn.add(objHelp);	
-		objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
-		listaReturn.add(objHelp);
-		
-		
-		//Nur fuer den ConflictResolver
-		objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
-		listaReturn.add(objHelp);
-		
-//
-//		objHelp = new KernelConfigHelpLineZZZ("zcustom:","Custom Flag","Flagdefinition, berücksichtigen nur direkte Vererbungshierarchie. Es muss ein JSON String folgen, z.B. -zcustom {\"xyz\":false,\"abc\":true}");
-//		listaReturn.add(objHelp);	
-//		objHelp = new KernelConfigHelpLineZZZ("zlocal:","Lokaler Flag","Flagdefinition, berücksichtigen KEINE Vererbungshierarchie. Es muss ein JSON String folgen, z.B. -zlocal {\"MERGE_IGNORE_CHECKOUT_CONFLICTS\":false,\"USE_STRATEGY_MERGE_CONFLICT_THEIRS\":false,\"USE_PULL_DIRECT\":true}");
-//		//objHelp.setHeaderLine(objHeaderLine);
-//		listaReturn.add(objHelp);	
-		
+			//Berücksichtige dabei die Paramter aus den "Pattern" Strings
+			//final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|conflict|commit|conflictCommit|rl:project:filepath:comment.";	
+			IKernelConfigHeaderLineZZZ objHeaderLine=null;
+			objHeaderLine= new KernelConfigHeaderLineZZZ(1, "Argumente für: " + this.getProjectName());
+			
+			IKernelConfigHelpLineZZZ objHelp=null;
+			objHelp = new KernelConfigHelpLineZZZ();
+			objHelp.setHeaderLine(objHeaderLine);
+			listaReturn.add(objHelp);
+			
+			//Diese werden auch im Starter genutzt
+			objHeaderLine= new KernelConfigHeaderLineZZZ("Allgemeine Argumente aus: " + IConfigResolverJGIT.sPROJECT_NAME);						
+			objHelp = new KernelConfigHelpLineZZZ("comment:","Kommentar","Kommentar für den Commit");
+			objHelp.setHeaderLine(objHeaderLine);
+			listaReturn.add(objHelp);
+			objHelp = new KernelConfigHelpLineZZZ("project:","Projekt","Name des Projekts im Repository");		
+			listaReturn.add(objHelp);
+			objHelp = new KernelConfigHelpLineZZZ("rl:","Dateipfad","Pfad zum lokalen Repository");
+			listaReturn.add(objHelp);
+			
+			objHeaderLine= new KernelConfigHeaderLineZZZ(1,"Aktionen aus: " + IConfigResolverJGIT.sPROJECT_NAME);
+			objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");		
+			objHelp.setHeaderLine(objHeaderLine);
+			listaReturn.add(objHelp);
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
+			listaReturn.add(objHelp);			
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+			listaReturn.add(objHelp);	
+			objHelp = new KernelConfigHelpLineZZZ("searcConflictFiles","Suche nach Konfliktdateien","Suche nach Dateien, die Konfliktmarkierungen enthalten");
+			listaReturn.add(objHelp);	
+			objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
+			listaReturn.add(objHelp);
+			
+			
+			//Nur fuer den ConflictResolver
+			objHelp = new KernelConfigHelpLineZZZ("filepath:","Dateipfad","Pfad zur Datei mit dem Konflikt");
+			listaReturn.add(objHelp);
 		}//end main:
 		return listaReturn;
 	}

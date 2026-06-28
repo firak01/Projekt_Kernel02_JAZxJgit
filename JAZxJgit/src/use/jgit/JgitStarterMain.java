@@ -228,6 +228,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				//+++++++++++++++++++++++++++++++++
 				//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
 				//Darum ist commt z.B. vor pull oder push. 
+				//          status immer hinten
 				//TODO: Die erstellte ArrayList sortieren nach einem Schema....
 				sAction = objConfig.readActionCommit();
 				if(!StringZZZ.isEmpty(sAction)) {

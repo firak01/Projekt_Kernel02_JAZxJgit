@@ -92,43 +92,7 @@ public class GitPostFetchAnalyse {
                         result.addProblem(
                                 "IO_FAILURE bei: " + sRemoteName,
                                 "Netzwerk- oder Repository-Zugriff prüfen.");
-                    }
-
-                   //if(updateResult == TrackingRefUpdate.Result.LOCK_FAILURE) {
-//                    if(updateResult == org.eclipse.jgit.lib.RefUpdate.LOCK_FAILURE) {
-//
-//                        result.addProblem(
-//                                "LOCK_FAILURE bei: " + sRemoteName,
-//                                "Prüfe mögliche Sperren im .git-Verzeichnis.");
-//                    }
-
-                    //if(updateResult == TrackingRefUpdate.Result.FORCED) {
-//                    if(updateResult == org.eclipse.jgit.lib.RefUpdate.FORCED) {
-//
-//                        result.addProblem(
-//                                "Forced Update erkannt für: " + sRemoteName,
-//                                "Remote-Historie wurde überschrieben.");
-//                    }
-
-                    // #################################################
-                    // Informative Situationen
-                    // #################################################
-
-                    //if(updateResult == TrackingRefUpdate.Result.NEW) {
-//                    if(updateResult == org.eclipse.jgit.lib.RefUpdate.NEW) {
-//
-//                        result.addInfo(
-//                                "Neuer Remote-Branch erkannt: "
-//                                + sRemoteName);
-//                    }
-
-                    //if(updateResult == TrackingRefUpdate.Result.FAST_FORWARD) {
-//                    if(updateResult == org.eclipse.jgit.lib.RefUpdate.FAST_FORWARD) {
-//
-//                        result.addInfo(
-//                                "Fast-Forward Update: "
-//                                + sRemoteName);
-//                    }
+                    }                  
                 }
             }
         }

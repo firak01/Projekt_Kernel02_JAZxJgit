@@ -121,7 +121,7 @@ public class JgitResolverMain implements IConstantZZZ{
 	/*
 	Kommandozeilenparamater fuer den Einsatz:
 	a) PUSH
-	-push -https -pat <PAT> 
+	-https -push -pat <PAT> 
 	-rr https://github.com/firak01/HIS_QISSERVER_FGL.git
 	-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL
 	
@@ -151,7 +151,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			System.out.println(System.getenv("sRRACZZZ"));
 			
 			
-			String sAction=null;
+			String sAction=null; String sComment=null;
 			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
 						
 			//Trotz Einbinden von  in pom.xml Fehlermeldung;
@@ -174,6 +174,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
 			System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
 			
+			//+++++++++++++++++++++++++++++++++++++++
 			//hilfsaktion
 			sAction = objConfig.readActionHelp();
 			if(!StringZZZ.isEmpty(sAction)) {				
@@ -190,24 +191,38 @@ public class JgitResolverMain implements IConstantZZZ{
 			}
 			
 			//+++++++++++++++++++++++++++++++++
-			//actions
-			sAction = objConfig.readActionStatus();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
+			//Darum ist commt z.B. vor pull oder push. 
+			//          searchConflictFiles vor den resolve Actions
+			//          status immer hinten.
+			//TODO: Die erstellte ArrayList sortieren nach einem Schema....
+			sAction = objConfig.readActionCommit();
+			if(!StringZZZ.isEmpty(sAction)) {
+				listasAction.add(sAction);
+				
+				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+				sComment = objConfig.readComment();
+			}
 			
+			//nur lokales Repository berücksichtigen, also kein fetch...
+						
 			sAction = objConfig.readActionSearchConflictFiles();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
 			sAction = objConfig.readActionResolveConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionCommit();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
+						
 			sAction = objConfig.readActionResolveConflictCommit();
+			if(!StringZZZ.isEmpty(sAction)) {
+				listasAction.add(sAction);
+				
+				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+				sComment = objConfig.readComment();
+			}
+			
+			sAction = objConfig.readActionStatus();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			
-			
+						
 			if(listasAction.isEmpty()) {
 				ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;

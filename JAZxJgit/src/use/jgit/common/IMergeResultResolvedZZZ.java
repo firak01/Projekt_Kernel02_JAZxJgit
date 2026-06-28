@@ -20,7 +20,7 @@ public interface IMergeResultResolvedZZZ {
 	public void setListFile(List<String> listFile) throws ExceptionZZZ;
 
 	public MergeStatus getMergeStatusOriginal() throws ExceptionZZZ;
-//* KEINE KONFLIKTEn Setter weil der Status aus dem MergeResult-Objekt geholt wird.
+    //* KEINE KONFLIKTE Setter weil der Status aus dem MergeResult-Objekt geholt wird.
 	//public void setMergeStatusOriginal(MergeStatus mergeStatus) throws ExceptionZZZ;
 
 	public Status getGitStatus() throws ExceptionZZZ;
