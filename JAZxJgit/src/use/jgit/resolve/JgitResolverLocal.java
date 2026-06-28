@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.measure.spi.SystemOfUnits;
+
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -12,6 +14,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
+import basic.zBasic.util.abstractList.ArrayListUtilZZZ;
+import basic.zBasic.util.abstractList.ArrayListZZZ;
+import basic.zBasic.util.datatype.string.StringArrayZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.FileTextReaderZZZ;
@@ -110,22 +115,72 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
 				}
 				
+				boolean bUseListFile = false;
+				List<File> listFile = null;
 				String sFilePath = objConfig.readFilePath();
 				if(StringZZZ.isEmpty(sFilePath)) {
-					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
+					listFile = this.getFiles();
+					if(listFile.isEmpty()) {
+						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}else {
+						bUseListFile = true;
+					}
 				}
 				
 				String sComment = objConfig.readComment();
 				this.setCommentCommit(sComment);
 				
-				boolean bSuccessConflict = this.resolveit(sFilePath, sComment);
-				if(bSuccessConflict) {
-					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePath + "')");					
-					bReturn = true;
+				if(bUseListFile && listFile!=null) {
+					//Liste von Dateien verarbeiten
+					ArrayList<String>listasFileSuccess = new ArrayList<String>();
+					ArrayList<String>listasFileFailed = new ArrayList<String>();
+					for(File objFile : listFile) {
+						boolean bSuccessConflict = this.resolveit(sFilePath, sComment);
+						if(bSuccessConflict) {
+							listasFileSuccess.add(sFilePath);
+						}else {
+							listasFileFailed.add(sFilePath);
+						}
+					}//end for
+					
+					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL");
+					if(listasFileSuccess.isEmpty()) {
+						System.out.println("* NO FILE");
+						bReturn = true;
+					}else {						
+						String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileSuccess);
+						saFile = StringArrayZZZ.plusString( "* ", saFile);
+						String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+						System.out.println(sPrint);
+						bReturn = false;
+					}								
+											
+					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED");
+					if(listasFileFailed.isEmpty()) {
+						System.out.println("* NO FILE");
+						bReturn = true;
+					}else {						
+						String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileFailed);
+						saFile = StringArrayZZZ.plusString( "* ", saFile);
+						String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+						System.out.println(sPrint);
+						bReturn = false;	
+					}								
+						
+
 				}else {
-					System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED ('" + sFilePath + "')");					
-					bReturn = false;
+					//Einzelne Datei verarbeiten.
+					boolean bSuccessConflict = this.resolveit(sFilePath, sComment);
+					if(bSuccessConflict) {
+						System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL");
+						System.out.println("* " + sFilePath);					
+						bReturn = true;
+					}else {
+						System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED");
+						System.out.println("* " + sFilePath);					
+						bReturn = false;
+					}
 				}
 			
 		}//end main:
