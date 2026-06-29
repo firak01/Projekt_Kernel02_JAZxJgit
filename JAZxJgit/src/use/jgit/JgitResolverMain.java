@@ -202,6 +202,9 @@ public class JgitResolverMain implements IConstantZZZ{
 			sAction = objConfig.readActionSearchConflictFiles();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 			
+			sAction = objConfig.readActionResolveDeleted();
+			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+			
 			sAction = objConfig.readActionResolveConflict();
 			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 						
@@ -310,7 +313,7 @@ public class JgitResolverMain implements IConstantZZZ{
 				case "resolveDeleted":
 					bReturn = objResolver.resolveDeletedit(objConfig);
 					break;
-				case "resolveByStageStateit":
+				case "resolveByStageState":
 					bReturn = objResolver.resolveByStageStateit(objConfig);
 					break;
 				case "resolveConflictCommit":

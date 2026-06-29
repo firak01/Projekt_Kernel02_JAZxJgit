@@ -11,6 +11,10 @@ public class GitStatusMapper {
 
         GitStatusMap map = new GitStatusMap();
 
+        //20260629 also scheint mir zu fehlen, conflicting
+        // 0. Conflicts
+        map.getModified().addAll(status.getConflicting());
+        
         // 1. Klassische Änderungen
         map.getModified().addAll(status.getModified());
         map.getModified().addAll(status.getChanged());

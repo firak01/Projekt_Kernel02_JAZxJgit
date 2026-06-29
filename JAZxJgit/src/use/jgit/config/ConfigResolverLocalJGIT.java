@@ -122,6 +122,32 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 		
 	//### aus IConfigResolverGIT
 	@Override
+	public String readActionResolveByStageState() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("resolveByStageState");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionResolveDeleted() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("resolveDeleted");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
 	public String readActionResolveConflict() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{

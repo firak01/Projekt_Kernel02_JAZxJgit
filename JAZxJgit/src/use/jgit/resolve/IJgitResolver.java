@@ -15,11 +15,11 @@ public interface IJgitResolver {
 	
 	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
 	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveByStageStateit(String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 		
 	//#### Konflikte aufgrund von Löschungen auflösen
 	public boolean resolveDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveDeletedit(String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 	
 	//#### Konflikte mit Konfliktmarkern auflösen
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
