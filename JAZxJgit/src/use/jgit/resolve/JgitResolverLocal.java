@@ -93,6 +93,68 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 	
 	//##################################################
+	//###### RESOLVE BY STAGESTATE ################################
+	/* Typische Werte des StageState sind:
+	 * 
+			BOTH_MODIFIED   --->CONFLICTIT
+			DELETED_BY_THEM --->DELETEDIT
+			DELETED_BY_US   --->DELETEDIT
+			BOTH_ADDED      --->????
+			ADDED_BY_US     --->????
+			ADDED_BY_THEM   --->????
+	 * 
+	 * (non-Javadoc)
+	 * @see use.jgit.resolve.IJgitResolver#resolveByStageStateit(use.jgit.config.IConfigResolverJGIT)
+	 */
+	@Override
+	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		
+		//Code Snippet
+//		Status status = git.status().call();
+//		IndexDiff.StageState stageState = status.getConflictingStageState().get(path);
+		
+		
+		return false;
+	}
+
+	@Override
+	public boolean resolveByStageStateit(String sFilepathTotal) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		
+		
+		return false;
+	}
+	
+	
+	//##################################################
+	//###### RESOLVEDELETED #######################################	
+	@Override
+	public boolean resolveDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean resolveDeletedit(String sFilepathTotal) throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		
+		//Code Snippet:
+		//Merke: das ist Strategieabhängig und StageState abhängig, was passieren soll.		
+		//Die Löschung soll gewinnen (rm)
+		git.rm()
+		   .addFilepattern(sFilepathTotal)
+		   .call();
+		
+		//Die Lokale Datei soll erhalten bleiben.
+		git.add()
+		   .addFilepattern(sFilepathTotal)
+		   .call();
+				
+		return false;
+	}
+	
+	//##################################################
 	//###### RESOLVECONFLICT ######################################
 	@Override
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {

@@ -474,19 +474,20 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		        //##################################################################
 		        
 				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-				TODOGOON20260629;//steuere den Weg per Flag
-				
-				//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-				//!!ABER Verwendet die Eigenschaft org.eclipse.jgit.api.RebaseResult.Status.UNCOMMITTED_CHANGES
-				this.addFileTrackedChanged(git);
-				
-				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-		        this.addFileUntracked(git);
-				//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		        
-		        //Alternativer Ansatz, der auch Deletes berücksichtigt und auch sofort die untracked Dateien.
-		        this.addFileStageAll(git);
-		        
+				//steuere den Weg per Flag
+				boolean bIgnoreDeletes = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.STAGING_IGNORE_DELETES);
+				if(bIgnoreDeletes) {
+					//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+					//!!ABER Verwendet die Eigenschaft org.eclipse.jgit.api.RebaseResult.Status.UNCOMMITTED_CHANGES
+					this.addFileTrackedChanged(git);
+					
+					//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+			        this.addFileUntracked(git);
+					//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+				}else {
+			        //Alternativer Ansatz, der auch Deletes berücksichtigt und auch sofort die untracked Dateien.
+			        this.addFileStageAll(git);
+				}
 		        
 		        
 		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine

@@ -307,6 +307,12 @@ public class JgitResolverMain implements IConstantZZZ{
 				case "resolveConflict":
 					bReturn = objResolver.resolveConflictit(objConfig);					
 					break;
+				case "resolveDeleted":
+					bReturn = objResolver.resolveDeletedit(objConfig);
+					break;
+				case "resolveByStageStateit":
+					bReturn = objResolver.resolveByStageStateit(objConfig);
+					break;
 				case "resolveConflictCommit":
 					bReturn = objResolver.resolveConflictCommitit(objConfig);
 					break;
