@@ -485,10 +485,10 @@ public class JgitUtilGIT implements IConstantZZZ{
 				
 				//Debug only
 				if(sUrlRepoRemote.equals(sUrlRepoRemoteALT)) {
-					System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": neuer Berechnungweg = alter Berechnungsweg...");
+					System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Berechnung des Alias im Repository: Neuer Berechnungsweg = alter Berechnungsweg...");
 				}else {
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": ACHTUNG !!!");
-					System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": neuer Berechnungweg != alter Berechnungsweg...");
+					System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Berechnung des Alias im Repository:  Neuer Berechnungsweg != alter Berechnungsweg...");
 				}
 				
 				

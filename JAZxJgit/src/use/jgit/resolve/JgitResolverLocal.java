@@ -226,40 +226,40 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 
 	@Override
-	public boolean resolveDeletedit(Git git, String sFilePathTotalIn) throws ExceptionZZZ {				
+	public boolean resolveDeletedit(Git git, String sFilePathInRepository) throws ExceptionZZZ {				
 		boolean bReturn = false;
 		main:{
 			if (git == null) {
 	            throw new IllegalArgumentException("git must not be null");
 	        }
 			
-			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+			if(StringZZZ.isEmpty(sFilePathInRepository)) {
+				ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			String sFilePathTotal = null;
-			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathTotalIn);
-			if(bPathRelative) {
-				String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
-				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathTotalIn);
-			}else {
-				sFilePathTotal = sFilePathTotalIn;
-			}
+//			String sFilePathTotal = null;
+//			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathInRepository);
+//			if(bPathRelative) {
+//				String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
+//				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathInRepository);
+//			}else {
+//				sFilePathTotal = sFilePathInRepository;
+//			}
 			
 			
-			File objFile = new File(sFilePathTotal);
-			boolean bFileExists = FileEasyZZZ.exists(objFile);
-			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
-			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
+//			File objFile = new File(sFilePathTotal);
+//			boolean bFileExists = FileEasyZZZ.exists(objFile);
+//			if(!bFileExists) {
+//				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+//			
+//			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
+//			if(!bIsFile) {
+//				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
 			
 			
 			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
@@ -271,9 +271,9 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 
 			boolean bResolvedSuccess=false;			
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {						
-				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, objFile, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
+				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, sFilePathInRepository, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
-				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, objFile, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
+				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, sFilePathInRepository, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
