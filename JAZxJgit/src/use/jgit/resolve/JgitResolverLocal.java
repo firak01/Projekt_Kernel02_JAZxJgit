@@ -140,18 +140,8 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}
 				
 				//################################################
-				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-				//JgitResolver braucht nur das lokale Repository zu konfigurieren, kein GIT-Objekt, komplett
-//				//Konfiguriere JGit lokal
-//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal((IConfigStarterLocalJGIT)objConfig);
-//				if(bLocalRepositoryConfigured) {
-//					System.out.println("Lokales Repository erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Lokales Repository NICHT erfolgreich konfiguriert");
-//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//				}
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen												
 				
-				//+++++++++++++++++++++++++++++++
 				//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
 				//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
 				boolean bSuccess = this.configureGit(objConfig);
