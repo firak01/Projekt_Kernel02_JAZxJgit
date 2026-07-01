@@ -3,10 +3,13 @@ package use.jgit.tool.resolve;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
@@ -82,7 +85,7 @@ public class GitConflictResolverUtil implements IConstantZZZ {
      * @return
      * @throws ExceptionZZZ
      */
-    public static boolean resolveJDeleted(Git git, String sFilePathInRepository, STRATEGYMERGECONFLICT strategy) throws ExceptionZZZ{
+    public static boolean resolveDeleted(Git git, String sFilePathInRepository, STRATEGYMERGECONFLICT strategy) throws ExceptionZZZ{
         boolean bReturn = false;
         main:{
      	   try {
@@ -117,11 +120,78 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  					File fA = new File(repositoryA.getWorkTree(), sFilePathInRepository);
  					System.out.println("A) VORHER. Vom Worktree, file.exists(): " + fA.exists());
  					 
+ 					//DEBUG:
+ 					RepositoryState stateA = git.getRepository().getRepositoryState();
+ 					System.out.println(stateA);
+
+ 					Status statusA = git.status().call();
+ 					System.out.println(statusA.getConflicting());
+ 					System.out.println(statusA.getRemoved());
+ 					System.out.println(statusA.getMissing());
+ 					System.out.println(statusA.getChanged());
+ 					System.out.println(statusA.getAdded());
+ 					
  					//Die Löschung soll gewinnen (rm)
  					DirCache objCache = git.rm()
  					   .addFilepattern(sFilePathInRepository)
  					   .call();
- 								
+ 					
+ 					//DEBUG 2:
+ 					System.out.println("HasUnmergedPaths = " + objCache.hasUnmergedPaths());
+ 					for (int i = 0; i < objCache.getEntryCount(); i++) {
+ 					    DirCacheEntry e = objCache.getEntry(i);
+
+// 					    if(e.getPathString().equals(sFilePathInRepository)) {
+ 					        System.out.println(
+ 					            e.getPathString()
+ 					            + " stage=" + e.getStage()
+ 					        );
+// 					    }
+ 					}
+ 					
+ 						
+ 					//Versuchen den Konflikt als gelöst zu markieren
+ 					git.add()
+ 				   .addFilepattern(sFilePathInRepository)
+ 				   .call();
+ 					
+ 					
+ 					
+ 					//DEBUG:
+ 					RepositoryState stateB = git.getRepository().getRepositoryState();
+ 					System.out.println(stateB);
+
+ 					Status statusB = git.status().call();
+ 					System.out.println(statusB.getConflicting());
+ 					System.out.println(statusB.getRemoved());
+ 					System.out.println(statusB.getMissing());
+ 					System.out.println(statusB.getChanged());
+ 					System.out.println(statusB.getAdded());
+ 					
+ 					//DEBUG:
+ 					DirCache cache = git.getRepository().readDirCache();
+ 					System.out.println("HasUnmergedPaths = " + cache.hasUnmergedPaths());
+
+ 					for (int i = 0; i < cache.getEntryCount(); i++) {
+ 					    DirCacheEntry e = cache.getEntry(i);
+
+// 					    if(e.getPathString().equals(sFilePathInRepository)) {
+ 					        System.out.println(
+ 					            e.getPathString()
+ 					            + " stage=" + e.getStage()
+ 					        );
+// 					    }
+ 					}
+ 					
+ 					boolean bNoConflicts = git.status().call().getConflicting().isEmpty();
+ 					System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts +"'" );
+ 					if(bNoConflicts) {
+ 						git.commit()
+ 					   .setMessage("Merge resolved")
+ 					   .call();
+ 					}
+ 					
+ 									
  					//B) Nachher
  					Repository repositoryB = git.getRepository();					
  					File fB = new File(repositoryB.getWorkTree(), sFilePathInRepository);
@@ -189,7 +259,7 @@ public class GitConflictResolverUtil implements IConstantZZZ {
 				String sFilePathTotal = objFile.getAbsolutePath();
 				String sFileName = objFile.getName();
 				
-				TODOGOON20260630;//hier den relativen Pfad im Repository errechnen.
+				//TODOGOON20260630;//hier den relativen Pfad im Repository errechnen.
 				String sFilePathInRepository = null;
 				
 				//Code Snippet:
