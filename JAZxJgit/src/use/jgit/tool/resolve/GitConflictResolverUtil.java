@@ -3,6 +3,7 @@ package use.jgit.tool.resolve;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
@@ -113,32 +114,35 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  					//Die Lokale Datei soll erhalten bleiben.
  						git.add()
  						   .addFilepattern(sFilePathInRepository)
- 						   .call();				
+ 						   .call();	
+ 					 
+ 					 
+ 					 
  				 }else if( strategy == STRATEGYMERGECONFLICT.THEIRS) {
  					//Aus Debuggründen: Ist die Datei im WorkTree
  					
  					//A) Vorher
  					Repository repositoryA = git.getRepository();
  					File fA = new File(repositoryA.getWorkTree(), sFilePathInRepository);
- 					System.out.println("A) VORHER. Vom Worktree, file.exists(): " + fA.exists());
- 					 
+ 					bReturn = fA.exists();
+ 					System.out.println("A) VORHER. Vom Worktree, file.exists(): " + bReturn);
+ 					if(bReturn) { 						
+ 					}else { 						
+ 						System.out.println("\tAuch wenn die Datei nicht mehr da ist, weitermachen und sie aus dem Index entfernen.");
+ 					}
+ 					
  					//DEBUG:
  					RepositoryState stateA = git.getRepository().getRepositoryState();
  					System.out.println(stateA);
 
  					Status statusA = git.status().call();
- 					System.out.println(statusA.getConflicting());
- 					System.out.println(statusA.getRemoved());
- 					System.out.println(statusA.getMissing());
- 					System.out.println(statusA.getChanged());
- 					System.out.println(statusA.getAdded());
+ 					System.out.println("conflicts: " + statusA.getConflicting());
+ 					System.out.println("removed: " + statusA.getRemoved());
+ 					System.out.println("missing: " + statusA.getMissing());
+ 					System.out.println("changed: " + statusA.getChanged());
+ 					System.out.println("added: "   + statusA.getAdded());
  					
- 					//Die Löschung soll gewinnen (rm)
- 					DirCache objCacheA = git.rm()
- 					   .addFilepattern(sFilePathInRepository)
- 					   .call();
- 					
- 					//DEBUG 2a:
+  					DirCache objCacheA = git.getRepository().readDirCache(); 					
  					System.out.println("\nCACHE A: HasUnmergedPaths = " + objCacheA.hasUnmergedPaths());
  					for (int i = 0; i < objCacheA.getEntryCount(); i++) {
  					    DirCacheEntry e = objCacheA.getEntry(i);
@@ -160,25 +164,37 @@ public class GitConflictResolverUtil implements IConstantZZZ {
 // 					editor.add(new DirCacheEditor.DeletePath(sFilePathInRepository));
 // 					editor.commit();
  					
+ 					//Versuchen den Konflikt als gelöst zu markieren
+ 					//Die Löschung soll gewinnen (rm)
+ 					//.setCached(true) // Wichtig: Entfernt die Datei nur aus dem Index, nicht vom Dateisystem
+ 					//wir wollen die Datei aber auch aus dem Dateisystem weg haben.
+ 					System.out.println("\nVERSUCH A: Entferne aus dem Index per git.rm");
+ 					git.rm()
+ 					   .addFilepattern(sFilePathInRepository) 					   
+ 				       .call();
  					
- 					DirCache cache = git.getRepository().lockDirCache(); //damit Änderungen gemacht werden können, muss der Index gelocked werden.
- 					try {
- 					    DirCacheEditor editor = cache.editor(); 
- 					    PathEdit objPathEdit = new DirCacheEditor.DeletePath(sFilePathInRepository);
- 					    editor.add(objPathEdit); 					    
- 					    editor.finish();
- 					    //editor.commit(); //macht schon den unlock auf den index.
- 					    cache.write();
- 					    cache.commit();
- 					} finally {
- 						try {
- 					    cache.unlock();
- 						}catch(Exception e) {
- 							System.out.println(e.getMessage());
- 						}
+ 					
+ 					//######## B 
+ 					Repository repositoryB = git.getRepository();
+ 					File fB = new File(repositoryB.getWorkTree(), sFilePathInRepository);
+ 					bReturn = fB.exists();
+ 					System.out.println("B) VORHER. Vom Worktree, file.exists(): " + bReturn);
+ 					if(bReturn) { 						
+ 					}else { 						
+ 						System.out.println("\tAuch wenn die Datei nicht mehr da ist, weitermachen und sie aus dem Index entfernen.");
  					}
  					
- 					
+ 					//DEBUG B:
+ 					RepositoryState stateB = git.getRepository().getRepositoryState();
+ 					System.out.println(stateB);
+
+ 					Status statusB = git.status().call();
+ 					System.out.println("conflicts: " + statusB.getConflicting());
+ 					System.out.println("removed: " + statusB.getRemoved());
+ 					System.out.println("missing: " + statusB.getMissing());
+ 					System.out.println("changed: " + statusB.getChanged());
+ 					System.out.println("added: "   + statusB.getAdded());
+ 					 	
  					//Debug 2b:
  					//Erneut das staging im Cache
  					DirCache objCacheB = git.getRepository().readDirCache();
@@ -195,25 +211,48 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  					}	
  					
  					
- 					//Versuchen den Konflikt als gelöst zu markieren
- 					git.add()
- 				   .addFilepattern(sFilePathInRepository)
- 				   .call();
+ 					System.out.println("\nVERSUCH B: Entferne aus dem Index per Cache.editor");
+ 					DirCache cache = git.getRepository().lockDirCache(); //damit Änderungen gemacht werden können, muss der Index gelocked werden.
+ 					try {
+ 					    DirCacheEditor editor = cache.editor(); 
+ 					    PathEdit objPathEdit = new DirCacheEditor.DeletePath(sFilePathInRepository);
+ 					    editor.add(objPathEdit); 					    
+ 					    editor.finish();
+ 					    //editor.commit(); //macht schon den unlock auf den index. danach ist alles kaputt...
+ 					    cache.write();
+ 					    cache.commit();
+ 					} finally {
+ 						try {
+ 					    cache.unlock();
+ 						}catch(Exception e) {
+ 							System.out.println(e.getMessage());
+ 						}
+ 					}
  					
  					
- 					
- 					//DEBUG:
- 					RepositoryState stateB = git.getRepository().getRepositoryState();
- 					System.out.println(stateB);
-
- 					Status statusB = git.status().call();
- 					System.out.println(statusB.getConflicting());
- 					System.out.println(statusB.getRemoved());
- 					System.out.println(statusB.getMissing());
- 					System.out.println(statusB.getChanged());
- 					System.out.println(statusB.getAdded());
+ 					//########### C
+ 					Repository repositoryC = git.getRepository();
+ 					File fC = new File(repositoryC.getWorkTree(), sFilePathInRepository);
+ 					bReturn = fC.exists();
+ 					System.out.println("C) VORHER. Vom Worktree, file.exists(): " + bReturn);
+ 					if(bReturn) { 						
+ 					}else { 						
+ 						System.out.println("\tAuch wenn die Datei nicht mehr da ist, weitermachen und sie aus dem Index entfernen.");
+ 					}
  					
  					//DEBUG C:
+ 					RepositoryState stateC = git.getRepository().getRepositoryState();
+ 					System.out.println(stateC);
+
+ 					Status statusC = git.status().call();
+ 					System.out.println("conflicts: " + statusC.getConflicting());
+ 					System.out.println("removed: " + statusC.getRemoved());
+ 					System.out.println("missing: " + statusC.getMissing());
+ 					System.out.println("changed: " + statusC.getChanged());
+ 					System.out.println("added: "   + statusC.getAdded());
+ 					 	
+ 					
+
  					DirCache objCacheC = git.getRepository().readDirCache();
  					System.out.println("\nCACHE C: HasUnmergedPaths = " + objCacheC.hasUnmergedPaths());
 
@@ -228,27 +267,39 @@ public class GitConflictResolverUtil implements IConstantZZZ {
 // 					    }
  					}
  					
+ 									
  					boolean bNoConflicts = git.status().call().getConflicting().isEmpty();
- 					System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts +"'" );
+ 					System.out.println("C) NACHHER. Konflikt frei? '" + bNoConflicts +"'" );
  					if(bNoConflicts) {
+ 						System.out.println("C) NACHHER. Mache commit" );
  						git.commit()
  					   .setMessage("Merge resolved")
  					   .call();
+ 					}else {
+ 						//Immer noch Konflikt
+ 						System.out.println("C) NACHHER. Mache Hardreset" );
+ 						git.reset()
+ 	 				   .setMode(ResetCommand.ResetType.HARD)
+ 	 				   .setRef("HEAD")
+ 	 				   .call();
+ 	 					
  					}
  					
- 									
- 					//B) Nachher
- 					Repository repositoryB = git.getRepository();					
- 					File fB = new File(repositoryB.getWorkTree(), sFilePathInRepository);
- 					System.out.println("B) NACHHER. Vom Worktree, file.exists(): " + fB.exists());
+			
+ 					//D) Vorher
+ 					Repository repositoryD = git.getRepository();					
+ 					File fD = new File(repositoryD.getWorkTree(), sFilePathInRepository);
+ 					System.out.println("D) VORHER. Vom Worktree, file.exists(): " + fD.exists());
  					
- 					//Sicherstellen, dass die Datei auch wirklich gelöscht wird.
- 					//DAS IST KEINE GUTE IDEE, HAUT ALLES KAPUTT
-// 					boolean bDeleteSuccess = false;
-// 					if (fB.exists()) {
-// 					    bDeleteSuccess = fB.delete();
-// 					    System.out.println("\tErgebnis des Löschens: " + bDeleteSuccess); 					     					   					     					
-// 					}
+ 					//Sicherstellen, dass die Datei auch wirklich gelöscht wird.				
+ 					if (fD.exists()) {
+ 					    bReturn = fD.delete();
+ 					    System.out.println("\tErgebnis des Löschens: " + bReturn); 					     					   					     					
+ 					}else {
+ 						bReturn = true;
+ 					}
+ 					
+ 					
  				 }else {
  					 System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Unerwartetet Strategy: '" + strategy.getName() + "'");
  					 ExceptionZZZ ez = new ExceptionZZZ("Unerwartete Strategy: '" +strategy.getName() + "'", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -266,8 +317,6 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  		    	ExceptionZZZ ez = new ExceptionZZZ(e);
  		    	throw ez;
      	   }
-     	   
-     	   bReturn = true;
         }//end main:
         return bReturn;
      }
@@ -335,11 +384,10 @@ public class GitConflictResolverUtil implements IConstantZZZ {
 					
 					//DAS IST KEINE GUTE IDEE, HAUT ALLES KAPUTT
 					//Sicherstellen, dass die Datei auch wirklich gelöscht wird.
-//					boolean bDeleteSuccess = false;
-//					if (fB.exists()) {
-//					    bDeleteSuccess = fB.delete();
-//					    System.out.println("\tErgebnis des Löschens: " + bDeleteSuccess);
-//					}
+					if (fB.exists()) {
+					    bReturn = fB.delete();
+					    System.out.println("\tErgebnis des Löschens: " + bReturn);
+					}
 				 }else {
 					 System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Unerwartetet Strategy: '" + strategy.getName() + "'");
 					 ExceptionZZZ ez = new ExceptionZZZ("Unerwartete Strategy: '" +strategy.getName() + "'", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
