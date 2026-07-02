@@ -7,6 +7,8 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEditor;
+import org.eclipse.jgit.dircache.DirCacheEditor.PathEdit;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
@@ -132,15 +134,15 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  					System.out.println(statusA.getAdded());
  					
  					//Die Löschung soll gewinnen (rm)
- 					DirCache objCache = git.rm()
+ 					DirCache objCacheA = git.rm()
  					   .addFilepattern(sFilePathInRepository)
  					   .call();
  					
- 					//DEBUG 2:
- 					System.out.println("HasUnmergedPaths = " + objCache.hasUnmergedPaths());
- 					for (int i = 0; i < objCache.getEntryCount(); i++) {
- 					    DirCacheEntry e = objCache.getEntry(i);
-
+ 					//DEBUG 2a:
+ 					System.out.println("\nCACHE A: HasUnmergedPaths = " + objCacheA.hasUnmergedPaths());
+ 					for (int i = 0; i < objCacheA.getEntryCount(); i++) {
+ 					    DirCacheEntry e = objCacheA.getEntry(i);
+//hier fehlt eine Normierung \ nach / 
 // 					    if(e.getPathString().equals(sFilePathInRepository)) {
  					        System.out.println(
  					            e.getPathString()
@@ -149,7 +151,50 @@ public class GitConflictResolverUtil implements IConstantZZZ {
 // 					    }
  					}
  					
- 						
+ 					//Lösungsansatz, da und JGit 4.5 das high-Leve. .rm nicht so funktioniert:
+ 					//Direkt im cache löschen.
+ 					//aber nicht vergessen den index "locked" zu machen, sonst Fehlermeldung wie:
+ 					//java.lang.IllegalStateException: DirCache C:\1fgl\repo\EclipseOxygen_V02\Projekt_Kernel02_JAZDummy\.git\index not locked
+// 					DirCache cache = git.getRepository().readDirCache();
+// 					DirCacheEditor editor = cache.editor();
+// 					editor.add(new DirCacheEditor.DeletePath(sFilePathInRepository));
+// 					editor.commit();
+ 					
+ 					
+ 					DirCache cache = git.getRepository().lockDirCache(); //damit Änderungen gemacht werden können, muss der Index gelocked werden.
+ 					try {
+ 					    DirCacheEditor editor = cache.editor(); 
+ 					    PathEdit objPathEdit = new DirCacheEditor.DeletePath(sFilePathInRepository);
+ 					    editor.add(objPathEdit); 					    
+ 					    editor.finish();
+ 					    //editor.commit(); //macht schon den unlock auf den index.
+ 					    cache.write();
+ 					    cache.commit();
+ 					} finally {
+ 						try {
+ 					    cache.unlock();
+ 						}catch(Exception e) {
+ 							System.out.println(e.getMessage());
+ 						}
+ 					}
+ 					
+ 					
+ 					//Debug 2b:
+ 					//Erneut das staging im Cache
+ 					DirCache objCacheB = git.getRepository().readDirCache();
+ 					System.out.println("\nCACHE B: HasUnmergedPaths = " + objCacheB.hasUnmergedPaths());
+ 					for (int i = 0; i < objCacheB.getEntryCount(); i++) {
+ 					    DirCacheEntry e = objCacheB.getEntry(i);
+//hier fehlt eine Normierung \ nach / 
+// 					    if(e.getPathString().equals(sFilePathInRepository)) {
+ 					        System.out.println(
+ 					            e.getPathString()
+ 					            + " stage=" + e.getStage()
+ 					        );
+// 					    }
+ 					}	
+ 					
+ 					
  					//Versuchen den Konflikt als gelöst zu markieren
  					git.add()
  				   .addFilepattern(sFilePathInRepository)
@@ -168,13 +213,13 @@ public class GitConflictResolverUtil implements IConstantZZZ {
  					System.out.println(statusB.getChanged());
  					System.out.println(statusB.getAdded());
  					
- 					//DEBUG:
- 					DirCache cache = git.getRepository().readDirCache();
- 					System.out.println("HasUnmergedPaths = " + cache.hasUnmergedPaths());
+ 					//DEBUG C:
+ 					DirCache objCacheC = git.getRepository().readDirCache();
+ 					System.out.println("\nCACHE C: HasUnmergedPaths = " + objCacheC.hasUnmergedPaths());
 
- 					for (int i = 0; i < cache.getEntryCount(); i++) {
- 					    DirCacheEntry e = cache.getEntry(i);
-
+ 					for (int i = 0; i < objCacheC.getEntryCount(); i++) {
+ 					    DirCacheEntry e = objCacheC.getEntry(i);
+//hier fehlt eine Normierung \ nach / 
 // 					    if(e.getPathString().equals(sFilePathInRepository)) {
  					        System.out.println(
  					            e.getPathString()
