@@ -103,6 +103,8 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			listaReturn.add(objHelp);	
 			objHelp = new KernelConfigHelpLineZZZ("searcConflictFiles","Suche nach Konfliktdateien","Suche nach Dateien, die Konfliktmarkierungen enthalten");
 			listaReturn.add(objHelp);	
+			objHelp = new KernelConfigHelpLineZZZ("searcConflictFilesDeleted","Suche nach 'Deleted' Konfliktdateien","Suche nach Dateien, die den Status 'DELTED' im Repository haben.");
+			listaReturn.add(objHelp);	
 			objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
 			listaReturn.add(objHelp);
 			
@@ -135,14 +137,14 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	}	
 	
 	@Override
-	public String readActionResolveDeleted() throws ExceptionZZZ {
+	public String readActionResolveConflictDeleted() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("resolveDeleted");			
+			sReturn = objOpt.readValue("resolveConflictDeleted");			
 		}//end main:		
 		return sReturn;
 	}	
@@ -182,6 +184,19 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("searchConflictFiles");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionSearchConflictFilesDeleted() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("searchConflictFilesDeleted");			
 		}//end main:		
 		return sReturn;
 	}	

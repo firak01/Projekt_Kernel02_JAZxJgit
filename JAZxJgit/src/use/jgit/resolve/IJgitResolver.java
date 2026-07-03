@@ -18,8 +18,8 @@ public interface IJgitResolver {
 	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 		
 	//#### Konflikte aufgrund von Löschungen auflösen
-	public boolean resolveDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveConflictDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 	
 	//#### Konflikte mit Konfliktmarkern auflösen
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
@@ -40,6 +40,17 @@ public interface IJgitResolver {
 	
 	public List<File>getFiles() throws ExceptionZZZ;
 	public void setFiles(List<File>listFile) throws ExceptionZZZ;
+	
+	
+	//Suche in dem Repository nach Dateien, die im Repository den entprechenden Konflikt-Typen haben.
+	public boolean searchConflictFilesDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesDeletedit(Git git, String sProjectName) throws ExceptionZZZ;
+	
+	public boolean searchConflictFilesByScanit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesByScanit(Git git, String sProjectName) throws ExceptionZZZ;
+	
+	public List<String>getRepositoryPathStrings() throws ExceptionZZZ;
+	public void setRepositoryPathStrings(List<String>listasRepositoryPath) throws ExceptionZZZ;
 	
 	//IDEE 20260506;
 	//Wurde die Strategie "OURS" umgesetzt, dann wurde der Konflikt zwar aufgelöst, 
