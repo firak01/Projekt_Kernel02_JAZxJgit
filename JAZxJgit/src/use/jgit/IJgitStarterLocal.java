@@ -34,10 +34,15 @@ public interface IJgitStarterLocal {
 	public Git getGitObject() throws ExceptionZZZ;
 	public void setGitObject(Git git) throws ExceptionZZZ;
 		
+	//Alternative 1: Verwendet unvollständiges status.getUncommittedChanges()
 	public void addFileTrackedChanged() throws ExceptionZZZ;
 	public void addFileTrackedChanged(Git git) throws ExceptionZZZ;
 	public void addFileUntracked() throws ExceptionZZZ;
 	public void addFileUntracked(Git git) throws ExceptionZZZ;
+	
+	//Alternative 2: Verwendet detailierteres. Auch für gelöschte Dateien, eigene ServiceKlassen
+	public void addFileStageAll(Git git) throws ExceptionZZZ;
+	
 	
 	//+++ Arbeiten mit dem LOCALEN Repository-Object, etc.
 	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	

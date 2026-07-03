@@ -36,6 +36,7 @@ import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
 import use.jgit.protocol.ssh.JgitStarterSSH;
+import use.jgit.tool.status.GitAutoStageService;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
@@ -473,11 +474,22 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		        //##################################################################
 		        
 				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-				this.addFileTrackedChanged(git);
-				
-				//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-		        this.addFileUntracked(git);
-				
+				//steuere den Weg per Flag
+				boolean bIgnoreDeletes = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.STAGING_IGNORE_DELETES);
+				if(bIgnoreDeletes) {
+					//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+					//!!ABER Verwendet die Eigenschaft org.eclipse.jgit.api.RebaseResult.Status.UNCOMMITTED_CHANGES
+					this.addFileTrackedChanged(git);
+					
+					//Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+			        this.addFileUntracked(git);
+					//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+				}else {
+			        //Alternativer Ansatz, der auch Deletes berücksichtigt und auch sofort die untracked Dateien.
+			        this.addFileStageAll(git);
+				}
+		        
+		        
 		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
 		        String sCommentByProperty = this.getCommentCommit();
 		        String sComment = StringZZZ.coalesce(sCommentIn, sCommentByProperty);
@@ -508,6 +520,41 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		this.addFileTrackedChanged(git);       
 	}
 	
+	/* Verwendet UncommittedChanges(), ABER:
+	 * 
+	 *status.getUncommittedChanges() ist in JGit eher eine Bequemlichkeitsmenge, aber keine semantisch saubere Kategorie für Git-Operationen.
+
+🔎 Was getUncommittedChanges() wirklich ist
+
+Das ist im Kern eine Vereinigung mehrerer Statusgruppen, z. B.:
+
+modified
+added
+removed
+changed (je nach JGit-Version etwas unterschiedlich interpretiert)
+
+Also eher ein „alles was irgendwie unstaged/staged geändert ist“-Sammelbehälter.
+
+🧠 Wann das Aufteilen sinnvoll ist
+Dein aktueller Use Case ist entscheidend.
+👍 Sinnvoll, wenn du unterschiedliche Aktionen brauchst
+Du hast z. B. jetzt:
+
+neue Dateien → addFileUntracked() → git add <file>
+geänderte Dateien → addFileTrackedChanged() → git add <file>
+(optional) gelöschte Dateien → git add -u / setUpdate(true)
+
+Dann brauchst du explizit getrennte Statusmengen, weil:
+
+git add ≠ git add -u
+Deletes brauchen andere Behandlung als Modifications
+Renames sind Kombination aus beidem
+
+➡️ Dann ist Aufteilung absolut sinnvoll.
+	 * 
+	 * (non-Javadoc)
+	 * @see use.jgit.IJgitStarterLocal#addFileTrackedChanged(org.eclipse.jgit.api.Git)
+	 */
 	@Override
 	public void addFileTrackedChanged(Git git) throws ExceptionZZZ {		
 		try {
@@ -534,8 +581,6 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	        		listasUncommitedChanges.add(uncommitted);
 	        	}
 	        }
-	        
-	       
 	        
 	        // run the add-call 
 	        for(String uncommitted : listasUncommitedChanges) {
@@ -600,6 +645,15 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
     		throw ez;
 		}
 	
+	}
+	
+	@Override
+	public void addFileStageAll(Git git) throws ExceptionZZZ{
+		
+		//Alternative Variante, die feiner die Git-Statuswerte analysiert
+		//und so Löschungen mitbekommt
+		GitAutoStageService objStageService = new GitAutoStageService();
+		objStageService.stage(git);
 	}
 
 	//#######################################

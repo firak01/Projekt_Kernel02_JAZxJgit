@@ -13,17 +13,28 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitResolver {
 	
+	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
+	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+		
+	//#### Konflikte aufgrund von Löschungen auflösen
+	public boolean resolveDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	
+	//#### Konflikte mit Konfliktmarkern auflösen
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveConflictit(String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
 	public boolean resolveConflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
 	public boolean resolveCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
 	public boolean resolveCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+
 	
 	
-	//Suche in dem Repository nach Dateien, die Konflikmarker haben
+	
+	//Suche in dem Repository nach Dateien, die Konflikmarker haben (DELETED haben keine Konfliktmarker, werden damit also nicht erfasst)
 	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
 	public boolean searchConflictFilesit(Git git, String sProjectName) throws ExceptionZZZ;
 	

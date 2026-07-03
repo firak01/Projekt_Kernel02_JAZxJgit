@@ -139,6 +139,16 @@ public class JgitUtilZZZ implements IConstantZZZ {
 	
 	//##########################################################
 	
+	/** Normiere einen ggfs. von Windows übergebenen Dateipfad in die Form, wie sie in Git verwendet wird.
+	 * @param sFilePathInRepository
+	 * @return
+	 */
+	public static String computeGitPath(String sFilePathInRepository) {
+	    return sFilePathInRepository.replace('\\', '/');
+	}
+	
+	//##########################################################
+	
 	public static String computeRepositoryConnectionTypeFromProtocol(String sProtocol) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{

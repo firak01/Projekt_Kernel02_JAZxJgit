@@ -12,7 +12,8 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 		USE_STRATEGY_MERGE_CONFLICT_OURS    (1 << 2),
 		USE_STRATEGY_MERGE_CONFLICT_THEIRS (1 << 3), 
 		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4), //NOCH NICHT REALISIERT
-		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5); //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
+		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5), //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
+		STAGING_IGNORE_DELETES  (1 << 6);             //beim Commit wird nicht der eigens entwickelte GitAutoStageService verwendet. Sondern nur auf untracked und trackedChanged geachtet.
 		
 		private final int mask;
 		
