@@ -37,11 +37,11 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
-import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
+import use.jgit.tool.resolve.JgitResolverConflictUtilZZZ;
 
 /** Für den HTTPS Weg:
 	 * Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
@@ -451,7 +451,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 							 System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 							
 							 //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-							 bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							 bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
 							 bMyAutoResolve = true;
 							 
 						}//end STATUS "CONFLICTING"
@@ -459,7 +459,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 						if(status.equals(MergeStatus.FAILED)) {
 						    System.out.println("PULL: Failed erkannt ("+iCount+")");
 
-						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
+						    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
 						    bMyAutoResolve = true;
 						}//end status FAILED 
 												
@@ -642,7 +642,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 							 System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 							
 							 //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-							 bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							 bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
 							 bMyAutoResolve = true;
 							 
 						}//end STATUS "CONFLICTING"
@@ -650,7 +650,7 @@ public class JgitUtilHTTPS implements IConstantZZZ{
 						if(status.equals(MergeStatus.FAILED)) {
 						    System.out.println("PULL: Failed erkannt ("+iCount+")");
 
-						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
+						    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
 						    bMyAutoResolve = true;
 						}//end status FAILED 
 												

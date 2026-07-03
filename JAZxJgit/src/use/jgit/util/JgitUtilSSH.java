@@ -25,10 +25,10 @@ import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
-import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
+import use.jgit.tool.resolve.JgitResolverConflictUtilZZZ;
 
 public class JgitUtilSSH implements IConstantZZZ{
 	public static final String sPROTOCOL_PART = JgitStarterSSH.sPROTOCOL + "@";
@@ -759,14 +759,14 @@ public class JgitUtilSSH implements IConstantZZZ{
 				    System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 				    
 				    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-				    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);					    
+				    bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);					    
 				}//end STATUS "CONFLICTING"
 			
 			
 				if(status.equals(MergeStatus.FAILED)) {
 				    System.out.println("Failed erkannt ("+iCount+")");
 
-				    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objReturn);
+				    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objReturn);
 
 				}//end status FAILED 
 				
@@ -863,14 +863,14 @@ public class JgitUtilSSH implements IConstantZZZ{
 					    System.out.println("Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 					    
 					    //Mit dem Merge - Ergebnis weiterarbeiten.
-					    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);					    
+					    bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objReturn, objEnumStrategy);					    
 					}//end STATUS "CONFLICTING"
 				
 				
 					if(status.equals(MergeStatus.FAILED)) {
 					    System.out.println("Failed erkannt ("+iCount+")");
 
-					    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objReturn);
+					    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objReturn);
 
 					}//end status FAILED 
 					

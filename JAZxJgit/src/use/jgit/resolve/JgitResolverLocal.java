@@ -27,7 +27,8 @@ import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigResolverJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.tool.resolve.GitConflictResolverUtil;
+import use.jgit.tool.resolve.JgitResolverDeletedUtilZZZ;
+import use.jgit.tool.resolve.JgitResolverConflictPostUtilZZZ;
 import use.jgit.util.JgitUtilZZZ;
 
 
@@ -238,6 +239,16 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				throw ez;
 			}
 			
+
+			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+			//Statt so etwas zu machen, das Flag übergeben:
+			//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+			//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+			STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+			
+			
+			//DAS KANN MAN NOCH OPTIMIEREN.
+			//STRATEGIE UND VORHANDENSEIN DER DATEI
 //			String sFilePathTotal = null;
 //			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathInRepository);
 //			if(bPathRelative) {
@@ -261,27 +272,18 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 //				throw ez;
 //			}
 			
-			
-			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-			//Statt so etwas zu machen, das Flag übergeben:
-			//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-			//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-			STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-			
-
 			boolean bResolvedSuccess=false;			
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {						
-				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, sFilePathInRepository, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
+				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedTHEIRS(git, sFilePathInRepository);				
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
-				bResolvedSuccess = GitConflictResolverUtil.resolveDeleted(git, sFilePathInRepository, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
+				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedOURS(git, sFilePathInRepository);
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 				
-			}
-			
+			}			
 			bReturn = bResolvedSuccess;
 			
 			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
@@ -290,7 +292,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 					String sLog="Erfolgreiche Konfliktauflösung.\n"
 							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
-							  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
+							  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
 					System.out.println(sLog);
 				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
@@ -450,10 +452,10 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
 			//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
 				//sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
-				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
+				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
-				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
+				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
@@ -651,10 +653,10 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			String sResolved = null;
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
 			//if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
-				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);
+				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
 			//}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
-				sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);						
+				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);						
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
@@ -795,7 +797,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				String sFileDirectory = FileEasyZZZ.joinFilePathName(objFileDirectory, sProjectName);
 				objFileProject = new File(sFileDirectory);				
 			}
-			listFile = JgitResolverUtilZZZ.findFilesWithConflictMarkers(objFileProject);
+			listFile = JgitResolverConflictPostUtilZZZ.findFilesWithConflictMarkers(objFileProject);
 	        this.setFiles(listFile);
 			
 	        bReturn = true;							

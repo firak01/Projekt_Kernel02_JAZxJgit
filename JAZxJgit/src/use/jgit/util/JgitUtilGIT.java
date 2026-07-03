@@ -36,10 +36,10 @@ import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverLocal;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
-import use.jgit.resolve.JgitResolverUtilZZZ;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;
+import use.jgit.tool.resolve.JgitResolverConflictUtilZZZ;
 
 /** Für den GIT Weg:
 	 *  Merke: Bei Pull mit HTTPS ist es notwendig den pull in fetch und merge zu zerlegen
@@ -737,7 +737,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 							 System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 							
 							 //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-							 bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							 bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
 							 bMyAutoResolve = true;
 							 
 						}//end STATUS "CONFLICTING"
@@ -745,7 +745,7 @@ public class JgitUtilGIT implements IConstantZZZ{
 						if(status.equals(MergeStatus.FAILED)) {
 						    System.out.println("PULL: Failed erkannt ("+iCount+")");
 
-						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
+						    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objMergeResult, objEnumStrategy);
 						    bMyAutoResolve = true;
 						}//end status FAILED 
 												
@@ -1094,7 +1094,7 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 						    System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 						    
 						    //Mit dem ersten Merge - Ergebnis weiterarbeiten. Das ist der Vorteil gegenüber einem normalen PULL
-						    bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+						    bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
 						    bMyAutoResolve = true;
 						}//end STATUS "CONFLICTING"
 					
@@ -1102,7 +1102,7 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 						if(status.equals(MergeStatus.FAILED)) {
 						    System.out.println("PULL: Failed erkannt ("+iCount+")");
 		
-						    bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
+						    bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objMergeResult);
 						    bMyAutoResolve = true;
 						}//end status FAILED 
 				
@@ -1264,7 +1264,7 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 							System.out.println("PULL: Konflikte erkannt ("+iCount+"). IgnoreConflicts. Strategy: " + objEnumStrategy.getName());
 					    
 							//Mit dem Merge - Ergebnis weiterarbeiten.
-							bAnyResolved = JgitResolverUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
+							bAnyResolved = JgitResolverConflictUtilZZZ.resolveConflicts(git, objMergeResult, objEnumStrategy);
 							bMyAutoResolved = true;
 						}//end STATUS "CONFLICTING"
 				
@@ -1272,7 +1272,7 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 						if(status.equals(MergeStatus.FAILED)) {
 							System.out.println("PULL: Failed erkannt ("+iCount+")");
 
-							bAnyResolved= JgitResolverUtilZZZ.resolveFailed(git, objMergeResult);
+							bAnyResolved= JgitResolverConflictUtilZZZ.resolveFailed(git, objMergeResult);
 							bMyAutoResolved = true;
 					}//end status FAILED 
 					
