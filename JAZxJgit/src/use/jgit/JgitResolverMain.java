@@ -197,21 +197,30 @@ public class JgitResolverMain implements IConstantZZZ{
 				//          status immer hinten.
 				//TODO: Die erstellte ArrayList sortieren nach einem Schema....
 				
+				
 				//Hier: Nur lokales Repository berücksichtigen, also kein fetch...
-							
-				sAction = objConfig.readActionSearchConflictFiles();
+				
+				//...die Suchaktionen immer voranstellen, die anderen Aktionen bauen ggfs. darauf auf.
+				sAction = objConfig.readActionSearchConflictFilesMarked();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
 				sAction = objConfig.readActionSearchConflictFilesDeleted();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType = objConfig.readOptionValue("resolveConflict");
+				if(!StringZZZ.isEmpty(sConflictType)) {
+					sAction = "resolveConflict";
+					listasAction.add(sAction);
+				}
+				
 				sAction = objConfig.readActionResolveConflictDeleted();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
-				sAction = objConfig.readActionResolveConflict();
+				sAction = objConfig.readActionResolveConflictMarked();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 							
-				sAction = objConfig.readActionResolveConflictCommit();
+				sAction = objConfig.readActionResolveConflictMarkedCommit();
 				if(!StringZZZ.isEmpty(sAction)) {
 					listasAction.add(sAction);
 					
@@ -311,7 +320,10 @@ public class JgitResolverMain implements IConstantZZZ{
 						bReturn = objResolver.commitit(objConfig);					
 						break;
 					case "resolveConflict":
-						bReturn = objResolver.resolveConflictit(objConfig);					
+						bReturn = objResolver.resolveConflictit(objConfig, sConflictType);					
+						break;
+					case "resolveConflictMarked":
+						bReturn = objResolver.resolveConflictMarkedit(objConfig);					
 						break;
 					case "resolveConflictDeleted":
 						bReturn = objResolver.resolveConflictDeletedit(objConfig);
@@ -319,11 +331,11 @@ public class JgitResolverMain implements IConstantZZZ{
 					case "resolveByStageState":
 						bReturn = objResolver.resolveByStageStateit(objConfig);
 						break;
-					case "resolveConflictCommit":
-						bReturn = objResolver.resolveConflictCommitit(objConfig);
+					case "resolveConflictMarkedCommit":
+						bReturn = objResolver.resolveConflictMarkedCommitit(objConfig);
 						break;
-					case "searchConflictFiles":
-						bReturn = objResolver.searchConflictFilesit(objConfig);
+					case "searchConflictFilesMarked":
+						bReturn = objResolver.searchConflictFilesMarkedit(objConfig);
 						break;
 					case "searchConflictFilesDeleted":
 						bReturn = objResolver.searchConflictFilesDeletedit(objConfig);

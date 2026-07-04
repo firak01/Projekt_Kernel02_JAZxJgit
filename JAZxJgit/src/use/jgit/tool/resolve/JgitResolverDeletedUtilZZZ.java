@@ -100,18 +100,23 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      * @return
      * @throws ExceptionZZZ
      */
-    public static boolean resolveDeletedTHEIRS(Git git, String sFilePathInRepository) throws ExceptionZZZ{
+    public static boolean resolveDeletedTHEIRS(Git git, String sFilePathInRepositoryIn) throws ExceptionZZZ{
         boolean bReturn = false;
         main:{
      	   try {
  	    	 
- 	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepository)) {
+ 	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepositoryIn)) {
  	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
  	    	   }
  	    	   
+ 	    	   
+ 	    	   
  	    	  Repository repository = git.getRepository();
  	    	   
+ 	    	 //wichtig, normiere den Pfad
+	    	 String sFilePathInRepository =  JgitUtilZZZ.computeGitPath(sFilePathInRepositoryIn);
+	    	  
  	    	   
  	    	  //############################################### 				
  	    	  //### A
@@ -216,20 +221,23 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      * @return
      * @throws ExceptionZZZ
      */
-    public static boolean resolveDeletedOURS(Git git, String sFilePathInRepository) throws ExceptionZZZ{
+    public static boolean resolveDeletedOURS(Git git, String sFilePathInRepositoryIn) throws ExceptionZZZ{
         boolean bReturn = false;
         main:{
      	   try {
  	    	 
  	    	   
- 	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepository)) {
+ 	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepositoryIn)) {
  	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
  	    	   }
  	    	   
  	    	   
  	    	   //###############################################
-
+ 	    	   //wichtig, normiere den Pfad
+ 	    	   String sFilePathInRepository =  JgitUtilZZZ.computeGitPath(sFilePathInRepositoryIn);
+ 	    	   
+ 	    	   
  				//Code Snippet:
  				//Merke: das ist Strategieabhängig und StageState abhängig, was passieren soll.					
  				

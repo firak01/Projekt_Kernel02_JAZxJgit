@@ -11,7 +11,7 @@ public interface IConfigResolverJGIT extends IConfigStarterLocalJGIT{
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|commit|resolveByStageState|resolveConflictDeleted|resolveConflict|resolveConflictCommit|searchConflictFiles|searchConflictFilesDeleted|rl:project:filepath:comment."; 
+	final static String sPATTERN4GIT_RESOLVER_DEFAULT="help|?|status|commit|resolveByStageState|resolveConflict:resolveConflictDeleted|resolveConflictMarked|resolveConflictMarkedCommit|searchConflictFiles:searchConflictFilesMarked|searchConflictFilesDeleted|rl:project:filepath:comment."; 
 	                                                //Aktionen;
 													//conflict = löse in einer angegebenen die angezeigten Konflikte automatisch
 	                                                //           Konflikte werden in einer Datei mit <<<< oder >>>> angezeigt, etc.
@@ -30,10 +30,12 @@ public interface IConfigResolverJGIT extends IConfigStarterLocalJGIT{
 	public String getFilePathDefault() throws ExceptionZZZ;
 	
 	public String readActionResolveByStageState() throws ExceptionZZZ;
-	public String readActionResolveConflictDeleted() throws ExceptionZZZ;
 	public String readActionResolveConflict() throws ExceptionZZZ;
-	public String readActionResolveConflictCommit() throws ExceptionZZZ;	
+	public String readActionResolveConflictDeleted() throws ExceptionZZZ;
+	public String readActionResolveConflictMarked() throws ExceptionZZZ;
+	public String readActionResolveConflictMarkedCommit() throws ExceptionZZZ;	
 	
 	public String readActionSearchConflictFiles() throws ExceptionZZZ;
+	public String readActionSearchConflictFilesMarked() throws ExceptionZZZ;
 	public String readActionSearchConflictFilesDeleted() throws ExceptionZZZ;
 }
