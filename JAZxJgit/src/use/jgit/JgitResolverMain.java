@@ -208,12 +208,26 @@ public class JgitResolverMain implements IConstantZZZ{
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
 				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
-				String sConflictType = objConfig.readOptionValue("resolveConflict");
-				if(!StringZZZ.isEmpty(sConflictType)) {
-					sAction = "resolveConflict";
+				String sConflictType4Search = objConfig.readOptionValue("searchConflictFiles");
+				if(!StringZZZ.isEmpty(sConflictType4Search)) {
+					sAction = "searchConflictFiles";
 					listasAction.add(sAction);
 				}
 				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType4Scan = objConfig.readOptionValue("searchConflictFilesByScan");
+				if(!StringZZZ.isEmpty(sConflictType4Scan)) {
+					sAction = "searchConflictFilesByScan";
+					listasAction.add(sAction);
+				}
+				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType4Resolve = objConfig.readOptionValue("resolveConflict");
+				if(!StringZZZ.isEmpty(sConflictType4Resolve)) {
+					sAction = "resolveConflict";
+					listasAction.add(sAction);
+				}
+								
 				sAction = objConfig.readActionResolveConflictDeleted();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
@@ -320,7 +334,7 @@ public class JgitResolverMain implements IConstantZZZ{
 						bReturn = objResolver.commitit(objConfig);					
 						break;
 					case "resolveConflict":
-						bReturn = objResolver.resolveConflictit(objConfig, sConflictType);					
+						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);					
 						break;
 					case "resolveConflictMarked":
 						bReturn = objResolver.resolveConflictMarkedit(objConfig);					
@@ -339,6 +353,12 @@ public class JgitResolverMain implements IConstantZZZ{
 						break;
 					case "searchConflictFilesDeleted":
 						bReturn = objResolver.searchConflictFilesDeletedit(objConfig);
+						break;
+					case "searchConflictFiles":
+						bReturn = objResolver.searchConflictFilesit(objConfig, sConflictType4Search);
+						break;
+					case "searchConflictFilesByScan":
+						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
 						break;
 					case "status":
 						bReturn = objResolver.statusit(objConfig);

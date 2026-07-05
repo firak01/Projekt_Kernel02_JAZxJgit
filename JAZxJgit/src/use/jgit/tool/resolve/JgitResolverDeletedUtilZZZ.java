@@ -242,9 +242,9 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  				//Merke: das ist Strategieabhängig und StageState abhängig, was passieren soll.					
  				
 				//Die Lokale Datei soll erhalten bleiben.
- 						git.add()
- 						   .addFilepattern(sFilePathInRepository)
- 						   .call();	
+				git.add()
+				   .addFilepattern(sFilePathInRepository)
+				   .call();	
  					 				 
  			} catch (NoFilepatternException nfe) {
  				ExceptionZZZ ez = new ExceptionZZZ(nfe);

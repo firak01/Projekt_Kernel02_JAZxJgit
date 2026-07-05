@@ -37,21 +37,24 @@ public interface IJgitResolver {
 	
 	
 	
-	//Suche in dem Repository nach Dateien, die Konflikmarker haben (DELETED haben keine Konfliktmarker, werden damit also nicht erfasst)
+	//Suche in dem Repository nach Dateien, die Konflikmarker haben (DELETED haben keine Konfliktmarker in der Datei, werden damit also nicht erfasst)
+	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean searchConflictFilesit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
+	
 	public boolean searchConflictFilesMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean searchConflictFilesit(Git git, String sProjectName) throws ExceptionZZZ;
+	public boolean searchConflictFilesMarkedit(Git git, String sProjectName) throws ExceptionZZZ;
 	
 	public List<File>getFiles() throws ExceptionZZZ;
 	public void setFiles(List<File>listFile) throws ExceptionZZZ;
 	
 	
 	//Suche in dem Repository nach Dateien, die im Repository den entprechenden Konflikt-Typen haben.
+	public boolean searchConflictFilesByScanit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean searchConflictFilesByScanit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
+		
 	public boolean searchConflictFilesDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
 	public boolean searchConflictFilesDeletedit(Git git, String sProjectName) throws ExceptionZZZ;
-	
-	public boolean searchConflictFilesByScanit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean searchConflictFilesByScanit(Git git, String sProjectName) throws ExceptionZZZ;
-	
+		
 	public List<String>getRepositoryPathStrings() throws ExceptionZZZ;
 	public void setRepositoryPathStrings(List<String>listasRepositoryPath) throws ExceptionZZZ;
 	

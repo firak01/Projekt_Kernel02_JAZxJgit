@@ -100,10 +100,15 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarked","Konfliktauflösung per Markierung","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
 			listaReturn.add(objHelp);			
 			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarkedCommit","Konfliktauflösung per Markierung und Commit","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+			listaReturn.add(objHelp);
+
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFiles:","Suche nach Konfliktdateien. Optionen sind a) Marked b)... siehe searchConflictFilesByScan","Suche nach Dateien, die Konfliktmarkierungen enthalten entweder in der Datei selbst (marked) oder im internen Verzeichnis von GIT");
 			listaReturn.add(objHelp);	
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesByScan","Suche nach Konfliktdateien. Optionen sind 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY","Suche nach Dateien, die den entsprechenden Status im internen Verzeichis von GIT haben. Werte entsprechen dem Enum EnumGitConflictTypeZZZ.");
+			listaReturn.add(objHelp);
 			objHelp = new KernelConfigHelpLineZZZ("searchConflictMarkedFiles","Suche nach Dateien mit Konfliktmarkierung","Suche nach Dateien, die Konfliktmarkierungen enthalten");
 			listaReturn.add(objHelp);	
-			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesDeleted","Suche nach 'Deleted' Konfliktdateien","Suche nach Dateien, die den Status 'DELTED' im Repository haben.");
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesDeleted","Suche nach 'Deleted_Theirs' Konfliktdateien","Suche nach Dateien, die den Status 'DELTED_THEIRS' im Repository haben.");
 			listaReturn.add(objHelp);	
 			objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
 			listaReturn.add(objHelp);
