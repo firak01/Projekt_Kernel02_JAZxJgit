@@ -53,7 +53,8 @@ public interface IJgitResolver {
 	public boolean searchConflictFilesByScanit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
 		
 	public boolean searchConflictFilesDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean searchConflictFilesDeletedit(Git git, String sProjectName) throws ExceptionZZZ;
+	public boolean searchConflictFilesDeletedit(Git git, String sProjectName) throws ExceptionZZZ; //Deleted_By_Theirs als default sConflictType
+	public boolean searchConflictFilesDeletedit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
 		
 	public List<String>getRepositoryPathStrings() throws ExceptionZZZ;
 	public void setRepositoryPathStrings(List<String>listasRepositoryPath) throws ExceptionZZZ;

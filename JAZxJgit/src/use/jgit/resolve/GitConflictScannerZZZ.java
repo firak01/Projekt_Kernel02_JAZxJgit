@@ -84,14 +84,14 @@ public class GitConflictScannerZZZ {
         // Delete by THEM
         //---------------------------------------------------
         if (s.stage1 && s.stage2 && !s.stage3) {
-            return EnumGitConflictTypeZZZ.DELETE_BY_THEIRS;
+            return EnumGitConflictTypeZZZ.DELETED_BY_THEIRS;
         }
 
         //---------------------------------------------------
         // Delete by US
         //---------------------------------------------------
         if (s.stage1 && !s.stage2 && s.stage3) {
-            return EnumGitConflictTypeZZZ.DELETE_BY_OURS;
+            return EnumGitConflictTypeZZZ.DELETED_BY_OURS;
         }
 
         //---------------------------------------------------

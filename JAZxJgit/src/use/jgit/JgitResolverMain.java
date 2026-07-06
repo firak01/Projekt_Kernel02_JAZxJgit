@@ -329,9 +329,24 @@ public class JgitResolverMain implements IConstantZZZ{
 				
 				boolean bReturn = false;
 				for(String sActionTemp : listasAction) {				
-					switch(sActionTemp) {				
+					switch(sActionTemp) {
+					case "status":
+						bReturn = objResolver.statusit(objConfig);
+						break;	
 					case "commit":
 						bReturn = objResolver.commitit(objConfig);					
+						break;
+					case "searchConflictFilesMarked":
+						bReturn = objResolver.searchConflictFilesMarkedit(objConfig);
+						break;
+					case "searchConflictFilesDeleted":
+						bReturn = objResolver.searchConflictFilesDeletedit(objConfig);
+						break;
+					case "searchConflictFiles":
+						bReturn = objResolver.searchConflictFilesit(objConfig, sConflictType4Search);
+						break;
+					case "searchConflictFilesByScan":
+						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
 						break;
 					case "resolveConflict":
 						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);					
@@ -347,22 +362,7 @@ public class JgitResolverMain implements IConstantZZZ{
 						break;
 					case "resolveConflictMarkedCommit":
 						bReturn = objResolver.resolveConflictMarkedCommitit(objConfig);
-						break;
-					case "searchConflictFilesMarked":
-						bReturn = objResolver.searchConflictFilesMarkedit(objConfig);
-						break;
-					case "searchConflictFilesDeleted":
-						bReturn = objResolver.searchConflictFilesDeletedit(objConfig);
-						break;
-					case "searchConflictFiles":
-						bReturn = objResolver.searchConflictFilesit(objConfig, sConflictType4Search);
-						break;
-					case "searchConflictFilesByScan":
-						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
-						break;
-					case "status":
-						bReturn = objResolver.statusit(objConfig);
-						break;				
+						break;							
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available '" + sAction + "'", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;

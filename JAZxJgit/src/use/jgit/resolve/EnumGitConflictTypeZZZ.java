@@ -6,9 +6,9 @@ public enum EnumGitConflictTypeZZZ {
 
     CONTENT,
 
-    DELETE_BY_THEIRS,
+    DELETED_BY_THEIRS,
 
-    DELETE_BY_OURS,
+    DELETED_BY_OURS,
 
     ADD_ADD,
 

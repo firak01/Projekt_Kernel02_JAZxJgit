@@ -111,7 +111,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	   }
  	    	   
  	    	   
- 	    	   
+ 	    	  File fD=null;
  	    	  Repository repository = git.getRepository();
  	    	   
  	    	 //wichtig, normiere den Pfad
@@ -130,8 +130,17 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 				
 				
  	    	  //### B 
- 	    	  debugRepositoryState(git, "B) NACH git.rm()", sFilePathInRepository);
+ 	    	  debugRepositoryState(git, "A) NACH git.rm()", sFilePathInRepository);
 
+ 	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
+ 	    	  if (!fD.exists()) {
+
+ 	    	    System.out.println("A) NACHHER. Mache commit");
+
+ 	    	    bReturn = commitMergeResolved(git);
+ 	    	    break main;
+ 	    	  }
+ 	    	  
  	    	  System.out.println("\nB) VERSUCH: Entferne aus dem Index per Cache.editor");
 
  	    	  DirCache cache = repository.lockDirCache();
@@ -153,23 +162,21 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    			  System.out.println(e.getMessage());
  	    		  }
  	    	  }
-				
-				
- 	    	  //########### C
- 	    	  debugRepositoryState(git, "C) NACH Cache.editor()", sFilePathInRepository);
+				 
+ 	    	  debugRepositoryState(git, "B) NACH Cache.editor()", sFilePathInRepository);
 
  	    	  boolean bNoConflicts = git.status().call().getConflicting().isEmpty();
- 	    	  System.out.println("C) NACHHER. Konflikt frei? '" + bNoConflicts + "'");
+ 	    	  System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts + "'");
 
  	    	  if (bNoConflicts) {
- 	    		  System.out.println("C) NACHHER. Mache commit");
+ 	    		  System.out.println("B) NACHHER. Mache commit");
 
  	    		  bReturn = commitMergeResolved(git);
  	    		  break main;
 
  	    	  } else {
 
- 	    		  System.out.println("C) NACHHER. Mache Hardreset");
+ 	    		  System.out.println("B) NACHHER. Mache Hardreset");
 
  	    		  git.reset()
  	    		  .setMode(ResetCommand.ResetType.HARD)
@@ -177,24 +184,25 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    		  .call();
  	    	  }
 		
- 	    	  //### D			
- 	    	  File fD = new File(repository.getWorkTree(), sFilePathInRepository);
+
+ 	    	  //########### C
+ 	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
  	    	  if (!fD.exists()) {
 
- 	    	    System.out.println("D) NACHHER. Mache commit");
+ 	    	    System.out.println("B) NACHHER. Mache commit");
 
  	    	    bReturn = commitMergeResolved(git);
  	    	    break main;
  	    	  }
  	    	  
  	    	  //### E
- 	    	  System.out.println("E) VORHER. Vom Worktree, file.exists(): " + fD.exists());
+ 	    	  System.out.println("C) VORHER. Vom Worktree, file.exists(): " + fD.exists());
 				
  	    	  //Sicherstellen, dass die Datei auch wirklich gelöscht wird.
  	    	  boolean bDeletedExplizit = fD.delete();
- 	    	  System.out.println("E) Ergebnis des expliziten Löschens: " + bDeletedExplizit); 					     					   					     					 	    	  
+ 	    	  System.out.println("C) Ergebnis des expliziten Löschens: " + bDeletedExplizit); 					     					   					     					 	    	  
  	    	  if(bDeletedExplizit) {
-					System.out.println("E) NACHHER. Mache commit" );
+					System.out.println("C) NACHHER. Mache commit" );
 					bReturn = commitMergeResolved(git);
 					break main;					
  	    	  }else {
