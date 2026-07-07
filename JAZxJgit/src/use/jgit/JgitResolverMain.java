@@ -348,21 +348,21 @@ public class JgitResolverMain implements IConstantZZZ{
 					case "searchConflictFilesByScan":
 						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
 						break;
-					case "resolveConflict":
-						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);					
+					case "resolveSearchedConflict":
+						bReturn = objResolver.resolveSearchedConflictit(objConfig, sConflictType4Resolve);					
 						break;
-					case "resolveConflictMarked":
-						bReturn = objResolver.resolveConflictMarkedit(objConfig);					
+					case "resolveSearchedConflictMarked":
+						bReturn = objResolver.resolveSearchedConflictMarkedit(objConfig);					
 						break;
-					case "resolveConflictDeleted":
-						bReturn = objResolver.resolveConflictDeletedit(objConfig);
+					case "resolveSearchedConflictDeleted":
+						bReturn = objResolver.resolveSearchedConflictDeletedit(objConfig);
+						break;
+					case "resolveSearchedConflictMarkedCommit":
+						bReturn = objResolver.resolveSearchedConflictMarkedCommitit(objConfig);
 						break;
 					case "resolveByStageState":
 						bReturn = objResolver.resolveByStageStateit(objConfig);
 						break;
-					case "resolveConflictMarkedCommit":
-						bReturn = objResolver.resolveConflictMarkedCommitit(objConfig);
-						break;							
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available '" + sAction + "'", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
@@ -372,7 +372,7 @@ public class JgitResolverMain implements IConstantZZZ{
 						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;						
 					}
-				}
+				}//end for
 														
 			} catch (IllegalStateException e) {
 				e.printStackTrace();		

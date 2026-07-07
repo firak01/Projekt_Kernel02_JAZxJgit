@@ -18,21 +18,21 @@ public interface IJgitResolver {
 	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 		
 	//### Konflikte aufgrund des Konfliktyps auflösen 
-	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	
 	//#### Konflikte aufgrund von Löschungen auflösen
-	public boolean resolveConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveConflictDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveSearchedConflictDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 	
 	//#### Konflikte mit Konfliktmarkern auflösen	
-	public boolean resolveConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveConflictMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveSearchedConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveSearchedConflictMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
-	public boolean resolveConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean resolveCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
-	public boolean resolveCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 
 	
 	
