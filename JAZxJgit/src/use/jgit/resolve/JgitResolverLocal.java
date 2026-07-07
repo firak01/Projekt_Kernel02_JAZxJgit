@@ -10,6 +10,7 @@ import javax.measure.spi.SystemOfUnits;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
@@ -127,22 +128,127 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	 */
 	@Override
 	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		
-		//Code Snippet
-//		Status status = git.status().call();
-//		IndexDiff.StageState stageState = status.getConflictingStageState().get(path);
-		
-		
-		return false;
+		boolean bReturn = false;
+		main:{
+			try {
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen												
+				
+				//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
+				//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
+				boolean bSuccess = this.configureGit(objConfig);
+				if(bSuccess) {
+					System.out.println("Git erfolgreich konfiguriert");
+				}else {
+					System.out.println("Git NICHT erfolgreich konfiguriert");
+					break main;
+				}
+				
+				Git git = this.getGitObject();
+				
+				//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+				//Statt so etwas zu machen, das Flag übergeben:
+				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+				
+				//Hole alle Konflikte im Repository
+				
+				//Code Snippet
+				//Status status = git.status().call();
+				//IndexDiff.StageState stageState = status.getConflictingStageState().get(path);
+				//
+				//hier aber über:
+				//DirCacheEntry entry = cache.getEntry(i);
+				List<GitConflictInfoZZZ> conflicts = GitConflictScannerZZZ.scan(git.getRepository());
+				for (GitConflictInfoZZZ info : conflicts) {
+
+				    switch (info.getConflictType()) {				    
+				    case DELETED_BY_THEIRS:		
+				    	TODOGOON20260707;//sConflictType per Argument übergeben.
+				    	                 //ALL, * 
+				    	                 //-resolve:     
+				    	                 //D.h. Methode umbenennen nach resolve
+				    	System.out.println("Verarbeite Remote gelöscht: " + info.getRepositoryPath());
+					   
+				    	break;
+				    case DELETED_BY_OURS:
+				    	System.out.println("Verarbeite Lokal gelöscht: " + info.getRepositoryPath());
+
+				    	break;
+				    case CONTENT:				    	
+					    System.out.println("Verarbeite Textkonflikt: " + info.getRepositoryPath());
+
+				    	break;
+				    default:
+				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht impelmentierter Konflikt-Typ '"+ info.getConflictType().name(), iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+				    }
+				} //end for
+				
+				
+				boolean bResolvedSuccess = false;
+				bReturn = bResolvedSuccess;
+				
+				//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
+				if(bReturn=true) {
+					if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
+					//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
+						String sLog="Erfolgreiche Konfliktauflösung.\n"
+								  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+								  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
+						System.out.println(sLog);
+					}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
+					//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
+						String sLog="Erfolgreiche Konfliktauflösung.\n"
+								  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+								  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
+						System.out.println(sLog);							
+					}else {
+						//Default
+						System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
+						ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+				}
+			
+			} catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
 	}
 
 	@Override
-	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		
-		
-		return false;
+	public boolean resolveByStageStateit(Git git, String sFilePathInRepository) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+//			try {	
+			if (git == null) {
+	            throw new IllegalArgumentException("git must not be null");
+	        }
+			
+			if(StringZZZ.isEmpty(sFilePathInRepository)) {
+				ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+//				
+//			
+//			} catch (IOException ioe) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+//				throw ez;
+//			}
+			
+		    bReturn = true;							
+		}//end main:
+		return bReturn;
 	}
 	
 	
