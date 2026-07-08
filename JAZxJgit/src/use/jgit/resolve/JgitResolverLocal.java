@@ -5,18 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.measure.spi.SystemOfUnits;
-
-import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.dircache.DirCacheEntry;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.abstractList.ArrayListUtilZZZ;
-import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.datatype.string.StringArrayZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
@@ -25,12 +20,10 @@ import basic.zBasic.util.file.FileTextWriterZZZ;
 import use.jgit.AbstractJgitStarterLocal;
 import use.jgit.JgitResolverMain;
 import use.jgit.JgitStarterMain;
-import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigResolverJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.tool.resolve.JgitResolverDeletedUtilZZZ;
 import use.jgit.tool.resolve.JgitResolverConflictPostUtilZZZ;
+import use.jgit.tool.resolve.JgitResolverDeletedUtilZZZ;
 import use.jgit.util.JgitUtilZZZ;
 
 
@@ -127,14 +120,20 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	 * @see use.jgit.resolve.IJgitResolver#resolveByStageStateit(use.jgit.config.IConfigResolverJGIT)
 	 */
 	@Override
-	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictTypeIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
 				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
+				
+				if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				String sConflictType = sConflictTypeIn.toUpperCase();
 				
 				//################################################
 				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen												
@@ -151,11 +150,9 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				
 				Git git = this.getGitObject();
 				
-				//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-				//Statt so etwas zu machen, das Flag übergeben:
-				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+				ArrayList<String>listasFileSuccess = new ArrayList<String>();
+				ArrayList<String>listasFileFailed = new ArrayList<String>();	
+				boolean bResolveSuccess = false;
 				
 				//Hole alle Konflikte im Repository
 				
@@ -169,21 +166,38 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				for (GitConflictInfoZZZ info : conflicts) {
 
 				    switch (info.getConflictType()) {				    
-				    case DELETED_BY_THEIRS:		
-				    	TODOGOON20260707;//sConflictType per Argument übergeben.
-				    	                 //ALL, * 
-				    	                 //-resolve:     
-				    	                 //D.h. Methode umbenennen nach resolve
-				    	System.out.println("Verarbeite Remote gelöscht: " + info.getRepositoryPath());
-					   
+				    case DELETED_BY_THEIRS:	
+				    	if(sConflictType.equals("ALL") || sConflictType.equals(info.getConflictType().name())) {
+					    	System.out.println("\nVerarbeite Remote gelöscht: " + info.getRepositoryPath());
+					    	bResolveSuccess = this.resolveConflictFileDeletedit(git, info.getRepositoryPath());
+					    	if(bResolveSuccess) {
+					    		listasFileSuccess.add(info.getRepositoryPath());
+					    	}else {
+					    		listasFileFailed.add(info.getRepositoryPath());
+					    	}
+				    	}
 				    	break;
 				    case DELETED_BY_OURS:
-				    	System.out.println("Verarbeite Lokal gelöscht: " + info.getRepositoryPath());
-
+				    	if(sConflictType.equals("ALL") || sConflictType.equals(info.getConflictType().name())) {
+					    	System.out.println("\nVerarbeite Lokal gelöscht: " + info.getRepositoryPath());
+					    	bResolveSuccess = this.resolveConflictFileDeletedit(git, info.getRepositoryPath());
+					    	if(bResolveSuccess) {
+					    		listasFileSuccess.add(info.getRepositoryPath());
+					    	}else {
+					    		listasFileFailed.add(info.getRepositoryPath());
+					    	}
+				    	}
 				    	break;
-				    case CONTENT:				    	
-					    System.out.println("Verarbeite Textkonflikt: " + info.getRepositoryPath());
-
+				    case CONTENT:
+				    	if(sConflictType.equals("ALL") || sConflictType.equals(info.getConflictType().name())) {
+						    System.out.println("\nVerarbeite Textkonflikt: " + info.getRepositoryPath());
+						    bResolveSuccess = this.resolveConflictFileMarkedit(info.getRepositoryPath());
+						    if(bResolveSuccess) {
+					    		listasFileSuccess.add(info.getRepositoryPath());
+					    	}else {
+					    		listasFileFailed.add(info.getRepositoryPath());
+					    	}
+				    	}
 				    	break;
 				    default:
 				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht impelmentierter Konflikt-Typ '"+ info.getConflictType().name(), iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -191,32 +205,60 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				    }
 				} //end for
 				
+				//###############################################
+				//### Ausgabe der Rückmeldung
 				
-				boolean bResolvedSuccess = false;
-				bReturn = bResolvedSuccess;
+				//Liste von Dateien verarbeiten					
+				System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILES...");
+				if(listasFileSuccess.isEmpty()) {
+					System.out.println("* NO FILE");
+					bReturn = true;
+				}else {						
+					String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileSuccess);
+					saFile = StringArrayZZZ.plusString( "* ", saFile);
+					String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+					System.out.println(sPrint);
+					bReturn = true;
+				}								
+										
+				System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILES...");
+				if(listasFileFailed.isEmpty()) {
+					System.out.println("* NO FILE");
+					bReturn = true;
+				}else {						
+					String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileFailed);
+					saFile = StringArrayZZZ.plusString( "* ", saFile);
+					String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+					System.out.println(sPrint);
+					bReturn = false;	
+				}	
 				
 				//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
+				
+				//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+				//Statt so etwas zu machen, das Flag übergeben:
+				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+				
 				if(bReturn=true) {
 					if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-					//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
-						String sLog="Erfolgreiche Konfliktauflösung.\n"
+						String sLog="\nErfolgreiche Konfliktauflösung.\n"
 								  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 								  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
 						System.out.println(sLog);
 					}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-					//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
-						String sLog="Erfolgreiche Konfliktauflösung.\n"
+						String sLog="\nErfolgreiche Konfliktauflösung.\n"
 								  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 								  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 						System.out.println(sLog);							
 					}else {
-						//Default
 						System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 						ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}
 				}
-			
+				
 			} catch (IOException ioe) {
 				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
@@ -225,33 +267,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		return bReturn;
 	}
 
-	@Override
-	public boolean resolveByStageStateit(Git git, String sFilePathInRepository) throws ExceptionZZZ {
-		boolean bReturn = false;
-		main:{
-//			try {	
-			if (git == null) {
-	            throw new IllegalArgumentException("git must not be null");
-	        }
-			
-			if(StringZZZ.isEmpty(sFilePathInRepository)) {
-				ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-//				
-//			
-//			} catch (IOException ioe) {
-//				ExceptionZZZ ez = new ExceptionZZZ(ioe);
-//				throw ez;
-//			}
-			
-		    bReturn = true;							
-		}//end main:
-		return bReturn;
-	}
-	
-	
+
 	//##################################################
 	//###### RESOLVEDELETED #######################################	
 	@Override
@@ -299,7 +315,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
 					ArrayList<String>listasFileFailed = new ArrayList<String>();
 					for(String  sPathInRepository : listasPathInRepository) {
-						boolean bSuccessConflict = this.resolveSearchedConflictDeletedit(git, sPathInRepository);
+						boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sPathInRepository);
 						if(bSuccessConflict) {
 							listasFileSuccess.add(sPathInRepository);
 						}else {
@@ -334,13 +350,13 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 
 				}else {
 					//Einzelne Datei verarbeiten.
-					boolean bSuccessConflict = this.resolveSearchedConflictDeletedit(git, sFilePath);
+					boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sFilePath);
 					if(bSuccessConflict) {
-						System.out.println("STATUS AFTER RESOLVING DELETED: SUCCESSFUL");
+						System.out.println("\nSTATUS AFTER RESOLVING DELETED: SUCCESSFUL");
 						System.out.println("* " + sFilePath);					
 						bReturn = true;
 					}else {
-						System.out.println("STATUS AFTER RESOLVING DELETED: FAILED");
+						System.out.println("\nSTATUS AFTER RESOLVING DELETED: FAILED");
 						System.out.println("* " + sFilePath);					
 						bReturn = false;
 					}
@@ -351,7 +367,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	}
 
 	@Override
-	public boolean resolveSearchedConflictDeletedit(Git git, String sFilePathInRepository) throws ExceptionZZZ {				
+	public boolean resolveConflictFileDeletedit(Git git, String sFilePathInRepository) throws ExceptionZZZ {				
 		boolean bReturn = false;
 		main:{
 			if (git == null) {
@@ -369,33 +385,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
 			//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 			STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-			
-			
-			//DAS KANN MAN NOCH OPTIMIEREN.
-			//STRATEGIE UND VORHANDENSEIN DER DATEI
-//			String sFilePathTotal = null;
-//			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathInRepository);
-//			if(bPathRelative) {
-//				String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
-//				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathInRepository);
-//			}else {
-//				sFilePathTotal = sFilePathInRepository;
-//			}
-			
-			
-//			File objFile = new File(sFilePathTotal);
-//			boolean bFileExists = FileEasyZZZ.exists(objFile);
-//			if(!bFileExists) {
-//				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-//			
-//			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
-//			if(!bIsFile) {
-//				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-			
+
 			boolean bResolvedSuccess=false;			
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {						
 				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedTHEIRS(git, sFilePathInRepository);				
@@ -413,19 +403,16 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
 			if(bReturn=true) {
 				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-				//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung: '" + sFilePathInRepository + "'\n"
 							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 							  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
 					System.out.println(sLog);
 				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung: '" + sFilePathInRepository + "'\n"
 							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 							  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 					System.out.println(sLog);							
 				}else {
-					//Default
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -509,7 +496,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 							//Liste von Dateien aus dem Filesystem verarbeiten						
 							for(File objFile : listFile) {
 								String sFilePathTemp = objFile.getAbsolutePath();
-								bSuccessConflict = this.resolveSearchedConflictMarkedit(sFilePathTemp);
+								bSuccessConflict = this.resolveConflictFileMarkedit(sFilePathTemp);
 								if(bSuccessConflict) {
 									listasFileSuccess.add(sFilePathTemp);
 								}else {
@@ -521,7 +508,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 						if(listasPathInRepository!=null) {
 							//Liste von Dateien mit Kennzeichnung im GIT verarbeiten						
 							for(String sPathInRepository : listasPathInRepository) {
-								bSuccessConflict = this.resolveSearchedConflictMarkedit(sPathInRepository);
+								bSuccessConflict = this.resolveConflictFileMarkedit(sPathInRepository);
 								if(bSuccessConflict) {
 									listasFileSuccess.add(sPathInRepository);
 								}else {
@@ -532,7 +519,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					}else {
 						//Einzelne Datei verarbeiten
 						if(!StringZZZ.isEmptyTrimmed(sFilePath)) {
-							bSuccessConflict = this.resolveSearchedConflictMarkedit(sFilePath);
+							bSuccessConflict = this.resolveConflictFileMarkedit(sFilePath);
 						}
 					}
 					break;
@@ -542,7 +529,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					if(bUseList && listasPathInRepository!=null) {
 						//Liste von Repositorypfaden verarbeiten						
 						for(String sPathInRepository : listasPathInRepository) {
-							bSuccessConflict = this.resolveSearchedConflictDeletedit(git, sPathInRepository);
+							bSuccessConflict = this.resolveConflictFileDeletedit(git, sPathInRepository);
 							if(bSuccessConflict) {
 								listasFileSuccess.add(sPathInRepository);
 							}else {
@@ -552,7 +539,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					}else {
 						//Einzelne Datei verarbeiten
 						if(!StringZZZ.isEmptyTrimmed(sFilePath)) {
-							bSuccessConflict = this.resolveSearchedConflictDeletedit(git, sFilePath);
+							bSuccessConflict = this.resolveConflictFileDeletedit(git, sFilePath);
 						}
 					}
 					break;
@@ -597,7 +584,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}else {
 					//Einzelne Datei verarbeiten.
 					if(bSuccessConflict) {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
+						System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
 						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
 							System.out.println("* NO FILE");
 							bReturn = true;
@@ -606,7 +593,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 							bReturn = true;
 						}						
 					}else {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED FILE");
+						System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILE");
 						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
 							System.out.println("* NO FILE");
 							bReturn = true;
@@ -662,7 +649,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
 					ArrayList<String>listasFileFailed = new ArrayList<String>();
 					for(File objFile : listFile) {
-						boolean bSuccessConflict = this.resolveSearchedConflictMarkedit(sFilePath);
+						boolean bSuccessConflict = this.resolveConflictFileMarkedit(sFilePath);
 						if(bSuccessConflict) {
 							listasFileSuccess.add(sFilePath);
 						}else {
@@ -697,9 +684,9 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 
 				}else {
 					//Einzelne Datei verarbeiten.
-					boolean bSuccessConflict = this.resolveSearchedConflictMarkedit(sFilePath);
+					boolean bSuccessConflict = this.resolveConflictFileMarkedit(sFilePath);
 					if(bSuccessConflict) {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
+						System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
 						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
 							System.out.println("* NO FILE");
 						}else {
@@ -707,7 +694,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 						}				
 						bReturn = true;
 					}else {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED FILE");
+						System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILE");
 						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
 							System.out.println("* NO FILE");
 						}else {
@@ -715,15 +702,14 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 						}				
 						bReturn = false;
 					}
-				}
-			
+				}			
 		}//end main:
 		return bReturn;
 	}
 	
 		
 	@Override
-	public boolean resolveSearchedConflictMarkedit(String sFilePathTotalIn) throws ExceptionZZZ {
+	public boolean resolveConflictFileMarkedit(String sFilePathTotalIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
@@ -767,14 +753,10 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			
 			String sResolved = null;			
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-			//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
-				//sResolved = GitConflictResolverUtil.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
-			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
+			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
 			}else {
-				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -786,19 +768,16 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
 			if(bReturn=true) {
 				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-				//if(!bUseMergeStrategOURS & bUseMergeStrategTHEIRS) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung: '" + sFilePathTotal + "'\n"
 							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 							  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein Commit muss noch gemacht werden.";
 					System.out.println(sLog);
 				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-				//}else if(bUseMergeStrategOURS & !bUseMergeStrategTHEIRS) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung: '" + sFilePathTotal + "'\n"
 							  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 							  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
 					System.out.println(sLog);							
 				}else {
-					//Default
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -814,123 +793,104 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			//try {
-				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit lokal							
+			boolean bSuccess = this.configureGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert");
+				break main;
+			}
+			
+			boolean bUseListFile = false;
+			List<File> listFile = null;
+			String sFilePath = objConfig.readFilePath();
+			if(StringZZZ.isEmpty(sFilePath)) {
+				listFile = this.getFiles();
+				if(listFile.isEmpty()) {
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
-				}
-				
-				//+++++++++++++++++++++++++++++++
-				//Konfiguriere JGit lokal							
-				boolean bSuccess = this.configureGit(objConfig);
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
-					break main;
+					bUseListFile = true;
 				}
-				
-				boolean bUseListFile = false;
-				List<File> listFile = null;
-				String sFilePath = objConfig.readFilePath();
-				if(StringZZZ.isEmpty(sFilePath)) {
-					listFile = this.getFiles();
-					if(listFile.isEmpty()) {
-						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-						throw ez;
-					}else {
-						bUseListFile = true;
-					}
-				}
-				
-				String sComment = objConfig.readComment();
-				this.setCommentCommit(sComment);
-				
-				Git git = this.getGitObject();
-				
-				if(bUseListFile && listFile!=null) {
-					//Liste von Dateien verarbeiten
-					ArrayList<String>listasFileSuccess = new ArrayList<String>();
-					ArrayList<String>listasFileFailed = new ArrayList<String>();
-					for(File objFile : listFile) {
-						sFilePath = objFile.getAbsolutePath();
-						boolean bSuccessConflict = this.resolveSearchedConflictMarkedit(sFilePath);
-						if(bSuccessConflict) {
-							listasFileSuccess.add(sFilePath);
-						}else {
-							listasFileFailed.add(sFilePath);
-						}
-					}//end for
-					
-					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILES...");
-					if(listasFileSuccess.isEmpty()) {
-						System.out.println("* NO FILE");
-						bReturn = false;
-					}else {						
-						String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileSuccess);
-						saFile = StringArrayZZZ.plusString( "* ", saFile);
-						String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
-						System.out.println(sPrint);
-						bReturn = true;
-					}								
-											
-					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILES...");
-					if(listasFileFailed.isEmpty()) {
-						System.out.println("* NO FILE");
-						bReturn = true;
-					}else {						
-						String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileFailed);
-						saFile = StringArrayZZZ.plusString( "* ", saFile);
-						String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
-						System.out.println(sPrint);
-						bReturn = false;	
-					}		
-					if(!bReturn) break main;
-					
-					bReturn = this.commitit(git, sComment);//Alle Dateien auf einmal committen						
-				}else {
-					//Einzelne Datei verarbeiten.					
-					String sRepositoryLocalBase = this.getRepositoryLocalBase();
-					String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
-					boolean bSuccessConflict = this.resolveSearchedConflictMarkedCommitit(git, sFilePathTotal, sComment);
+			}
+			
+			String sComment = objConfig.readComment();
+			this.setCommentCommit(sComment);
+			
+			Git git = this.getGitObject();
+			
+			if(bUseListFile && listFile!=null) {
+				//Liste von Dateien verarbeiten
+				ArrayList<String>listasFileSuccess = new ArrayList<String>();
+				ArrayList<String>listasFileFailed = new ArrayList<String>();
+				for(File objFile : listFile) {
+					sFilePath = objFile.getAbsolutePath();
+					boolean bSuccessConflict = this.resolveConflictFileMarkedit(sFilePath);
 					if(bSuccessConflict) {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
-						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
-							System.out.println("* NO FILE");
-							bReturn = true;
-						}else {
-							System.out.println("* " + sFilePath);
-							bReturn = true;
-						}					
+						listasFileSuccess.add(sFilePath);
 					}else {
-						System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED FILE");
-						if(StringZZZ.isEmptyTrimmed(sFilePath)) {
-							System.out.println("* NO FILE");
-							bReturn = true;
-						}else {
-							System.out.println("* " + sFilePath);
-							bReturn = false;
-						}											
+						listasFileFailed.add(sFilePath);
 					}
+				}//end for
+				
+				System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILES...");
+				if(listasFileSuccess.isEmpty()) {
+					System.out.println("* NO FILE");
+					bReturn = false;
+				}else {						
+					String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileSuccess);
+					saFile = StringArrayZZZ.plusString( "* ", saFile);
+					String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+					System.out.println(sPrint);
+					bReturn = true;
+				}								
+										
+				System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILES...");
+				if(listasFileFailed.isEmpty()) {
+					System.out.println("* NO FILE");
+					bReturn = true;
+				}else {						
+					String[] saFile = ArrayListUtilZZZ.toStringArray(listasFileFailed);
+					saFile = StringArrayZZZ.plusString( "* ", saFile);
+					String sPrint = StringArrayZZZ.implode(saFile, StringZZZ.crlf());
+					System.out.println(sPrint);
+					bReturn = false;	
+				}		
+				if(!bReturn) break main;
+				
+				bReturn = this.commitit(git, sComment);//Alle Dateien auf einmal committen						
+			}else {
+				//Einzelne Datei verarbeiten.					
+				String sRepositoryLocalBase = this.getRepositoryLocalBase();
+				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
+				boolean bSuccessConflict = this.resolveSearchedConflictMarkedCommitit(git, sFilePathTotal, sComment);
+				if(bSuccessConflict) {
+					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE");
+					if(StringZZZ.isEmptyTrimmed(sFilePath)) {
+						System.out.println("* NO FILE");
+						bReturn = true;
+					}else {
+						System.out.println("* " + sFilePath);
+						bReturn = true;
+					}					
+				}else {
+					System.out.println("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILE");
+					if(StringZZZ.isEmptyTrimmed(sFilePath)) {
+						System.out.println("* NO FILE");
+						bReturn = true;
+					}else {
+						System.out.println("* " + sFilePath);
+						bReturn = false;
+					}											
 				}
-				
-//				//Finde geaenderte und neue Dateien fuer den commit
-////				//Wenn der Filepath nicht absolut ist... baseRepository und Projekt holen und voranstellen
-//				String sRepositoryLocalBase = this.getRepositoryLocalBase();
-//				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
-//				String sComment = objConfig.readComment();
-//				this.setCommentCommit(sComment);
-//				
-//				Git git = this.getGitObject();				
-//				boolean bSuccessConflict = this.resolveCommitit(git, sFilePathTotal, sComment);
-//				if(bSuccessConflict) {
-//					System.out.println("STATUS AFTER RESOLVING CONFLICT: SUCCESSFUL ('" + sFilePathTotal + "')");					
-//					bReturn = true;
-//				}else {
-//					System.out.println("STATUS AFTER RESOLVING CONFLICT: FAILED ('" + sFilePathTotal + "')");					
-//					bReturn = false;
-//				}
-				
+			}				
 		}//end main:
 		return bReturn;
 	}
@@ -979,13 +939,10 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			
 			String sResolved = null;
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-			//if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-			//}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);						
 			}else {
-				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -1000,11 +957,11 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//Finde geaenderte und neue Dateien fuer den commit
 			boolean bSuccessCommit = this.commitit(git);
 			if(bSuccessCommit) {
-				System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
+				System.out.println("\nSTATUS AFTER COMMIT: SUCCESSFUL");
 				this.printStatus(git);
 				bReturn = true;
 			}else {
-				System.out.println("STATUS AFTER COMMIT: FAILED");
+				System.out.println("\nSTATUS AFTER COMMIT: FAILED");
 				this.printStatus(git);	
 				bReturn = false;
 			}
@@ -1016,19 +973,16 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//                                            das wären für den Resolver zuviele weitere Parameter/Methoden
 			if(bReturn=true) {
 				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-				//if(!bUseMergeStrategyOur & bUseMergeStrategyTheir) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung.\n"
 							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 							  + "HINWEIS:\t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt.";
 					System.out.println(sLog);
 				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-				//}else if(bUseMergeStrategyOur & !bUseMergeStrategyTheir) {
-					String sLog="Erfolgreiche Konfliktauflösung.\n"
+					String sLog="\nErfolgreiche Konfliktauflösung.\n"
 							  + "Verwendete Stategie:\t " + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 							  + "HINWEIS:\t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Erst noch einen PUSH machen.";
 					System.out.println(sLog);					
 				}else {
-					//Default
 					System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -1353,7 +1307,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				    	}
 				    	break;
 				    default:
-				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht impelmentierter Konflikt-Typ '"+ info.getConflictType().name() +"', Argument aus der Kommandozeile.'" + sConflictTypeIn + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht implementierter Konflikt-Typ '"+ info.getConflictType().name() +"', Argument aus der Kommandozeile.'" + sConflictTypeIn + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 				    }
 				}
@@ -1474,11 +1428,11 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				Git git = this.getGitObject();
 				boolean bSuccessCommit = this.commitit(git);
 				if(bSuccessCommit) {
-					System.out.println("STATUS AFTER COMMIT: SUCCESSFUL");
+					System.out.println("\nSTATUS AFTER COMMIT: SUCCESSFUL");
 					this.printStatus(git);
 					  bReturn = true;
 				}else {
-					System.out.println("STATUS AFTER COMMIT: FAILED");
+					System.out.println("\nSTATUS AFTER COMMIT: FAILED");
 					this.printStatus(git);	
 					bReturn = false;
 				}

@@ -227,7 +227,14 @@ public class JgitResolverMain implements IConstantZZZ{
 					sAction = "resolveConflict";
 					listasAction.add(sAction);
 				}
+				
 								
+				String sConflictType4SearchedResolve = objConfig.readOptionValue("resolveConflictSearched");
+				if(!StringZZZ.isEmpty(sConflictType4SearchedResolve)) {
+					sAction = "resolveConflictSearched";
+					listasAction.add(sAction);
+				}
+					
 				sAction = objConfig.readActionResolveConflictDeleted();
 				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
 				
@@ -349,7 +356,7 @@ public class JgitResolverMain implements IConstantZZZ{
 						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
 						break;
 					case "resolveSearchedConflict":
-						bReturn = objResolver.resolveSearchedConflictit(objConfig, sConflictType4Resolve);					
+						bReturn = objResolver.resolveSearchedConflictit(objConfig, sConflictType4SearchedResolve);					
 						break;
 					case "resolveSearchedConflictMarked":
 						bReturn = objResolver.resolveSearchedConflictMarkedit(objConfig);					
@@ -360,8 +367,8 @@ public class JgitResolverMain implements IConstantZZZ{
 					case "resolveSearchedConflictMarkedCommit":
 						bReturn = objResolver.resolveSearchedConflictMarkedCommitit(objConfig);
 						break;
-					case "resolveByStageState":
-						bReturn = objResolver.resolveByStageStateit(objConfig);
+					case "resolveConflict":
+						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);
 						break;
 					default:
 						ExceptionZZZ ez = new ExceptionZZZ("Action not available '" + sAction + "'", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());

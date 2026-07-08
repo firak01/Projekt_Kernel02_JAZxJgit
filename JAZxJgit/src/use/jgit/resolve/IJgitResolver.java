@@ -14,19 +14,19 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 public interface IJgitResolver {
 	
 	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
-	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;	
+	//public boolean resolveConflictit(Git git, String sFilepathTotal, String sConflictType) throws ExceptionZZZ;
 		
 	//### Konflikte aufgrund des Konfliktyps auflösen 
 	public boolean resolveSearchedConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	
 	//#### Konflikte aufgrund von Löschungen auflösen
 	public boolean resolveSearchedConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveSearchedConflictDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictFileDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 	
 	//#### Konflikte mit Konfliktmarkern auflösen	
 	public boolean resolveSearchedConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveSearchedConflictMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveConflictFileMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
