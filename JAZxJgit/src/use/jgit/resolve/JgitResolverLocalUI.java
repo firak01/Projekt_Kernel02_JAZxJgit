@@ -23,16 +23,37 @@ public class JgitResolverLocalUI implements IConstantZZZ{
         }
     }
 	
-    public static void printResolveResultListString(String sTitle, List<String> listasFile) throws ExceptionZZZ{
+   
+    public static void printResolveResultListString(String sTitle, List<String> listasPathInRepository) throws ExceptionZZZ{
         System.out.println("\n" + sTitle);
-        if(listasFile==null || listasFile.isEmpty()){
+        if(listasPathInRepository==null || listasPathInRepository.isEmpty()){
             System.out.println("* NO FILE");
         }else{
-            String[] saFile = ArrayListUtilZZZ.toStringArray(listasFile);
+            String[] saFile = ArrayListUtilZZZ.toStringArray(listasPathInRepository);
             saFile = StringArrayZZZ.plusString("* ", saFile);
             System.out.println(StringArrayZZZ.implode(saFile, StringZZZ.crlf()));
         }
     }
+    
+    public static void printResolveResultListAny(String sTitle, List<File> listaFile, List<String> listasPathInRepository) throws ExceptionZZZ{
+        System.out.println("\n" + sTitle);
+        if((listaFile==null || listaFile.isEmpty()) && (listasPathInRepository==null || listasPathInRepository.isEmpty())) {
+            System.out.println("* NO FILE");
+        }else{
+        	if(listaFile!=null) {
+        		for(File objFile : listaFile) {
+        			System.out.println("* " + objFile.getAbsolutePath());
+        		}
+        	}
+        	
+        	if(listasPathInRepository!=null && !listasPathInRepository.isEmpty()){                
+                String[] saFile = ArrayListUtilZZZ.toStringArray(listasPathInRepository);
+                saFile = StringArrayZZZ.plusString("* ", saFile);
+                System.out.println(StringArrayZZZ.implode(saFile, StringZZZ.crlf()));
+            }
+        }
+    }
+    
 
     public static void printResolveResultSingle(String sTitle, String sFilePath) throws ExceptionZZZ{
         System.out.println("\n" + sTitle);
