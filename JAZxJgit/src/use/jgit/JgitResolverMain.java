@@ -229,9 +229,9 @@ public class JgitResolverMain implements IConstantZZZ{
 				}
 				
 								
-				String sConflictType4SearchedResolve = objConfig.readOptionValue("resolveConflictSearched");
+				String sConflictType4SearchedResolve = objConfig.readOptionValue("resolveSearchedConflict");
 				if(!StringZZZ.isEmpty(sConflictType4SearchedResolve)) {
-					sAction = "resolveConflictSearched";
+					sAction = "resolveSearchedConflict";
 					listasAction.add(sAction);
 				}
 					

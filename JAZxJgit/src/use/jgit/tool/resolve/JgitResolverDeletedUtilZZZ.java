@@ -122,7 +122,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	  //### A
  	    	  debugRepositoryState(git, "A) VOR git.rm()", sFilePathInRepository);
 
- 	    	  System.out.println("\nA) VERSUCH: Entferne aus dem Index per git.rm");
+ 	    	  System.out.println("\nA) VERSUCH: Entferne aus dem Index per git.rm().addFilepattern(...)");
 
  	    	  git.rm()
  	    	  .addFilepattern(sFilePathInRepository)
@@ -245,6 +245,8 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	   //wichtig, normiere den Pfad
  	    	   String sFilePathInRepository =  JgitUtilZZZ.computeGitPath(sFilePathInRepositoryIn);
  	    	   
+ 	    	  debugRepositoryState(git, "A) VOR git.add("+sFilePathInRepository+")", sFilePathInRepository);
+ 	    	 System.out.println("\nA) VERSUCH: Hinzufügen zum Index per git.add().addFilepattern(...)");
  	    	   
  				//Code Snippet:
  				//Merke: das ist Strategieabhängig und StageState abhängig, was passieren soll.					

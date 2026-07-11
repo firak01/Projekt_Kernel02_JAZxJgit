@@ -40,12 +40,14 @@ public class JgitResolverLocalUI implements IConstantZZZ{
         if((listaFile==null || listaFile.isEmpty()) && (listasPathInRepository==null || listasPathInRepository.isEmpty())) {
             System.out.println("* NO FILE");
         }else{
+        	System.out.println("Dateien mit Konfliktmarkierung in Datei:");
         	if(listaFile!=null) {
         		for(File objFile : listaFile) {
         			System.out.println("* " + objFile.getAbsolutePath());
         		}
         	}
         	
+        	System.out.println("Dateien mit Konfliktmarkierung im Git-Index:");
         	if(listasPathInRepository!=null && !listasPathInRepository.isEmpty()){                
                 String[] saFile = ArrayListUtilZZZ.toStringArray(listasPathInRepository);
                 saFile = StringArrayZZZ.plusString("* ", saFile);

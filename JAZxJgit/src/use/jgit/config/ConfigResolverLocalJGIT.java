@@ -97,7 +97,7 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");		
 			objHelp.setHeaderLine(objHeaderLine);
 			listaReturn.add(objHelp);
-			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung per Konflikttyp","Löse den Konflikt. Berücksichtige dabei per Flag übergebene Strategien. Optionen sind a) All b) 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY");
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung per Konflikttyp","Löse den Konflikt. Berücksichtige dabei per Flag übergebene Strategien. Optionen sind a) ALL b) 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY  C) MARKED Zum Auslesen der Konfliktmarker in Dateien D) ALL_MARKED als Kombination von MARKED und ALL");
 			listaReturn.add(objHelp);
 			
 			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarked","Konfliktauflösung per Markierung","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");

@@ -894,6 +894,9 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			String sConflictType = sConflictTypeIn.trim().toUpperCase();
 			if(sConflictType.equals("MARKED")) {
 				bReturn = this.searchConflictFilesMarkedit(git, sProjectName);
+			}else if(sConflictType.equals("ALL_MARKED")) {
+				bReturn = this.searchConflictFilesMarkedit(git, sProjectName);
+				bReturn = this.searchConflictFilesByScanit(git, sProjectName, "ALL");
 			}else{
 				bReturn = this.searchConflictFilesByScanit(git, sProjectName, sConflictType);
 			}//end if sConflictType))						
