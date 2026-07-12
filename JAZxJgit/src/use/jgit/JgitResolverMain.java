@@ -139,215 +139,260 @@ public class JgitResolverMain implements IConstantZZZ{
 		//siehe: https://www.vogella.com/tutorials/JGit/article.html
 		//siehe: https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
 		main:{
-		try {	
-			//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
-			//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
-			//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.
-			System.out.println("Vorhandene Umgebungsvariablen, seit Eclipsestart:");
-			System.out.println(System.getenv("MY_TRUSTSTORE"));
-			System.out.println(System.getenv("sPATZZZ"));
-			System.out.println(System.getenv("sRLZZZ"));
-			System.out.println(System.getenv("sRRHZZZ"));		
-			System.out.println(System.getenv("sRRACZZZ"));
-			
-			
-			String sAction=null; String sComment=null;
-			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
-						
-			//Trotz Einbinden von  in pom.xml Fehlermeldung;
-			//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
-			//Lösung dazu:
-			//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
-			//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
-			System.setProperty("log4j.configurationFile","./use/jgit/log/log4j2.xml");
-			
-			//Logger log = LogManager.getLogger(this.getClass().getName());		
-			Logger log = LogManager.getLogger();
-			
-			//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
-			//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
-			//System.setProperty("https.protocols", "TLSv1");		
-			System.setProperty("https.protocols", "TLSv1.2"); 
-			
-			//### Argumente entgegenzunehmen
-			ConfigResolverLocalJGIT objConfig = new ConfigResolverLocalJGIT(args);						
-			File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
-			System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
-			
-			//+++++++++++++++++++++++++++++++++++++++
-			//hilfsaktion
-			sAction = objConfig.readActionHelp();
-			if(!StringZZZ.isEmpty(sAction)) {				
-				String sHelp = objConfig.createHelp();
-				System.out.println(sHelp);
-				break main;
-			}
-			
-			sAction = objConfig.readActionH();
-			if(!StringZZZ.isEmpty(sAction)) {				
-				String sHelp = objConfig.createHelp();
-				System.out.println(sHelp);
-				break main;
-			}
-			
-			//+++++++++++++++++++++++++++++++++
-			//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
-			//Darum ist searchConflictFiles vor den resolve Actions 
-			//          commit hinter den resolve Actions und (woanders) z.B. vor pull oder push.
-			//          status immer hinten.
-			//TODO: Die erstellte ArrayList sortieren nach einem Schema....
-			
-			//Hier: Nur lokales Repository berücksichtigen, also kein fetch...
-						
-			sAction = objConfig.readActionSearchConflictFiles();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionResolveDeleted();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-			
-			sAction = objConfig.readActionResolveConflict();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-						
-			sAction = objConfig.readActionResolveConflictCommit();
-			if(!StringZZZ.isEmpty(sAction)) {
-				listasAction.add(sAction);
+			try {	
+				//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
+				//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
+				//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.
+				System.out.println("Vorhandene Umgebungsvariablen, seit Eclipsestart:");
+				System.out.println(System.getenv("MY_TRUSTSTORE"));
+				System.out.println(System.getenv("sPATZZZ"));
+				System.out.println(System.getenv("sRLZZZ"));
+				System.out.println(System.getenv("sRRHZZZ"));		
+				System.out.println(System.getenv("sRRACZZZ"));
 				
-				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
-				sComment = objConfig.readComment();
-			}
-			
-			sAction = objConfig.readActionCommit();
-			if(!StringZZZ.isEmpty(sAction)) {
-				listasAction.add(sAction);
 				
-				//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
-				sComment = objConfig.readComment();
-			}
-						
-			sAction = objConfig.readActionStatus();
-			if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
-						
-			if(listasAction.isEmpty()) {
-				ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			//++++++++++++++++++++++++++++++++
-			//-z  Flags:
-			//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
-			HashMap<String,Boolean> hmFlag = null;
-			HashMap<String,Boolean> hmFlagCustom = null;
-			HashMap<String,Boolean> hmFlagLocal = null;
-			
-			//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
-			//       Von dort dann über .getHashMapFlagZPassed holen 
-						
-			
-			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
-			//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
-			//a) Das Füllen des FlagContainers
-			FlagContainerZZZ objFlagContainer = null;					
-			String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
-			if(!StringZZZ.isEmpty(sFlagZJson)) {
-				Gson gson = new Gson();			
-				objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
-			}						
-			
-			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
-			//b) Das Auslesen des FlagContainers und ggfs. uebergebene Flags setzen:
-			if(objFlagContainer!=null) {
-				HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
-				for(int i=0; i< hmFlagByContainer.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagByContainer, i);
-					Boolean boolFlagValue = hmFlagByContainer.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					
-					System.out.println(i + ". HmFlagByContainer: " + sFlagName + ": " + bFlagValue);					
-				}
-			}
-		
-			//##############################################################
-			//Starte die passende Klasse mit der passenden Methode
-			JgitResolverLocal objResolver = new JgitResolverLocal();
+				String sAction=null; String sComment=null;
+				ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
 							
-			//Ggfs. uebergebene Flags setzen
-			hmFlag = objConfig.getHashMapFlagPassed();
-			if(hmFlag!=null) {
-				for(int i=0; i< hmFlag.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-					Boolean boolFlagValue = hmFlag.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					objResolver.setFlag(sFlagName, bFlagValue);
-				}
-			}
+				//Trotz Einbinden von  in pom.xml Fehlermeldung;
+				//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
+				//Lösung dazu:
+				//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
+				//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
+				System.setProperty("log4j.configurationFile","./use/jgit/log/log4j2.xml");
 				
-			hmFlagCustom = objConfig.getHashMapFlagCustom();
-			if(hmFlagCustom!=null) {
-				for(int i=0; i< hmFlagCustom.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
-					Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					objResolver.setFlagCustom(sFlagName, bFlagValue);
-				}
-			}
+				//Logger log = LogManager.getLogger(this.getClass().getName());		
+				Logger log = LogManager.getLogger();
 				
-			hmFlagLocal = objConfig.getHashMapFlagLocal();
-			if(hmFlagLocal!=null) {
-				for(int i=0; i< hmFlagLocal.size(); i++) {
-					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
-					Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
-					boolean bFlagValue = boolFlagValue.booleanValue();
-					objResolver.setFlagLocal(sFlagName, bFlagValue);
+				//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
+				//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
+				//System.setProperty("https.protocols", "TLSv1");		
+				System.setProperty("https.protocols", "TLSv1.2"); 
+				
+				//### Argumente entgegenzunehmen
+				ConfigResolverLocalJGIT objConfig = new ConfigResolverLocalJGIT(args);						
+				File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
+				System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
+				
+				//+++++++++++++++++++++++++++++++++++++++
+				//hilfsaktion
+				sAction = objConfig.readActionHelp();
+				if(!StringZZZ.isEmpty(sAction)) {				
+					String sHelp = objConfig.createHelp();
+					System.out.println(sHelp);
+					break main;
 				}
-			}
-			
-			boolean bReturn = false;
-			for(String sActionTemp : listasAction) {				
-				switch(sActionTemp) {				
-				case "commit":
-					bReturn = objResolver.commitit(objConfig);					
-					break;
-				case "resolveConflict":
-					bReturn = objResolver.resolveConflictit(objConfig);					
-					break;
-				case "resolveDeleted":
-					bReturn = objResolver.resolveDeletedit(objConfig);
-					break;
-				case "resolveByStageState":
-					bReturn = objResolver.resolveByStageStateit(objConfig);
-					break;
-				case "resolveConflictCommit":
-					bReturn = objResolver.resolveConflictCommitit(objConfig);
-					break;
-				case "searchConflictFiles":
-					bReturn = objResolver.searchConflictFilesit(objConfig);
-					break;
-				case "status":
-					bReturn = objResolver.statusit(objConfig);
-					break;				
-				default:
-					ExceptionZZZ ez = new ExceptionZZZ("Action not available", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				
+				sAction = objConfig.readActionH();
+				if(!StringZZZ.isEmpty(sAction)) {				
+					String sHelp = objConfig.createHelp();
+					System.out.println(sHelp);
+					break main;
+				}
+				
+				//+++++++++++++++++++++++++++++++++
+				//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
+				//Darum ist searchConflictFiles vor den resolve Actions 
+				//          commit hinter den resolve Actions und (woanders) z.B. vor pull oder push.
+				//          status immer hinten.
+				//TODO: Die erstellte ArrayList sortieren nach einem Schema....
+				
+				
+				//Hier: Nur lokales Repository berücksichtigen, also kein fetch...
+				
+				//...die Suchaktionen immer voranstellen, die anderen Aktionen bauen ggfs. darauf auf.
+				sAction = objConfig.readActionSearchConflictFilesMarked();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionSearchConflictFilesDeleted();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType4Search = objConfig.readOptionValue("searchConflictFiles");
+				if(!StringZZZ.isEmpty(sConflictType4Search)) {
+					sAction = "searchConflictFiles";
+					listasAction.add(sAction);
+				}
+				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType4Scan = objConfig.readOptionValue("searchConflictFilesByScan");
+				if(!StringZZZ.isEmpty(sConflictType4Scan)) {
+					sAction = "searchConflictFilesByScan";
+					listasAction.add(sAction);
+				}
+				
+				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
+				String sConflictType4Resolve = objConfig.readOptionValue("resolveConflict");
+				if(!StringZZZ.isEmpty(sConflictType4Resolve)) {
+					sAction = "resolveConflict";
+					listasAction.add(sAction);
+				}
+				
+								
+				String sConflictType4SearchedResolve = objConfig.readOptionValue("resolveSearchedConflict");
+				if(!StringZZZ.isEmpty(sConflictType4SearchedResolve)) {
+					sAction = "resolveSearchedConflict";
+					listasAction.add(sAction);
+				}
+					
+				sAction = objConfig.readActionResolveConflictDeleted();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+				
+				sAction = objConfig.readActionResolveConflictMarked();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+							
+				sAction = objConfig.readActionResolveConflictMarkedCommit();
+				if(!StringZZZ.isEmpty(sAction)) {
+					listasAction.add(sAction);
+					
+					//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+					sComment = objConfig.readComment();
+				}
+				
+				sAction = objConfig.readActionCommit();
+				if(!StringZZZ.isEmpty(sAction)) {
+					listasAction.add(sAction);
+					
+					//Bei einem Commit kann es ggfs. einen besseren Kommentar geben als den Defaultkommentar
+					sComment = objConfig.readComment();
+				}
+							
+				sAction = objConfig.readActionStatus();
+				if(!StringZZZ.isEmpty(sAction))listasAction.add(sAction);
+							
+				if(listasAction.isEmpty()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Action", iERROR_PARAMETER_MISSING, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-					
-				if(!bReturn) {
-					ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;						
+				
+				//++++++++++++++++++++++++++++++++
+				//-z  Flags:
+				//Per Konsole uebergeben:  -zlocal {"IGNORE_CHECKOUT_CONFLICTS":true}
+				HashMap<String,Boolean> hmFlag = null;
+				HashMap<String,Boolean> hmFlagCustom = null;
+				HashMap<String,Boolean> hmFlagLocal = null;
+				
+				//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
+				//       Von dort dann über .getHashMapFlagZPassed holen 
+							
+				
+				//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+				//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
+				//a) Das Füllen des FlagContainers
+				FlagContainerZZZ objFlagContainer = null;					
+				String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
+				if(!StringZZZ.isEmpty(sFlagZJson)) {
+					Gson gson = new Gson();			
+					objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
+				}						
+				
+				//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+				//b) Das Auslesen des FlagContainers und ggfs. uebergebene Flags setzen:
+				if(objFlagContainer!=null) {
+					HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
+					for(int i=0; i< hmFlagByContainer.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagByContainer, i);
+						Boolean boolFlagValue = hmFlagByContainer.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						
+						System.out.println(i + ". HmFlagByContainer: " + sFlagName + ": " + bFlagValue);					
+					}
 				}
+			
+				//##############################################################
+				//Starte die passende Klasse mit der passenden Methode
+				JgitResolverLocal objResolver = new JgitResolverLocal();
+								
+				//Ggfs. uebergebene Flags setzen
+				hmFlag = objConfig.getHashMapFlagPassed();
+				if(hmFlag!=null) {
+					for(int i=0; i< hmFlag.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+						Boolean boolFlagValue = hmFlag.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objResolver.setFlag(sFlagName, bFlagValue);
+					}
+				}
+					
+				hmFlagCustom = objConfig.getHashMapFlagCustom();
+				if(hmFlagCustom!=null) {
+					for(int i=0; i< hmFlagCustom.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagCustom, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objResolver.setFlagCustom(sFlagName, bFlagValue);
+					}
+				}
+					
+				hmFlagLocal = objConfig.getHashMapFlagLocal();
+				if(hmFlagLocal!=null) {
+					for(int i=0; i< hmFlagLocal.size(); i++) {
+						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagLocal, i);
+						Boolean boolFlagValue = hmFlagLocal.get(sFlagName);
+						boolean bFlagValue = boolFlagValue.booleanValue();
+						objResolver.setFlagLocal(sFlagName, bFlagValue);
+					}
+				}
+				
+				boolean bReturn = false;
+				for(String sActionTemp : listasAction) {				
+					switch(sActionTemp) {
+					case "status":
+						bReturn = objResolver.statusit(objConfig);
+						break;	
+					case "commit":
+						bReturn = objResolver.commitit(objConfig);					
+						break;
+					case "searchConflictFilesMarked":
+						bReturn = objResolver.searchConflictFilesMarkedit(objConfig);
+						break;
+					case "searchConflictFilesDeleted":
+						bReturn = objResolver.searchConflictFilesDeletedit(objConfig);
+						break;
+					case "searchConflictFiles":
+						bReturn = objResolver.searchConflictFilesit(objConfig, sConflictType4Search);
+						break;
+					case "searchConflictFilesByScan":
+						bReturn = objResolver.searchConflictFilesByScanit(objConfig, sConflictType4Scan);
+						break;
+					case "resolveSearchedConflict":
+						bReturn = objResolver.resolveSearchedConflictit(objConfig, sConflictType4SearchedResolve);					
+						break;
+					case "resolveSearchedConflictMarked":
+						bReturn = objResolver.resolveSearchedConflictMarkedit(objConfig);					
+						break;
+					case "resolveSearchedConflictDeleted":
+						bReturn = objResolver.resolveSearchedConflictDeletedit(objConfig);
+						break;
+					case "resolveSearchedConflictMarkedCommit":
+						bReturn = objResolver.resolveSearchedConflictMarkedCommitit(objConfig);
+						break;
+					case "resolveConflict":
+						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);
+						break;
+					default:
+						ExceptionZZZ ez = new ExceptionZZZ("Action not available '" + sAction + "'", iERROR_PARAMETER_VALUE, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+						
+					if(!bReturn) {
+						ExceptionZZZ ez = new ExceptionZZZ("Action '" + sActionTemp + "' was not successful.", iERROR_RUNTIME, JgitResolverMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;						
+					}
+				}//end for
+														
+			} catch (IllegalStateException e) {
+				e.printStackTrace();		
+			} catch (ExceptionZZZ e) {
+				e.printStackTrace();
+			} catch (JGitInternalException e) {
+				e.printStackTrace();
+			} catch (NotSupportedException e) {
+				e.printStackTrace();
 			}
-													
-		} catch (IllegalStateException e) {
-			e.printStackTrace();		
-		} catch (ExceptionZZZ e) {
-			e.printStackTrace();
-		} catch (JGitInternalException e) {
-			e.printStackTrace();
-		} catch (NotSupportedException e) {
-			e.printStackTrace();
-		}
-		
+			
+		}//end main:
 	}
-	}//end main:
 	
 
 }

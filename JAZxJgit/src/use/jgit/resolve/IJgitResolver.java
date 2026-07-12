@@ -14,32 +14,50 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 public interface IJgitResolver {
 	
 	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
-	public boolean resolveByStageStateit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveByStageStateit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;	
+	//public boolean resolveConflictit(Git git, String sFilepathTotal, String sConflictType) throws ExceptionZZZ;
 		
-	//#### Konflikte aufgrund von Löschungen auflösen
-	public boolean resolveDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	//### Konflikte aufgrund des Konfliktyps auflösen 
+	public boolean resolveSearchedConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	
-	//#### Konflikte mit Konfliktmarkern auflösen
-	public boolean resolveConflictit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveConflictit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	//#### Konflikte aufgrund von Löschungen auflösen
+	public boolean resolveSearchedConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveConflictFileDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	
+	//#### Konflikte mit Konfliktmarkern auflösen	
+	public boolean resolveSearchedConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
+	public boolean resolveConflictFileMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
-	public boolean resolveConflictCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean resolveCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
-	public boolean resolveCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 
 	
 	
 	
-	//Suche in dem Repository nach Dateien, die Konflikmarker haben (DELETED haben keine Konfliktmarker, werden damit also nicht erfasst)
-	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean searchConflictFilesit(Git git, String sProjectName) throws ExceptionZZZ;
+	//Suche in dem Repository nach Dateien, die Konflikmarker haben (DELETED haben keine Konfliktmarker in der Datei, werden damit also nicht erfasst)
+	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean searchConflictFilesit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
+	
+	public boolean searchConflictFilesMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesMarkedit(Git git, String sProjectName) throws ExceptionZZZ;
 	
 	public List<File>getFiles() throws ExceptionZZZ;
 	public void setFiles(List<File>listFile) throws ExceptionZZZ;
+	
+	
+	//Suche in dem Repository nach Dateien, die im Repository den entprechenden Konflikt-Typen haben.
+	public boolean searchConflictFilesByScanit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean searchConflictFilesByScanit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
+		
+	public boolean searchConflictFilesDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesDeletedit(Git git, String sProjectName) throws ExceptionZZZ; //Deleted_By_Theirs als default sConflictType
+	public boolean searchConflictFilesDeletedit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
+		
+	public List<String>getRepositoryPathStrings() throws ExceptionZZZ;
+	public void setRepositoryPathStrings(List<String>listasRepositoryPath) throws ExceptionZZZ;
 	
 	//IDEE 20260506;
 	//Wurde die Strategie "OURS" umgesetzt, dann wurde der Konflikt zwar aufgelöst, 

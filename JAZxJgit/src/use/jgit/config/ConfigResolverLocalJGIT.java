@@ -97,11 +97,21 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			objHelp = new KernelConfigHelpLineZZZ("commit","Commit","Änderungen an das lokale Repository übertragen");		
 			objHelp.setHeaderLine(objHeaderLine);
 			listaReturn.add(objHelp);
-			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung per Konflikttyp","Löse den Konflikt. Berücksichtige dabei per Flag übergebene Strategien. Optionen sind a) ALL b) 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY  C) MARKED Zum Auslesen der Konfliktmarker in Dateien D) ALL_MARKED als Kombination von MARKED und ALL");
+			listaReturn.add(objHelp);
+			
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarked","Konfliktauflösung per Markierung","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
 			listaReturn.add(objHelp);			
-			objHelp = new KernelConfigHelpLineZZZ("resolveConflictCommit","Konflikt und Commit","Löse den Konflikt in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarkedCommit","Konfliktauflösung per Markierung und Commit","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien UND sofort die Änderungen an das lokale Repository übertragen");
+			listaReturn.add(objHelp);
+
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFiles:","Suche nach Konfliktdateien. Optionen sind a) Marked b)... siehe searchConflictFilesByScan","Suche nach Dateien, die Konfliktmarkierungen enthalten entweder in der Datei selbst (marked) oder im internen Verzeichnis von GIT");
 			listaReturn.add(objHelp);	
-			objHelp = new KernelConfigHelpLineZZZ("searcConflictFiles","Suche nach Konfliktdateien","Suche nach Dateien, die Konfliktmarkierungen enthalten");
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesByScan","Suche nach Konfliktdateien. Optionen sind 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY","Suche nach Dateien, die den entsprechenden Status im internen Verzeichis von GIT haben. Werte entsprechen dem Enum EnumGitConflictTypeZZZ.");
+			listaReturn.add(objHelp);
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictMarkedFiles","Suche nach Dateien mit Konfliktmarkierung","Suche nach Dateien, die Konfliktmarkierungen enthalten");
+			listaReturn.add(objHelp);	
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesDeleted","Suche nach 'Deleted_Theirs' Konfliktdateien","Suche nach Dateien, die den Status 'DELTED_THEIRS' im Repository haben.");
 			listaReturn.add(objHelp);	
 			objHelp = new KernelConfigHelpLineZZZ("status","Status","Status des rl: Repositories");		
 			listaReturn.add(objHelp);
@@ -135,19 +145,6 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	}	
 	
 	@Override
-	public String readActionResolveDeleted() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("resolveDeleted");			
-		}//end main:		
-		return sReturn;
-	}	
-	
-	@Override
 	public String readActionResolveConflict() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
@@ -161,7 +158,33 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 	}	
 	
 	@Override
-	public String readActionResolveConflictCommit() throws ExceptionZZZ {
+	public String readActionResolveConflictDeleted() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("resolveConflictDeleted");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionResolveConflictMarked() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("resolveConflictMarked");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionResolveConflictMarkedCommit() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
@@ -182,6 +205,32 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
 			sReturn = objOpt.readValue("searchConflictFiles");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionSearchConflictFilesMarked() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("searchConflictFilesMarked");			
+		}//end main:		
+		return sReturn;
+	}	
+	
+	@Override
+	public String readActionSearchConflictFilesDeleted() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("searchConflictFilesDeleted");			
 		}//end main:		
 		return sReturn;
 	}	
