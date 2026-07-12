@@ -219,6 +219,12 @@ public class JgitResolverMain implements IConstantZZZ{
 				if(!StringZZZ.isEmpty(sConflictType4Scan)) {
 					sAction = "searchConflictFilesByScan";
 					listasAction.add(sAction);
+				}else {
+					sConflictType4Scan = objConfig.readOptionValue("resolveConflictitByScanner");
+					if(!StringZZZ.isEmpty(sConflictType4Scan)) {
+						sAction = "resolveConflictitByScanner";
+						listasAction.add(sAction);
+					}
 				}
 				
 				//Anders als bei den Normalen Aktionen, die das sind oder nicht. Hier den Optionswert suchen und danach die Action setzen.
@@ -360,6 +366,9 @@ public class JgitResolverMain implements IConstantZZZ{
 						break;
 					case "resolveSearchedConflictMarked":
 						bReturn = objResolver.resolveSearchedConflictMarkedit(objConfig);					
+						break;
+					case "resolveConflictByScanner":
+						bReturn = objResolver.resolveConflictByScannerit(objConfig, sConflictType4Scan);
 						break;
 					case "resolveSearchedConflictDeleted":
 						bReturn = objResolver.resolveSearchedConflictDeletedit(objConfig);

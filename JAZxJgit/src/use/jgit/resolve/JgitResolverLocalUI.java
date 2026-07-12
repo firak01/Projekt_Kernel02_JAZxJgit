@@ -66,18 +66,18 @@ public class JgitResolverLocalUI implements IConstantZZZ{
         }
     }
 
-    public static void printStrategyHint(IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
-    	printStrategyHint("", objEnumStrategyMergeConflict);
+    public static void printStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    	printStrategyHint(sTitle, "", objEnumStrategyMergeConflict);
     }
     
-    public static void printStrategyHint(String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    public static void printStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
         String sLog;
         if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-			sLog="\nErfolgreiche Konfliktauflösung.\n"
+			sLog="\nErfolgreiche Konfliktauflösung. " + sTitle + "\n"
 					  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
 					  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
 		}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
-			sLog="\nErfolgreiche Konfliktauflösung.\n"
+			sLog="\nErfolgreiche Konfliktauflösung. " + sTitle + "\n"
 					  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
 					  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";						
 		}else {

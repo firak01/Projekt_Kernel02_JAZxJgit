@@ -99,6 +99,8 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 			listaReturn.add(objHelp);
 			objHelp = new KernelConfigHelpLineZZZ("resolveConflict","Konfliktauflösung per Konflikttyp","Löse den Konflikt. Berücksichtige dabei per Flag übergebene Strategien. Optionen sind a) ALL b) 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY  C) MARKED Zum Auslesen der Konfliktmarker in Dateien D) ALL_MARKED als Kombination von MARKED und ALL");
 			listaReturn.add(objHelp);
+			objHelp = new KernelConfigHelpLineZZZ("resolveConflictByScanner","Konfliktauflösung per Konflikttyp STAGE im Repository.","Löse den Konflikt auf für Dateien, die den entsprechenden Status im internen Verzeichis von GIT haben. 1 Wert aus 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY. Werte entsprechen dem Enum EnumGitConflictTypeZZZ.");
+			listaReturn.add(objHelp);
 			
 			objHelp = new KernelConfigHelpLineZZZ("resolveConflictMarked","Konfliktauflösung per Markierung","Löse den Konflikt anhand der Markierungen in der angegebenen Datei auf, brücksichtige dabei per Flag übergebene Strategien.");
 			listaReturn.add(objHelp);			
@@ -107,7 +109,7 @@ public class ConfigResolverLocalJGIT extends AbstractConfigStarterLocalJGIT impl
 
 			objHelp = new KernelConfigHelpLineZZZ("searchConflictFiles:","Suche nach Konfliktdateien. Optionen sind a) Marked b)... siehe searchConflictFilesByScan","Suche nach Dateien, die Konfliktmarkierungen enthalten entweder in der Datei selbst (marked) oder im internen Verzeichnis von GIT");
 			listaReturn.add(objHelp);	
-			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesByScan","Suche nach Konfliktdateien. Optionen sind 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY","Suche nach Dateien, die den entsprechenden Status im internen Verzeichis von GIT haben. Werte entsprechen dem Enum EnumGitConflictTypeZZZ.");
+			objHelp = new KernelConfigHelpLineZZZ("searchConflictFilesByScan","Suche nach Konfliktdateien per STAGE im Repository","Suche nach Dateien, die den entsprechenden Status im internen Verzeichis von GIT haben. 1 Wert aus NONE, CONTENT, DELETE_BY_THEIRS, DELETE_BY_OURS, ADD_ADD, RENAME_DELETE, RENAME_RENAME, BINARY. Werte entsprechen dem Enum EnumGitConflictTypeZZZ.");
 			listaReturn.add(objHelp);
 			objHelp = new KernelConfigHelpLineZZZ("searchConflictMarkedFiles","Suche nach Dateien mit Konfliktmarkierung","Suche nach Dateien, die Konfliktmarkierungen enthalten");
 			listaReturn.add(objHelp);	

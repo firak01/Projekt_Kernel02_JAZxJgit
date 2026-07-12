@@ -15,10 +15,15 @@ public interface IJgitResolver {
 	
 	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;	
-	//public boolean resolveConflictit(Git git, String sFilepathTotal, String sConflictType) throws ExceptionZZZ;
-		
+	public boolean resolveConflictit(Git git, String sProjectName, String sFilepathTotal, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictit(Git git, String sProjectName, String sFilepath, String sConflictType) throws ExceptionZZZ;	
+	
+	public boolean resolveConflictByScannerit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveConflictitByScanner(Git git, String sConflictType) throws ExceptionZZZ;
+	
 	//### Konflikte aufgrund des Konfliktyps auflösen 
 	public boolean resolveSearchedConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictit(Git git, String sFilepath, String sConflictType) throws ExceptionZZZ;
 	
 	//#### Konflikte aufgrund von Löschungen auflösen
 	public boolean resolveSearchedConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
@@ -26,7 +31,8 @@ public interface IJgitResolver {
 	
 	//#### Konflikte mit Konfliktmarkern auflösen	
 	public boolean resolveSearchedConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
-	public boolean resolveConflictFileMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveSearchedConflictMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveSearchedConflictFileMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
@@ -41,7 +47,7 @@ public interface IJgitResolver {
 	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	public boolean searchConflictFilesit(Git git, String sProjectName, String sConflictType) throws ExceptionZZZ;
 	
-	public boolean searchConflictFilesMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean searchConflictFilesMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
 	public boolean searchConflictFilesMarkedit(Git git, String sProjectName) throws ExceptionZZZ;
 	
 	public List<File>getFiles() throws ExceptionZZZ;
