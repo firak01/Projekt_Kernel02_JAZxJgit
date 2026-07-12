@@ -4,41 +4,50 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitStarterRemote;
 import use.jgit.config.IConfigResolverJGIT;
-import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitResolver {
 	
 	//#### Konflikte aufgrund des StageState auflösen, also entweder Deletedid... oder Conflictid...
 	public boolean resolveConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;	
 	public boolean resolveConflictit(Git git, String sProjectName, String sFilepathTotal, String sConflictType) throws ExceptionZZZ;
-	public boolean resolveSearchedConflictit(Git git, String sProjectName, String sFilepath, String sConflictType) throws ExceptionZZZ;	
+	public boolean resolveConflictit(Git git, String sProjectName, String sFilepathTotal, String sConflictType, boolean bPrintOutput) throws ExceptionZZZ;
 	
+	
+	public boolean resolveSearchedConflictit(Git git, String sProjectName, String sFilepath, String sConflictType) throws ExceptionZZZ;	
+	public boolean resolveSearchedConflictit(Git git, String sProjectName, String sFilepath, String sConflictType, boolean bPrintOutput) throws ExceptionZZZ;	
+		
 	public boolean resolveConflictByScannerit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	public boolean resolveConflictitByScanner(Git git, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveConflictitByScanner(Git git, String sConflictType, boolean bPrintOutput) throws ExceptionZZZ;
 	
 	//### Konflikte aufgrund des Konfliktyps auflösen 
 	public boolean resolveSearchedConflictit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ;
 	public boolean resolveSearchedConflictit(Git git, String sFilepath, String sConflictType) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictit(Git git, String sFilepath, String sConflictType, boolean bPrintOutput) throws ExceptionZZZ;
+	
 	
 	//#### Konflikte aufgrund von Löschungen auflösen
 	public boolean resolveSearchedConflictDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
 	public boolean resolveConflictFileDeletedit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveConflictFileDeletedit(Git git, String sFilepathTotal, boolean bPrintOutput) throws ExceptionZZZ;
 	
 	//#### Konflikte mit Konfliktmarkern auflösen	
 	public boolean resolveSearchedConflictMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;	
 	public boolean resolveSearchedConflictMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveSearchedConflictMarkedit(String sFilepathTotal, boolean bPrintOutput) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	public boolean resolveSearchedConflictFileMarkedit(String sFilepathTotal) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
+	public boolean resolveSearchedConflictFileMarkedit(String sFilepathTotal, boolean bPrintOutput) throws ExceptionZZZ;//Zum Abarbeiten der Liste von FILES, die per Suche nach Dateimarkerdateien gefüllt wurden.
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
 	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
-	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;	
 	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment, boolean bPrintOutput) throws ExceptionZZZ;
+	
 
 	
 	
@@ -52,6 +61,12 @@ public interface IJgitResolver {
 	
 	public List<File>getFiles() throws ExceptionZZZ;
 	public void setFiles(List<File>listFile) throws ExceptionZZZ;
+	public List<String>getFilesResolved() throws ExceptionZZZ;
+	public void setFilesResolved(List<String>listFilepath) throws ExceptionZZZ;
+	public List<String>getFilesFailed() throws ExceptionZZZ;
+	public void setFilesFailed(List<String>listFilepath) throws ExceptionZZZ;
+	
+	
 	
 	
 	//Suche in dem Repository nach Dateien, die im Repository den entprechenden Konflikt-Typen haben.
@@ -64,6 +79,11 @@ public interface IJgitResolver {
 		
 	public List<String>getRepositoryPathStrings() throws ExceptionZZZ;
 	public void setRepositoryPathStrings(List<String>listasRepositoryPath) throws ExceptionZZZ;
+	public List<String>getRepositoryPathStringsResolved() throws ExceptionZZZ;
+	public void setRepositoryPathStringsResolved(List<String>listasRepositoryPath) throws ExceptionZZZ;
+	public List<String>getRepositoryPathStringsFailed() throws ExceptionZZZ;
+	public void setRepositoryPathStringsFailed(List<String>listasRepositoryPath) throws ExceptionZZZ;
+	
 	
 	//IDEE 20260506;
 	//Wurde die Strategie "OURS" umgesetzt, dann wurde der Konflikt zwar aufgelöst, 

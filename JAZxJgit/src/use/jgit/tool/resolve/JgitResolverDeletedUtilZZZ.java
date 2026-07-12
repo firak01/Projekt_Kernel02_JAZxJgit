@@ -92,7 +92,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 	    }
 	}
 	
-    /** Bei der Strategie THEIRS soll die als Konflikt vorhandene Löschung sich im loklen Repository wiederfinden,
+	 /** Bei der Strategie THEIRS soll die als Konflikt vorhandene Löschung sich im loklen Repository wiederfinden,
      *  sprich... LÖSCHEN 
      * @param git
      * @param sFilePathInRepository
@@ -101,6 +101,18 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      * @throws ExceptionZZZ
      */
     public static boolean resolveDeletedTHEIRS(Git git, String sFilePathInRepositoryIn) throws ExceptionZZZ{
+    	return resolveDeletedTHEIRS(git, sFilePathInRepositoryIn, true);
+    }
+	
+    /** Bei der Strategie THEIRS soll die als Konflikt vorhandene Löschung sich im loklen Repository wiederfinden,
+     *  sprich... LÖSCHEN 
+     * @param git
+     * @param sFilePathInRepository
+     *        Hier den Dateipfad als String übergeben. Er wird so der Methode ..addFilepattern(...) übergeben.
+     * @return
+     * @throws ExceptionZZZ
+     */
+    public static boolean resolveDeletedTHEIRS(Git git, String sFilePathInRepositoryIn, boolean bPrintOutput) throws ExceptionZZZ{
         boolean bReturn = false;
         main:{
      	   try {
@@ -120,29 +132,36 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	   
  	    	  //############################################### 				
  	    	  //### A
- 	    	  debugRepositoryState(git, "A) VOR git.rm()", sFilePathInRepository);
+	    	  if(bPrintOutput) {
+	    		  debugRepositoryState(git, "A) VOR git.rm()", sFilePathInRepository);
 
- 	    	  System.out.println("\nA) VERSUCH: Entferne aus dem Index per git.rm().addFilepattern(...)");
-
+	    		  System.out.println("\nA) VERSUCH: Entferne aus dem Index per git.rm().addFilepattern(...)");
+	    	  }
+ 	    	  
  	    	  git.rm()
  	    	  .addFilepattern(sFilePathInRepository)
  	    	  .call();
 				
 				
  	    	  //### B 
- 	    	  debugRepositoryState(git, "A) NACH git.rm()", sFilePathInRepository);
-
+ 	    	  if(bPrintOutput) {
+ 	    		  debugRepositoryState(git, "A) NACH git.rm()", sFilePathInRepository);
+ 	    	  }
+ 	    	 
  	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
  	    	  if (!fD.exists()) {
-
- 	    	    System.out.println("A) NACHHER. Mache commit");
-
- 	    	    bReturn = commitMergeResolved(git);
+ 	    		if(bPrintOutput) {
+ 	    			System.out.println("A) NACHHER. Erfolgreich mit rm aus dem Index entfert."); 	    			 	    			
+ 	    		}
+ 	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
+ 	    	    //bReturn = commitMergeResolved(git);
+ 	    		bReturn = true;
  	    	    break main;
  	    	  }
  	    	  
- 	    	  System.out.println("\nB) VERSUCH: Entferne aus dem Index per Cache.editor");
-
+ 	    	  if(bPrintOutput) {
+ 	    		  System.out.println("\nB) VERSUCH: Entferne aus dem Index per Cache.editor");
+ 	    	  }
  	    	  DirCache cache = repository.lockDirCache();
 
  	    	  try {
@@ -163,21 +182,30 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    		  }
  	    	  }
 				 
- 	    	  debugRepositoryState(git, "B) NACH Cache.editor()", sFilePathInRepository);
-
+ 	    	  if(bPrintOutput) {
+ 	    		  debugRepositoryState(git, "B) NACH Cache.editor()", sFilePathInRepository);
+ 	    	  }
  	    	  boolean bNoConflicts = git.status().call().getConflicting().isEmpty();
- 	    	  System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts + "'");
-
+ 	    	 
+ 	    	  if(bPrintOutput) {
+ 	    		  System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts + "'");
+ 	    	  }
+ 	    	  
  	    	  if (bNoConflicts) {
- 	    		  System.out.println("B) NACHHER. Mache commit");
-
- 	    		  bReturn = commitMergeResolved(git);
+ 	    		  if(bPrintOutput) {
+ 	    			  System.out.println("B) NACHHER. Datei erfolgreich aus Index entfernt.");
+ 	    		  }
+ 	    		  
+ 	    		  //Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
+ 	    		  //bReturn = commitMergeResolved(git);
+ 	    		  bReturn = true;
  	    		  break main;
 
  	    	  } else {
-
- 	    		  System.out.println("B) NACHHER. Mache Hardreset");
-
+ 	    		  if(bPrintOutput) {
+ 	    			  System.out.println("B) NACHHER. Mache Hardreset");
+ 	    		  }
+ 	    		  
  	    		  git.reset()
  	    		  .setMode(ResetCommand.ResetType.HARD)
  	    		  .setRef("HEAD")
@@ -188,25 +216,36 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	  //########### C
  	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
  	    	  if (!fD.exists()) {
-
- 	    	    System.out.println("B) NACHHER. Mache commit");
-
- 	    	    bReturn = commitMergeResolved(git);
+ 	    		if(bPrintOutput) {
+ 	    			System.out.println("B) NACHHER. Datei erfolgreich entfernt.");
+ 	    		}
+ 	    		
+ 	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
+ 	    	    //bReturn = commitMergeResolved(git);
+ 	    		bReturn = true;
  	    	    break main;
  	    	  }
  	    	  
  	    	  //### E
- 	    	  System.out.println("C) VORHER. Vom Worktree, file.exists(): " + fD.exists());
-				
- 	    	  //Sicherstellen, dass die Datei auch wirklich gelöscht wird.
- 	    	  boolean bDeletedExplizit = fD.delete();
- 	    	  System.out.println("C) Ergebnis des expliziten Löschens: " + bDeletedExplizit); 					     					   					     					 	    	  
+ 	    	 if(bPrintOutput) {
+ 	    		 System.out.println("C) VORHER. Vom Worktree, file.exists(): " + fD.exists());
+ 	    	 }
+ 	    	 
+ 	    	 //Sicherstellen, dass die Datei auch wirklich gelöscht wird.
+ 	    	 boolean bDeletedExplizit = fD.delete();
+ 	    	 if(bPrintOutput) {
+ 	    		 System.out.println("C) Ergebnis des expliziten Löschens: " + bDeletedExplizit);
+ 	    	 }
  	    	  if(bDeletedExplizit) {
-					System.out.println("C) NACHHER. Mache commit" );
-					bReturn = commitMergeResolved(git);
-					break main;					
+ 	    		if(bPrintOutput) {
+ 	    			System.out.println("C) NACHHER. Datei erfolgreich entfernt." );
+ 	    		}
+ 	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
+				//bReturn = commitMergeResolved(git);
+ 	    		bReturn = true;
+				break main;					
  	    	  }else {
- 	    		  bReturn = false;
+ 	    		bReturn = false;
  	    	  }
 			} catch (NoFilepatternException nfe) {
 				ExceptionZZZ ez = new ExceptionZZZ(nfe);
