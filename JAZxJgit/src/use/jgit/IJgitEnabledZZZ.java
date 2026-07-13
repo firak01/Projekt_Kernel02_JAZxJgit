@@ -31,7 +31,7 @@ public interface IJgitEnabledZZZ  extends IFlagZEnabledZZZ{
 	public abstract boolean setFlagLocal(FLAGZLOCAL objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
 	public abstract boolean[] setFlagLocal(FLAGZLOCAL[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
 	public abstract boolean proofFlagLocalExists(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
-	public abstract boolean proofFlagSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean proofFlagLocalSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
 	
 	//#############################################################
 	//### FLAGZCustom

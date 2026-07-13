@@ -547,9 +547,9 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 
 			boolean bResolvedSuccess=false;			
 			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {						
-				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedTHEIRS(git, sFilePathInRepository);				
+				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedTHEIRS(git, sFilePathInRepository, bPrintOutput);				
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
-				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedOURS(git, sFilePathInRepository);
+				bResolvedSuccess = JgitResolverDeletedUtilZZZ.resolveDeletedOURS(git, sFilePathInRepository, bPrintOutput);
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");

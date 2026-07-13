@@ -890,7 +890,7 @@ Renames sind Kombination aus beidem
 	}
 
 	@Override
-	public boolean proofFlagSetBefore(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
+	public boolean proofFlagLocalSetBefore(IJgitEnabledZZZ.FLAGZLOCAL objEnumFlag) throws ExceptionZZZ {
 		return this.proofFlagSetBefore(objEnumFlag.name());
 	}
 

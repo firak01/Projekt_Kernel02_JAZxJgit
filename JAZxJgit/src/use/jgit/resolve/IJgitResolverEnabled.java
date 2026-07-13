@@ -157,11 +157,11 @@ public interface IJgitResolverEnabled {
 		DUMMYFLAGZCUSTOM
 	}
 		
-	boolean getFlagCustom(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
-	boolean setFlagCustom(FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean[] setFlagCustom(FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean proofFlagCustomExists(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
-	boolean proofFlagCustomSetBefore(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean getFlagCustom(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean setFlagCustom(FLAGZCUSTOM objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean[] setFlagCustom(FLAGZCUSTOM[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean proofFlagCustomExists(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean proofFlagCustomSetBefore(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
 		
 	
 	//#############################################################
@@ -171,11 +171,11 @@ public interface IJgitResolverEnabled {
 		DUMMYFLAGZ
 	}
 		
-	boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;
-	boolean setFlag(FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
-	boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean setFlag(FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	public abstract boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	public abstract boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
 	
 	
 	

@@ -20,9 +20,10 @@ import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.system.Syso;
+import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.resolve.JgitResolverLocal;
 import use.jgit.util.JgitUtilZZZ;
-import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 
 public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 	private static final boolean DEBUG_DELETE_THEIRS = true;
@@ -41,55 +42,67 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 	}
 	
 	private static void debugRepositoryState(Git git, String sLabel, String sFilePathInRepository) throws GitAPIException, IOException {
+		debugRepositoryState(git, sLabel, sFilePathInRepository, true);
+	}
+	
+	private static void debugRepositoryState(Git git, String sLabel, String sFilePathInRepository, boolean bPrintOutput) throws GitAPIException, IOException {
 		
-		  if(!DEBUG_DELETE_THEIRS) return;
+		if(!DEBUG_DELETE_THEIRS) return;
+		if(!bPrintOutput) return;
 		
-	    Repository repository = git.getRepository();
-	    File file = new File(repository.getWorkTree(), sFilePathInRepository);
 
-	    System.out.println("\n========== " + sLabel + " ==========");
-
-	    boolean bExists = file.exists();
-	    System.out.println("WorkTree file.exists(): " + bExists);
-	    if (!bExists) {
-	        System.out.println("\tAuch wenn die Datei nicht mehr da ist, weitermachen und sie aus dem Index entfernen.");
-	    }
-
-	    RepositoryState state = repository.getRepositoryState();
-	    System.out.println("RepositoryState: " + state);
-
-	    Status status = git.status().call();
-	    System.out.println("conflicts: " + status.getConflicting());
-	    System.out.println("removed:   " + status.getRemoved());
-	    System.out.println("missing:   " + status.getMissing());
-	    System.out.println("changed:   " + status.getChanged());
-	    System.out.println("added:     " + status.getAdded());
-
-	    DirCache cache = repository.readDirCache();
-	    System.out.println("CACHE: HasUnmergedPaths = " + cache.hasUnmergedPaths());
-
-	    // Git verwendet grundsätzlich '/', hier normierung notwendig falls Windows Pfade mit Backslash übergeben werden.
-	    String sNormalized = JgitUtilZZZ.computeGitPath(sFilePathInRepository);
-
-	    boolean bFound = false;
-	    for(int i = 0; i < cache.getEntryCount(); i++) {
-	        DirCacheEntry e = cache.getEntry(i);
-
-	        if(DEBUG_CACHE_ONLY_TARGET) {
-	            if(!e.getPathString().equals(sNormalized)) {
-	                continue;
-	            }
-	            bFound = true;
-	        }
-
-	        System.out.println(
-	                e.getPathString()
-	                + " stage=" + e.getStage());
-	    }
-
-	    if(DEBUG_CACHE_ONLY_TARGET && !bFound) {
-	        System.out.println("Cacheeintrag NICHT gefunden: " + sNormalized);
-	    }
+	    try {
+		    Repository repository = git.getRepository();
+		    File file = new File(repository.getWorkTree(), sFilePathInRepository);
+	
+			Syso.println("\n========== " + sLabel + " ==========");
+			
+		    boolean bExists = file.exists();
+		    Syso.println("WorkTree file.exists(): " + bExists);
+		    if (!bExists) {
+		        Syso.println("\tAuch wenn die Datei nicht mehr da ist, weitermachen und sie aus dem Index entfernen.");
+		    }
+	
+		    RepositoryState state = repository.getRepositoryState();
+		    Syso.println("RepositoryState: " + state);
+	
+		    Status status = git.status().call();
+		    Syso.println("conflicts: " + status.getConflicting());
+		    Syso.println("removed:   " + status.getRemoved());
+		    Syso.println("missing:   " + status.getMissing());
+		    Syso.println("changed:   " + status.getChanged());
+		    Syso.println("added:     " + status.getAdded());
+	
+		    DirCache cache = repository.readDirCache();
+		    Syso.println("CACHE: HasUnmergedPaths = " + cache.hasUnmergedPaths());
+	
+		    // Git verwendet grundsätzlich '/', hier normierung notwendig falls Windows Pfade mit Backslash übergeben werden.
+		    String sNormalized = JgitUtilZZZ.computeGitPath(sFilePathInRepository);
+	
+		    boolean bFound = false;
+		    for(int i = 0; i < cache.getEntryCount(); i++) {
+		        DirCacheEntry e = cache.getEntry(i);
+	
+		        if(DEBUG_CACHE_ONLY_TARGET) {
+		            if(!e.getPathString().equals(sNormalized)) {
+		                continue;
+		            }
+		            bFound = true;
+		        }
+	
+		        Syso.println(
+		                e.getPathString()
+		                + " stage=" + e.getStage());
+		    }
+	
+		    if(DEBUG_CACHE_ONLY_TARGET && !bFound) {
+		        Syso.println("Cacheeintrag NICHT gefunden: " + sNormalized);
+		    }
+	    
+	    } catch (ExceptionZZZ e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	
 	 /** Bei der Strategie THEIRS soll die als Konflikt vorhandene Löschung sich im loklen Repository wiederfinden,
@@ -130,38 +143,33 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 	    	 String sFilePathInRepository =  JgitUtilZZZ.computeGitPath(sFilePathInRepositoryIn);
 	    	  
  	    	   
- 	    	  //############################################### 				
- 	    	  //### A
-	    	  if(bPrintOutput) {
-	    		  debugRepositoryState(git, "A) VOR git.rm()", sFilePathInRepository);
-
-	    		  System.out.println("\nA) VERSUCH: Entferne aus dem Index per git.rm().addFilepattern(...)");
-	    	  }
+ 	    	 //############################################### 				
+ 	    	 //### A
+	    	 debugRepositoryState(git, "A) VOR git.rm()", sFilePathInRepository, bPrintOutput);
+	    	 Syso.println("\nA) VERSUCH: Entferne aus dem Index per git.rm().addFilepattern(...)", bPrintOutput);
+	    	 
  	    	  
  	    	  git.rm()
  	    	  .addFilepattern(sFilePathInRepository)
  	    	  .call();
 				
 				
- 	    	  //### B 
- 	    	  if(bPrintOutput) {
- 	    		  debugRepositoryState(git, "A) NACH git.rm()", sFilePathInRepository);
- 	    	  }
+ 	    	  //### B  	    	  
+ 	    	  debugRepositoryState(git, "A) NACH git.rm()", sFilePathInRepository, bPrintOutput);
+ 	    	  
  	    	 
  	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
- 	    	  if (!fD.exists()) {
- 	    		if(bPrintOutput) {
- 	    			System.out.println("A) NACHHER. Erfolgreich mit rm aus dem Index entfert."); 	    			 	    			
- 	    		}
+ 	    	  if (!fD.exists()) { 	    		
+ 	    		Syso.println("A) NACHHER. Erfolgreich mit rm aus dem Index entfert.", bPrintOutput); 	    			 	    			
+ 	    		
  	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
  	    	    //bReturn = commitMergeResolved(git);
  	    		bReturn = true;
  	    	    break main;
  	    	  }
  	    	  
- 	    	  if(bPrintOutput) {
- 	    		  System.out.println("\nB) VERSUCH: Entferne aus dem Index per Cache.editor");
- 	    	  }
+ 	    	  Syso.println("\nB) VERSUCH: Entferne aus dem Index per Cache.editor", bPrintOutput);
+ 	    	  
  	    	  DirCache cache = repository.lockDirCache();
 
  	    	  try {
@@ -178,33 +186,27 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    		  try {
  	    	        cache.unlock();
  	    		  } catch (Exception e) {
- 	    			  System.out.println(e.getMessage());
+ 	    			  Syso.println(e.getMessage());
  	    		  }
  	    	  }
 				 
- 	    	  if(bPrintOutput) {
- 	    		  debugRepositoryState(git, "B) NACH Cache.editor()", sFilePathInRepository);
- 	    	  }
+ 	    	  debugRepositoryState(git, "B) NACH Cache.editor()", sFilePathInRepository, bPrintOutput);
+ 	   
  	    	  boolean bNoConflicts = git.status().call().getConflicting().isEmpty();
- 	    	 
- 	    	  if(bPrintOutput) {
- 	    		  System.out.println("B) NACHHER. Konflikt frei? '" + bNoConflicts + "'");
- 	    	  }
+ 	    	  
+ 	    	  Syso.println("B) NACHHER. Konflikt frei? '" + bNoConflicts + "'", bPrintOutput);
+ 	    	  
  	    	  
  	    	  if (bNoConflicts) {
- 	    		  if(bPrintOutput) {
- 	    			  System.out.println("B) NACHHER. Datei erfolgreich aus Index entfernt.");
- 	    		  }
- 	    		  
+ 	    		  Syso.println("B) NACHHER. Datei erfolgreich aus Index entfernt.", bPrintOutput);
+ 	    		   	    		  
  	    		  //Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
  	    		  //bReturn = commitMergeResolved(git);
  	    		  bReturn = true;
  	    		  break main;
 
  	    	  } else {
- 	    		  if(bPrintOutput) {
- 	    			  System.out.println("B) NACHHER. Mache Hardreset");
- 	    		  }
+ 	    		  Syso.println("B) NACHHER. Mache Hardreset", bPrintOutput);
  	    		  
  	    		  git.reset()
  	    		  .setMode(ResetCommand.ResetType.HARD)
@@ -216,30 +218,25 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	  //########### C
  	    	  fD = new File(repository.getWorkTree(), sFilePathInRepository);
  	    	  if (!fD.exists()) {
- 	    		if(bPrintOutput) {
- 	    			System.out.println("B) NACHHER. Datei erfolgreich entfernt.");
- 	    		}
- 	    		
+	    		Syso.println("B) NACHHER. Datei erfolgreich entfernt.", bPrintOutput);
+ 	    	 	    		
  	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
  	    	    //bReturn = commitMergeResolved(git);
  	    		bReturn = true;
  	    	    break main;
  	    	  }
  	    	  
- 	    	  //### E
- 	    	 if(bPrintOutput) {
- 	    		 System.out.println("C) VORHER. Vom Worktree, file.exists(): " + fD.exists());
- 	    	 }
+ 	    	 //### E
+ 	    	 Syso.println("C) VORHER. Vom Worktree, file.exists(): " + fD.exists(), bPrintOutput);
+ 	    	
  	    	 
  	    	 //Sicherstellen, dass die Datei auch wirklich gelöscht wird.
- 	    	 boolean bDeletedExplizit = fD.delete();
- 	    	 if(bPrintOutput) {
- 	    		 System.out.println("C) Ergebnis des expliziten Löschens: " + bDeletedExplizit);
- 	    	 }
- 	    	  if(bDeletedExplizit) {
- 	    		if(bPrintOutput) {
- 	    			System.out.println("C) NACHHER. Datei erfolgreich entfernt." );
- 	    		}
+ 	    	 boolean bDeletedExplizit = fD.delete(); 	    	 
+ 	    	 Syso.println("C) Ergebnis des expliziten Löschens: " + bDeletedExplizit, bPrintOutput); 	    	 
+ 	    	 
+ 	    	 if(bDeletedExplizit) { 	    	
+ 	    		Syso.println("C) NACHHER. Datei erfolgreich entfernt.", bPrintOutput);
+ 	    		
  	    		//Hier keinen commit machen, das ggfs. state des Repository=merged. Das würde Fehler werfen.
 				//bReturn = commitMergeResolved(git);
  	    		bReturn = true;
@@ -261,6 +258,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
         return bReturn;
      }
     
+    
     /** Hier den Dateipfad als String übergeben. Er wird so der Methode ..addFilepattern(...) übergeben.
      * @param git
      * @param sFilePathInRepository
@@ -269,14 +267,22 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      * @throws ExceptionZZZ
      */
     public static boolean resolveDeletedOURS(Git git, String sFilePathInRepositoryIn) throws ExceptionZZZ{
+    	return resolveDeletedOURS(git, sFilePathInRepositoryIn, true);
+    }
+    /** Hier den Dateipfad als String übergeben. Er wird so der Methode ..addFilepattern(...) übergeben.
+     * @param git
+     * @param sFilePathInRepository
+     * @param strategy
+     * @return
+     * @throws ExceptionZZZ
+     */
+    public static boolean resolveDeletedOURS(Git git, String sFilePathInRepositoryIn, boolean bPrintOutput) throws ExceptionZZZ{
         boolean bReturn = false;
         main:{
      	   try {
- 	    	 
- 	    	   
  	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepositoryIn)) {
  	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
+ 	    		  throw ez;
  	    	   }
  	    	   
  	    	   
@@ -284,8 +290,8 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  	    	   //wichtig, normiere den Pfad
  	    	   String sFilePathInRepository =  JgitUtilZZZ.computeGitPath(sFilePathInRepositoryIn);
  	    	   
- 	    	  debugRepositoryState(git, "A) VOR git.add("+sFilePathInRepository+")", sFilePathInRepository);
- 	    	 System.out.println("\nA) VERSUCH: Hinzufügen zum Index per git.add().addFilepattern(...)");
+ 	    	  debugRepositoryState(git, "A) VOR git.add("+sFilePathInRepository+")", sFilePathInRepository, bPrintOutput);
+ 	    	  Syso.println("\nA) VERSUCH: Hinzufügen zum Index per git.add().addFilepattern(...)", bPrintOutput);
  	    	   
  				//Code Snippet:
  				//Merke: das ist Strategieabhängig und StageState abhängig, was passieren soll.					
@@ -310,6 +316,10 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      }
     
     public static boolean resolveDeleted(Git git, File objFile, STRATEGYMERGECONFLICT strategy) throws ExceptionZZZ{
+    	return resolveDeleted(git, objFile, strategy, true);
+    }
+    
+    public static boolean resolveDeleted(Git git, File objFile, STRATEGYMERGECONFLICT strategy, boolean bPrintOutput) throws ExceptionZZZ{
        boolean bReturn = false;
        main:{
     	   try {
@@ -358,7 +368,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 					//A) Vorher
 					Repository repositoryA = git.getRepository();
 					File fA = new File(repositoryA.getWorkTree(), sFileName);
-					System.out.println("A) VORHER. Vom Worktree, file.exists(): " + fA.exists());
+					Syso.println("A) VORHER. Vom Worktree, file.exists(): " + fA.exists(), bPrintOutput);
 					 
 					//Die Löschung soll gewinnen (rm)
 					DirCache objCache = git.rm()
@@ -368,16 +378,16 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 					//B) Nachher
 					Repository repositoryB = git.getRepository();					
 					File fB = new File(repositoryB.getWorkTree(), sFilePathTotal);
-					System.out.println("B) NACHHER. Vom Worktree, file.exists(): " + fB.exists());
+					Syso.println("B) NACHHER. Vom Worktree, file.exists(): " + fB.exists(), bPrintOutput);
 					
 					//DAS IST KEINE GUTE IDEE, HAUT ALLES KAPUTT
 					//Sicherstellen, dass die Datei auch wirklich gelöscht wird.
 					if (fB.exists()) {
 					    bReturn = fB.delete();
-					    System.out.println("\tErgebnis des Löschens: " + bReturn);
+					    Syso.println("\tErgebnis des Löschens: " + bReturn, bPrintOutput);
 					}
 				 }else {
-					 System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Unerwartetet Strategy: '" + strategy.getName() + "'");
+					 Syso.println(ReflectCodeZZZ.getPositionCurrent() + ": Unerwartetet Strategy: '" + strategy.getName() + "'", bPrintOutput);
 					 ExceptionZZZ ez = new ExceptionZZZ("Unerwartete Strategy: '" +strategy.getName() + "'", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 					 throw ez;
 				 }	
