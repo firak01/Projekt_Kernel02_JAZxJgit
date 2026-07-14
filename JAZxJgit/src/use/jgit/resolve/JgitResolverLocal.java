@@ -10,11 +10,14 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.FileTextReaderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
+import basic.zBasic.util.system.Syso;
+import basic.zBasic.util.system.SystemZZZ;
 import use.jgit.AbstractJgitStarterLocal;
 import use.jgit.JgitResolverMain;
 import use.jgit.JgitStarterMain;
@@ -198,8 +201,8 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			//ggfs. eine einzelne Datei
 			String sFilePath = objConfig.readFilePath();
 			
-			
-			bReturn = this.resolveConflictit(git, sProjectName, sFilePath, sConflictType, false);
+			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;
+			bReturn = this.resolveConflictit(git, sProjectName, sFilePath, sConflictType, bPrintOutput);
 			if(!bReturn) break main;
 			
 			List<String> listasRepositoryPathSuccess = this.getRepositoryPathStringsResolved();
@@ -326,7 +329,8 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 							
 			Git git = this.getGitObject();
 			
-			bReturn = this.resolveConflictitByScanner(git, sConflictType, false);
+			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;			
+			bReturn = this.resolveConflictitByScanner(git, sConflictType, bPrintOutput);
 		}//end main:
 		return bReturn;
 	}
@@ -483,13 +487,13 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}
 					
 				
-								
+				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;				
 				if(bUseList && listasPathInRepository!=null) {
 					//Liste von Dateien verarbeiten
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
 					ArrayList<String>listasFileFailed = new ArrayList<String>();
 					for(String  sPathInRepository : listasPathInRepository) {
-						boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sPathInRepository, false);
+						boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sPathInRepository, bPrintOutput);
 						if(bSuccessConflict) {
 							listasFileSuccess.add(sPathInRepository);
 						}else {
@@ -506,7 +510,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					}						
 				}else {
 					//Einzelne Datei verarbeiten.
-					boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sFilePath, false);
+					boolean bSuccessConflict = this.resolveConflictFileDeletedit(git, sFilePath, bPrintOutput);
 					if(bSuccessConflict) {
 						JgitResolverLocalUI.printResolveResultSingle("\nSTATUS AFTER RESOLVING DELETED: SUCCESSFUL", sFilePath);
 					}else {
@@ -601,7 +605,8 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				//ggfs. eine einzelne Datei
 				String sFilePath = objConfig.readFilePath();
 				
-				bReturn = this.resolveSearchedConflictit(git, sFilePath, sConflictTypeIn, false);	
+				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;	
+				bReturn = this.resolveSearchedConflictit(git, sFilePath, sConflictTypeIn, bPrintOutput);	
 		}//end main:
 		return bReturn;
 	}
@@ -779,12 +784,13 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					}
 				}
 							
+				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;
 				if(bUseListFile && listFile!=null) {
 					//Liste von Dateien verarbeiten
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
 					ArrayList<String>listasFileFailed = new ArrayList<String>();
 					for(File objFile : listFile) {
-						boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, false);
+						boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, bPrintOutput);
 						if(bSuccessConflict) {
 							listasFileSuccess.add(sFilePath);
 						}else {
@@ -802,7 +808,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 
 				}else {
 					//Einzelne Datei verarbeiten.
-					boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, false);
+					boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, bPrintOutput);
 					if(bSuccessConflict) {
 						JgitResolverLocalUI.printResolveResultSingle("\nSTATUS AFTER RESOLVING DELETED: SUCCESSFUL", sFilePath);
 					}else {
@@ -938,18 +944,15 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
 			}else {
-				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
+				Syso.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
 				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
-				
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
 			
-			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN			
-			if(bPrintOutput) {																				
-				JgitResolverLocalUI.printStrategyHint(sFilePathTotal, objEnumStrategyMergeConflict);					
-			}
+			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN																								
+			JgitResolverLocalUI.printStrategyHint(sFilePathTotal, objEnumStrategyMergeConflict, bPrintOutput);					
 		}//end main:
 		return bReturn;
 	}	
@@ -957,7 +960,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	//Normalerweise reicht ein einfacher commit nicht. Anschliessend muss aber ein Commit gemacht werden... 
 	//Damit Eclipse das Aufloesen des Konflikts auch merkt.
 	@Override
-	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
+	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig, String sCommentIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
@@ -988,18 +991,20 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}
 			}
 			
+			//Vielleicht noch einen weiteren Kommentar übergeben. Der wird (falls unterschiedlich zum Methodenparameter) ggfs. hinzugerechnet.
 			String sComment = objConfig.readComment();
 			this.setCommentCommit(sComment);
 			
 			Git git = this.getGitObject();
 			
+			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;
 			if(bUseListFile && listFile!=null) {
 				//Liste von Dateien verarbeiten
 				ArrayList<String>listasFileSuccess = new ArrayList<String>();
 				ArrayList<String>listasFileFailed = new ArrayList<String>();
 				for(File objFile : listFile) {
 					sFilePath = objFile.getAbsolutePath();
-					boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, false);
+					boolean bSuccessConflict = this.resolveSearchedConflictFileMarkedit(sFilePath, bPrintOutput);
 					if(bSuccessConflict) {
 						listasFileSuccess.add(sFilePath);
 					}else {
@@ -1016,12 +1021,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}
 				if(!bReturn) break main;
 				
-				bReturn = this.commitit(git, sComment);//Alle Dateien auf einmal committen						
+				bReturn = this.commitit(git, sCommentIn);//Alle Dateien auf einmal committen, Kommentar aus dem Methodenparameter.						
 			}else {
 				//Einzelne Datei verarbeiten.					
 				String sRepositoryLocalBase = this.getRepositoryLocalBase();
 				String sFilePathTotal = JgitUtilZZZ.computeRepositoryLocalFilePath(sRepositoryLocalBase, sRepositoryProject, sFilePath);
-				boolean bSuccessConflict = this.resolveSearchedConflictMarkedCommitit(git, sFilePathTotal, sComment, false);
+				boolean bSuccessConflict = this.resolveSearchedConflictMarkedCommitit(git, sFilePathTotal, sComment, bPrintOutput);
 				if(bSuccessConflict) {
 					JgitResolverLocalUI.printResolveResultSingle("\nSTATUS AFTER RESOLVING DELETED: SUCCESSFUL", sFilePath);
 				}else {

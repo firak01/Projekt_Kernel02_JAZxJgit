@@ -43,7 +43,7 @@ public interface IJgitResolver {
 	
 	//Normalerweise reicht es nicht aus den Konflikt aus der Datei zu entfernen.
 	//Es muss auch noch ein Commit gemacht werden.
-	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig) throws ExceptionZZZ;
+	public boolean resolveSearchedConflictMarkedCommitit(IConfigResolverJGIT objConfig, String sComment) throws ExceptionZZZ;
 	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal) throws ExceptionZZZ;
 	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment) throws ExceptionZZZ;
 	public boolean resolveSearchedConflictMarkedCommitit(Git git, String sFilepathTotal, String sComment, boolean bPrintOutput) throws ExceptionZZZ;

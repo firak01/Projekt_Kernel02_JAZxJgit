@@ -17,6 +17,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.system.SystemZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigResolverLocalJGIT;
 import use.jgit.resolve.JgitResolverLocal;
@@ -151,7 +152,7 @@ public class JgitResolverMain implements IConstantZZZ{
 				System.out.println(System.getenv("sRRACZZZ"));
 				
 				
-				String sAction=null; String sComment=null;
+				String sAction=null; String sComment=null; String sPrintLevel=null;
 				ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
 							
 				//Trotz Einbinden von  in pom.xml Fehlermeldung;
@@ -189,6 +190,11 @@ public class JgitResolverMain implements IConstantZZZ{
 					System.out.println(sHelp);
 					break main;
 				}
+				
+				//+++++++++++++++++++++++++++++++++
+				//printLevel
+				sPrintLevel = objConfig.readPrintLevel();
+				SystemZZZ.getInstance().setPrintLevel(StringZZZ.toInteger(sPrintLevel));
 				
 				//+++++++++++++++++++++++++++++++++
 				//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
@@ -374,7 +380,7 @@ public class JgitResolverMain implements IConstantZZZ{
 						bReturn = objResolver.resolveSearchedConflictDeletedit(objConfig);
 						break;
 					case "resolveSearchedConflictMarkedCommit":
-						bReturn = objResolver.resolveSearchedConflictMarkedCommitit(objConfig);
+						bReturn = objResolver.resolveSearchedConflictMarkedCommitit(objConfig, sComment);
 						break;
 					case "resolveConflict":
 						bReturn = objResolver.resolveConflictit(objConfig, sConflictType4Resolve);

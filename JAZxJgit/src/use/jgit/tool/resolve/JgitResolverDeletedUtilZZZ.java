@@ -311,6 +311,8 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
  		    	ExceptionZZZ ez = new ExceptionZZZ(e);
  		    	throw ez;
      	   }
+     	   
+     	   bReturn = true;
         }//end main:
         return bReturn;
      }
