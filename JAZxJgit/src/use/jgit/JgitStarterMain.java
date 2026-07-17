@@ -20,9 +20,9 @@ import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
-import use.jgit.config.ConfigStarterRemoteJGIT;
+import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -205,7 +205,7 @@ public class JgitStarterMain implements IConstantZZZ{
 				System.setProperty("https.protocols", "TLSv1.2"); 
 							
 				//### Argumente entgegenzunehmen
-				ConfigStarterRemoteJGIT objConfig = new ConfigStarterRemoteJGIT(args);						
+				ConfigStarterRemote4TestJGIT objConfig = new ConfigStarterRemote4TestJGIT(args);						
 				File objFileBaseDefault = objConfig.getRepositoryLocalBaseDirectoryDefault();
 				System.out.println("Default Repository Verzeichnis .getRepositoryLocalBaseDirectoryDefault() = " + objFileBaseDefault.getAbsolutePath());
 				

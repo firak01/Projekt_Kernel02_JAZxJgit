@@ -46,7 +46,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 

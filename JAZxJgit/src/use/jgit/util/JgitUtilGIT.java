@@ -31,7 +31,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.common.MergeResultResolvedZZZ;
-import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverLocal;

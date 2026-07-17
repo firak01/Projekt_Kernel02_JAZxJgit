@@ -1,4 +1,4 @@
-package use.jgit.protcol.git;
+package use.jgit.protocol.git;
 
 import java.io.File;
 

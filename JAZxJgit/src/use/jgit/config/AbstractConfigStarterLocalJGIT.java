@@ -35,6 +35,11 @@ import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
  */
 public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT implements IConfigStarterLocalJGIT{
 	private static final long serialVersionUID = 1229381223690096548L;
+	
+	protected boolean bRepositoryBare = false;
+	
+	
+	
 	public AbstractConfigStarterLocalJGIT() throws ExceptionZZZ{
 		super();
 	}
@@ -68,6 +73,18 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	//### aus IConfigJGIT
 	
 	//### aus IConfigStarterLocalJGIT	
+	
+	//siehe dort...
+	@Override
+	public void isRepositoryBare(boolean bRepositoryBare) throws ExceptionZZZ {
+		this.bRepositoryBare = bRepositoryBare;
+	}
+	@Override
+	public boolean isRepositoryBare() throws ExceptionZZZ {
+		return this.bRepositoryBare;
+	}
+	
+	//+++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readActionStatus() throws ExceptionZZZ {
 		String sReturn = null;

@@ -2,7 +2,7 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
-import use.jgit.protcol.git.JgitStarterGIT;
+import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
@@ -34,6 +34,9 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	final static String sPATTERN_DEFAULT= sPATTERN4GIT_REMOTE_DEFAULT + IKernelConfigZZZ.sPATTERN4FLAG_DEFAULT;
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
+
+	//#################################
+	//Auslesen von Argmenten aus der Kommandozeile
 	public String readActionStatus() throws ExceptionZZZ;
 	public String readActionPull() throws ExceptionZZZ;
 	public String readActionCommit() throws ExceptionZZZ;

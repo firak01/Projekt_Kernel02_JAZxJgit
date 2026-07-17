@@ -6,7 +6,16 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
 
 public interface IConfigStarterLocalJGIT extends IConfigJGIT{
-
+	
+	//##################################
+	//ist das Repository "bare", das wird für die JUnit-Tests gebraucht
+	//und nicht aus einem Kommandozeilen-Argument ausgelesen
+	public void isRepositoryBare(boolean bRepositoryBare) throws ExceptionZZZ;
+	public boolean isRepositoryBare() throws ExceptionZZZ;
+	
+	//##################################
+	//Auslesen von Argumenten aus der Kommandozeile
+	
 	//das lokale Repository-Verzeichnis
 	public String readRepositoryLocal() throws ExceptionZZZ;
 	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ;

@@ -754,6 +754,10 @@ Renames sind Kombination aus beidem
 				InitCommand gitCommandInit = Git.init();
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
+				if(objConfig.isRepositoryBare()) { //Wird für die JUnit - Tests gebraucht
+					gitCommandInit.setBare(true);
+				}
+				
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);
 			
