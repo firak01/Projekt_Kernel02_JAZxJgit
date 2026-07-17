@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -26,6 +27,7 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
+import use.jgit.resolve.JgitResolverLocalUI;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
@@ -238,6 +240,17 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        boolean bSuccessPull = this.pullit(git);
 		        if(bSuccessPull) {
 					System.out.println("pullit erfolgreich");
+					
+					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+					//Statt so etwas zu machen, das Flag übergeben:
+					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyByMergeStrategy(MergeStrategy.OURS);
+					
+					String sTitle = "";
+					JgitResolverLocalUI.printIgnoreStrategyHint(sTitle, objEnumStrategyMergeConflict);
+					
+					
 				}else {
 					System.out.println("pullit NICHT erfolgreich");
 					break main;

@@ -35,6 +35,7 @@ import use.jgit.protcol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverLocal;
+import use.jgit.resolve.JgitResolverLocalUI;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
@@ -923,7 +924,8 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 	        	       .setStrategy(MergeStrategy.OURS)
 	        	       .call();
 		        } catch (CheckoutConflictException e) {
-		
+		        	System.out.println("PULL: CheckoutConflictException=" + e.getMessage());
+
 		            Collection<String> conflictingPaths = e.getConflictingPaths();
 		
 		            if (conflictingPaths == null || conflictingPaths.isEmpty()) {
@@ -932,7 +934,11 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 		            }
 		
 		            //Konfliktdateien gezielt zurücksetzen
+		            System.out.println("PULL: Setze Konfliktdateien gezielt zurück");
+
 		            for (String path : conflictingPaths) {
+		            	System.out.println("* " + path);
+
 		                git.checkout()
 		                   .setStage(CheckoutCommand.Stage.OURS)
 		                   .addPath(path)
@@ -943,17 +949,27 @@ private static boolean pullIgnoreCheckoutConflictsGIT_by_Direct_(Git git, boolea
 		            }
 		
 		          //Pull erneut versuchen
+		            System.out.println("PULL: Erneut versuchen");
 		            git.pull()
 		            .setStrategy(MergeStrategy.OURS)
 		            .call();
 		          
 
-		          //!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN				
-		          //Noch haben wir hier keine Strategie...  //+ "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
-				  String sLog="Konflikte wurden erfolgreich ignoriert.\n"
-						  + "\tKonfliktdateien wurden gezielt zurückgesetzt."									 
-						  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
-				  System.out.println(sLog);													
+//		          //!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN				
+//		          //Noch haben wir hier keine Strategie...  //+ "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+//				  String sLog="Konflikte wurden erfolgreich ignoriert.\n"
+//						  + "\tKonfliktdateien wurden gezielt zurückgesetzt."									 
+//						  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";
+//				  System.out.println(sLog);		
+//				  
+//				  	//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+//					//Statt so etwas zu machen, das Flag übergeben:
+//					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+//					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+//					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyByMergeStrategy(MergeStrategy.OURS);
+//					
+//					String sTitle = "";
+//					JgitResolverLocalUI.printStrategyHint(sTitle, objEnumStrategyMergeConflict);
 		        }
 		        		       
 			}catch(InvalidRemoteException ire) {

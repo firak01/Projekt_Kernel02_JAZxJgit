@@ -215,11 +215,24 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYMARKED: SUCCESSFUL FILES...", listasFileSuccess);				
 			JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYMARDED: FAILED FILES...", listasFileFailed);
 			
+			
 			if((listasFileFailed!=null && !listasFileFailed.isEmpty()) && (listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty())) {					
 				bReturn = false;
 			}else {
+				//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN				
+				if((listasFileSuccess!=null && !listasFileSuccess.isEmpty()) || (listasRepositoryPathSuccess!=null && !listasRepositoryPathSuccess.isEmpty())) {
+					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+					//Statt so etwas zu machen, das Flag übergeben:
+					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+
+					String sTitle = "";
+					JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+				}
+				
 				bReturn = true;
-			}			
+			}	
 		}//end main:
 		return bReturn;
 	}
@@ -331,6 +344,30 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			
 			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevel()>=IConfigZZZ.iPRINT_LEVEL_ALL;			
 			bReturn = this.resolveConflictitByScanner(git, sConflictType, bPrintOutput);
+
+			List<String> listasRepositoryPathSuccess = this.getRepositoryPathStringsResolved();
+			List<String> listasRepositoryPathFailed = this.getRepositoryPathStringsFailed();
+			JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYSTAGE: SUCCESSFUL FILES...", listasRepositoryPathSuccess);				
+			JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYSTAGE: FAILED FILES...", listasRepositoryPathFailed);				
+				
+			if(listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty()) {					
+				bReturn = false;
+			}else {
+				//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN				
+				if(listasRepositoryPathSuccess!=null && !listasRepositoryPathSuccess.isEmpty()) {
+
+					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+					//Statt so etwas zu machen, das Flag übergeben:
+					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+										
+					String sTitle = "";
+					JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+				}
+				
+				bReturn = true;									
+			}	
 		}//end main:
 		return bReturn;
 	}
@@ -414,30 +451,16 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				
 				//###############################################
 				//### Ausgabe der Rückmeldung, nur falls gewuenscht								
-				JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYSCANNER: SUCCESSFUL FILES...", listasRepositoryPathSuccess, bPrintOutput);				
-				JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT BYSCANNER: FAILED FILES...", listasRepositoryPathFailed, bPrintOutput);
 				
+				//Rückgabe der Werte für die aufrufende Methode
 				this.setRepositoryPathStringsResolved(listasRepositoryPathSuccess);
-				this.setRepositoryPathStringsFailed(listasRepositoryPathFailed);				
-				
+				this.setRepositoryPathStringsFailed(listasRepositoryPathFailed);
+									
 				if(listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty()) {					
 					bReturn = false;
 				}else {
 					bReturn = true;
 				}
-				
-				//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
-				
-				//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-				//Statt so etwas zu machen, das Flag übergeben:
-				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-				
-				if(bReturn) {																				
-					JgitResolverLocalUI.printStrategyHint("BYSCANNER", objEnumStrategyMergeConflict, bPrintOutput);					
-				}
-				
 			} catch (IOException ioe) {
 				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
@@ -521,11 +544,23 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 					}
 				}
 				
-				if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {					
+				if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {// && (listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty())) {					
 					bReturn = false;
 				}else {
+					//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN									
+					if(listasFileSuccess!=null && !listasFileSuccess.isEmpty()) {
+						//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+						//Statt so etwas zu machen, das Flag übergeben:
+						//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+						//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+						STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+						
+						String sTitle = "";
+						JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+					}
+					
 					bReturn = true;
-				}	
+				}		
 		}//end main:
 		return bReturn;
 	}
@@ -569,11 +604,6 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				
 			}			
 			bReturn = bResolvedSuccess;
-			
-			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN			
-			if(bReturn=true & bPrintOutput) {																				
-				JgitResolverLocalUI.printStrategyHint(sFilePathInRepository, objEnumStrategyMergeConflict);					
-			}
 		}//end main:
 		return bReturn;
 	}
@@ -633,17 +663,17 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				if((listasFileFailed!=null && !listasFileFailed.isEmpty()) && (listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty())) {					
 					bReturn = false;
 				}else {
-					//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN
-					
-					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-					//Statt so etwas zu machen, das Flag übergeben:
-					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-					
-					if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {	
+					//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN					
+					if(listasFileSuccess!=null && !listasFileSuccess.isEmpty()) {
+
+						//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+						//Statt so etwas zu machen, das Flag übergeben:
+						//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+						//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+						STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+						
 						String sTitle = "";
-						JgitResolverLocalUI.printStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+						JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
 					}
 					
 					bReturn = true;
@@ -789,20 +819,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			}//end for	
 				
 			
-			//###############################################
-			//### Ausgabe der Rückmeldung, falls auf dieser Ebene gewünscht			
-			if(bUseList) {					
-				JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILES...", listasFileSuccess, bPrintOutput);				
-				JgitResolverLocalUI.printResolveResultListString("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILES...", listasFileFailed, bPrintOutput);								
-			}else {
-				//Einzelne Datei verarbeiten.					
-				if(bSuccessConflict) {
-					JgitResolverLocalUI.printResolveResultSingle("\nSTATUS AFTER RESOLVING CONFLICT: SUCCESSFUL FILE...", sFilePath, bPrintOutput);
-				}else {
-					JgitResolverLocalUI.printResolveResultSingle("\nSTATUS AFTER RESOLVING CONFLICT: FAILED FILE...", sFilePath, bPrintOutput);
-				}				
-			}
-			
+			//###############################################			
 			//Rückgabe der Werte für die aufrufende Methode
 			this.setFilesResolved(listasFileSuccess);
 			this.setFilesFailed(listasFileFailed);
@@ -894,6 +911,26 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				}else {
 					bReturn = true;
 				}
+				
+				
+				if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {// && (listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty())) {					
+					bReturn = false;
+				}else {
+					//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN					
+					if(listasFileSuccess!=null && !listasFileSuccess.isEmpty()) {
+
+						//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+						//Statt so etwas zu machen, das Flag übergeben:
+						//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+						//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+						STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+						
+						String sTitle = "";
+						JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+					}
+					
+					bReturn = true;
+				}		
 				
 
 		}//end main:
@@ -1029,9 +1066,6 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
-			
-			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN																								
-			JgitResolverLocalUI.printStrategyHint(sFilePathTotal, objEnumStrategyMergeConflict, bPrintOutput);					
 		}//end main:
 		return bReturn;
 	}	
@@ -1119,11 +1153,24 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				this.setFilesResolved(listasFileSuccess);
 				this.setFilesFailed(listasFileFailed);
 				
-				if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {					
+				if(listasFileFailed!=null && !listasFileFailed.isEmpty()) {// && (listasRepositoryPathFailed!=null && !listasRepositoryPathFailed.isEmpty())) {					
 					bReturn = false;
 				}else {
+					//!!! HINWEIS AUF NOTWENDIGE WEITERE AKTIONEN					
+					if(listasFileSuccess!=null && !listasFileSuccess.isEmpty()) {
+
+						//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+						//Statt so etwas zu machen, das Flag übergeben:
+						//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+						//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+						STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+						
+						String sTitle = "";
+						JgitResolverLocalUI.printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict);					
+					}
+					
 					bReturn = true;
-				}
+				}	
 				if(!bReturn) break main;
 				
 				bReturn = this.commitit(git, sCommentIn);//Alle Dateien auf einmal committen, Kommentar aus dem Methodenparameter.
@@ -1215,12 +1262,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		    git.close();
 			
 			
-			//!!! HINWEIS AUF NOTWENDIGE WEITER AKTIONEN, absichtlich hier nicht den PUSH durchführen, 
-			//                                            das wären für den Resolver zuviele weitere Parameter/Methoden
-			if(bReturn=true & bPrintOutput) {																
-				JgitResolverLocalUI.printStrategyHint("MARKEDCOMMIT", objEnumStrategyMergeConflict);					
-			}
-	
+		
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;
@@ -1473,25 +1515,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				String sConflictType = sConflictTypeIn.trim().toUpperCase();
 				boolean bEveryConflictType = sConflictType.equalsIgnoreCase("ALL");
 				
-				
-//				File objFileRepository = git.getRepository().getDirectory();
-//				File objFileDirectory = objFileRepository.getParentFile();
-//				
-//				String sFileDirectoryName = FileEasyZZZ.getNameOnly(objFileDirectory);
-//				
-//				List<File> listFile = null; List<String> listRepositoryPath = null; File objFileProject = null;
-//				if(sProjectName.equals(sFileDirectoryName) | sProjectName.equals("*")) {
-//					objFileProject = objFileDirectory;
-//				}else {
-//					String sFileDirectory = FileEasyZZZ.joinFilePathName(objFileDirectory, sProjectName);
-//					objFileProject = new File(sFileDirectory);				
-//				}
-				//listFile = JgitResolverConflictPostUtilZZZ.findFilesWithConflictMarkers(objFileProject);
-		        //this.setFiles(listFile);
-				
 				List<GitConflictInfoZZZ> conflicts = GitConflictScannerZZZ.scan(git.getRepository());
-				
-				
 				for (GitConflictInfoZZZ info : conflicts) {
 
 				    switch (info.getConflictType()) {				    

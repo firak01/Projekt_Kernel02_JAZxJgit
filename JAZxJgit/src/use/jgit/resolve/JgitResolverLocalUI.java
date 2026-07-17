@@ -89,17 +89,17 @@ public class JgitResolverLocalUI implements IConstantZZZ{
         }
     }
 
-    public static void printStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
-    	printStrategyHint(sTitle, objEnumStrategyMergeConflict, true);
+    public static void printResolveStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    	printResolveStrategyHint(sTitle, objEnumStrategyMergeConflict, true);
     }
-    public static void printStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
-    	printStrategyHint(sTitle, "", objEnumStrategyMergeConflict, bPrintOutput);
+    public static void printResolveStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
+    	printResolveStrategyHint(sTitle, "", objEnumStrategyMergeConflict, bPrintOutput);
     }
     
-    public static void printStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
-    	printStrategyHint(sTitle, sFilePath, objEnumStrategyMergeConflict, true);
+    public static void printResolveStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    	printResolveStrategyHint(sTitle, sFilePath, objEnumStrategyMergeConflict, true);
     }
-    public static void printStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
+    public static void printResolveStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
     	if(!bPrintOutput) return;
     	
     	String sLog;
@@ -118,4 +118,38 @@ public class JgitResolverLocalUI implements IConstantZZZ{
 		}
         Syso.println(sLog);
     }
+    
+    //#################################################
+    //Beim Pullit findet im Ignorieren Fall auch etwas mit dem Resolver statt. 
+    //Muss aber leicht anderen Strategiehinweis-Text bekommen
+    public static void printIgnoreStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    	printIgnoreStrategyHint(sTitle, objEnumStrategyMergeConflict, true);
+    }
+    public static void printIgnoreStrategyHint(String sTitle, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
+    	printResolveStrategyHint(sTitle, "", objEnumStrategyMergeConflict, bPrintOutput);
+    }
+    public static void printIgnoreStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict) throws ExceptionZZZ{
+    	printIgnoreStrategyHint(sTitle, sFilePath, objEnumStrategyMergeConflict, true);
+    }
+    public static void printIgnoreStrategyHint(String sTitle, String sFilePath, IJgitResolverEnabled.STRATEGYMERGECONFLICT objEnumStrategyMergeConflict, boolean bPrintOutput) throws ExceptionZZZ{
+    	if(!bPrintOutput) return;
+    	
+    	String sLog;
+        if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
+			sLog="\nErfolgreiches Ignorieren von Konflikten. " + sTitle + "\n"
+					  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS.name() + "\n"
+					  + "HINWEIS: \t\tRemote Änderung wurde übernommen. Die lokale Änderung wurde entfernt. Ein zusätzlicher Commit muss ggfs. noch gemacht werden.";
+		}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {
+			sLog="\nErfolgreiches Ignorieren von Konflikten. " + sTitle + "\n"
+					  + "Verwendete Stategie: \t" + objEnumStrategyMergeConflict.getName() + "\n"//IJgitResolverEnabled.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS.name() + "\n"
+					  + "HINWEIS: \t\tLokale Änderung wurde übernommen. Diese ist noch nicht auf dem Server. Ein Commit und PUSH muss  noch gemacht werden.";						
+		}else {
+			Syso.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
+			ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;
+		}
+        Syso.println(sLog);
+    }
+    
+    
 }
