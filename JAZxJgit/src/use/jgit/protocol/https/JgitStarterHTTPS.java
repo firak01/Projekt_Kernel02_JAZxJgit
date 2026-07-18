@@ -18,7 +18,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
-import use.jgit.IJgitEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterRemoteJGIT;
@@ -424,8 +424,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 			
 			
-			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
-			boolean bAutoResolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+			boolean bIgnoreConflicts = this.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);
+			boolean bAutoResolveConflicts = this.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
 			
 			
 			

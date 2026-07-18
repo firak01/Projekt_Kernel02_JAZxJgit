@@ -8,32 +8,9 @@ import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
-public interface IJgitStarterLocal {
+public interface IJgitStarterLocal extends IJgitRepository{
 	
-	//+++ Per Argument übergebene Werte
-	public String getRepositoryProject() throws ExceptionZZZ;
-	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
 	
-	public String getRepositoryBranch() throws ExceptionZZZ;
-	public void setRepositoryBranch(String sRepositoryBranch) throws ExceptionZZZ;
-	
-	public String getRepositoryLocalBase() throws ExceptionZZZ;
-	public void setRepositoryLocalBase(String sRepositoryBaseLocal) throws ExceptionZZZ;
-
-	public String getRepositoryRemoteAlias() throws ExceptionZZZ; //zwar REMOTE, wird aber zum Setzen von den Einträgen in der lokalen config-Datei gebraucht
-	public void setRepositoryRemoteAlias(String sRepositoryRemoteAlias) throws ExceptionZZZ;
-		
-	//+++ Errechnete Werte
-	public String getRepositoryLocalTotal() throws ExceptionZZZ;
-	public void setRepositoryTotalLocal(String sRepositoryTotalLocal) throws ExceptionZZZ;
-
-	public String getRepositoryTotalRemote() throws ExceptionZZZ; //zwar REMOTE, wird aber zum Setzen von den Einträgen in der lokalen config-Datei gebraucht	
-	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ;
-	
-	//+++ Arbeit mit dem GitObject, etc.
-	public Git getGitObject() throws ExceptionZZZ;
-	public void setGitObject(Git git) throws ExceptionZZZ;
-		
 	//Alternative 1: Verwendet unvollständiges status.getUncommittedChanges()
 	public void addFileTrackedChanged() throws ExceptionZZZ;
 	public void addFileTrackedChanged(Git git) throws ExceptionZZZ;
@@ -45,11 +22,8 @@ public interface IJgitStarterLocal {
 	
 	
 	//+++ Arbeiten mit dem LOCALEN Repository-Object, etc.
-	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	
-	public boolean configureRepositoryLocal(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
-	
-	public boolean configureGit() throws ExceptionZZZ;
-	public boolean configureRepositoryLocal() throws ExceptionZZZ;
+	//jetzt in IJgitRepository im dem entsprechenden Interface public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	
+	//jetzt in IJgitRepository im dem entsprechenden Interface public boolean configureRepositoryLocal(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	
     //+++ Arbeiten mit dem GIT-Objekt
 	public boolean statusit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;

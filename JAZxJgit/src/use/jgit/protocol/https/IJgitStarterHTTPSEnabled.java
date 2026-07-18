@@ -1,9 +1,9 @@
 package use.jgit.protocol.https;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ;
 
-public interface IJgitStarterHTTPSEnabled extends IJgitEnabledZZZ{
+public interface IJgitStarterHTTPSEnabled extends IJgitStarterEnabledZZZ{
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################

@@ -1,10 +1,10 @@
 package use.jgit.protocol.git;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitEnabledZZZ;
-import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
+import use.jgit.IJgitStarterEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 
-public interface IJgitStarterGITEnabled  extends IJgitEnabledZZZ{
+public interface IJgitStarterGITEnabled  extends IJgitStarterEnabledZZZ{
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################

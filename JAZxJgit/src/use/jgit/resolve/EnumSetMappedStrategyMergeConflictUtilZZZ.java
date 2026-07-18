@@ -9,7 +9,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractEnum.IEnumSetFactoryZZZ;
 import basic.zBasic.util.datatype.enums.EnumSetUtilZZZ;
-import use.jgit.IJgitEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 
 public class EnumSetMappedStrategyMergeConflictUtilZZZ extends EnumSetUtilZZZ{
@@ -50,7 +50,7 @@ public class EnumSetMappedStrategyMergeConflictUtilZZZ extends EnumSetUtilZZZ{
 		return objReturn;
 	}
 
-	public static STRATEGYMERGECONFLICT getStrategyChoosenByFlag(IJgitEnabledZZZ objGitStarter) throws ExceptionZZZ{
+	public static STRATEGYMERGECONFLICT getStrategyChoosenByFlag(IJgitStarterEnabledZZZ objGitStarter) throws ExceptionZZZ{
 		STRATEGYMERGECONFLICT objReturn = null;
 		main:{
 			if(objGitStarter==null) {
@@ -58,8 +58,8 @@ public class EnumSetMappedStrategyMergeConflictUtilZZZ extends EnumSetUtilZZZ{
 				throw ez;
 			}
 			
-			boolean bUseStrategyMergeConflictsOurs = objGitStarter.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-			boolean bUseStrategyMergeConflictsTheirs = objGitStarter.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+			boolean bUseStrategyMergeConflictsOurs = objGitStarter.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+			boolean bUseStrategyMergeConflictsTheirs = objGitStarter.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
 					
 			if(bUseStrategyMergeConflictsOurs & bUseStrategyMergeConflictsTheirs) {
 				ExceptionZZZ ez = new ExceptionZZZ("Ungueltige FlagKombination .", iERROR_PARAMETER_VALUE, EnumSetMappedStrategyMergeConflictUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());

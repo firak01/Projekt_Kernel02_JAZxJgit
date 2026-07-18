@@ -1,10 +1,10 @@
 package use.jgit.protocol.ssh;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitEnabledZZZ;
-import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
+import use.jgit.IJgitStarterEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 
-public interface IJgitStarterSSHEnabled  extends IJgitEnabledZZZ{
+public interface IJgitStarterSSHEnabled  extends IJgitStarterEnabledZZZ{
 	// #############################################################
 	// ### FLAGZ und FLAG - BASIS METHODEN
 	// #############################################################

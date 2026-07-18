@@ -32,8 +32,9 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
-import use.jgit.IJgitEnabledZZZ.FLAGZLOCAL;
+import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
+import use.jgit.config.IConfigRepositoryJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.ssh.JGitSshConfigZZZ;
@@ -60,7 +61,8 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 	public boolean configureGit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{		
-			bReturn = super.configureGit((IConfigStarterLocalJGIT) objConfig);
+			//bReturn = super.configureGit((IConfigStarterLocalJGIT) objConfig);
+			bReturn = super.configureGit((IConfigRepositoryJGIT) objConfig);
 			
 			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 			//Stelle sicher, dass das gewünschte Protokoll passt. Also: Die URL in die Konfiguration eintragen.

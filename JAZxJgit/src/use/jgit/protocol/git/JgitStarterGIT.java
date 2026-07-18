@@ -20,9 +20,10 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.AbstractJgitStarterRemote;
-import use.jgit.IJgitEnabledZZZ;
+import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
+import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
@@ -278,8 +279,8 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			String sBranchIn = this.getRepositoryBranch();
 			if(!StringZZZ.isEmptyTrimmed(sBranchIn)) sBranch = sBranchIn;
 				
-			boolean bIgnoreConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
-			boolean bAutosolveConflicts = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
+			boolean bIgnoreConflicts = this.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.MERGE_IGNORE_CHECKOUT_CONFLICTS);	
+			boolean bAutosolveConflicts = this.getFlagLocal(IJgitStarterEnabledZZZ.FLAGZLOCAL.MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS);
 
 			//Zum Testen gezielt steuern
 			//bIgnoreConflicts = false;

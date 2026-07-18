@@ -8,9 +8,9 @@ import basic.zKernel.GetOptZZZ;
 import use.jgit.config.AbstractConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
-public class ConfigStarterRemote4TestJGIT  extends AbstractConfigStarterRemoteJGIT{
+public class ConfigRepository4TestJGIT  extends AbstractConfigRepositoryManagerJGIT{
 	
-	public ConfigStarterRemote4TestJGIT() throws ExceptionZZZ {
+	public ConfigRepository4TestJGIT() throws ExceptionZZZ {
 		super();		
 	}
 	
@@ -19,24 +19,11 @@ public class ConfigStarterRemote4TestJGIT  extends AbstractConfigStarterRemoteJG
 	
 	//##########################################
 	//### aus IConfigStarterLocalJGIT	
-	
-	//+++++++++++++++++++++++++++++++++++++
 	@Override
-	public String readActionStatus() throws ExceptionZZZ {
-		return null;
+	public boolean isRepositoryBare() throws ExceptionZZZ {
+			return true;
 	}
-	
-	
-	@Override
-	public String readActionCommit() throws ExceptionZZZ {
-		return null;
-	}
-	
-	@Override
-	public String readActionFetch() throws ExceptionZZZ {
-		return null;
-	}
-	
+
 	//++++++++++++++++++++++++++++++++++++++++++++++++
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
@@ -61,67 +48,14 @@ public class ConfigStarterRemote4TestJGIT  extends AbstractConfigStarterRemoteJG
 	public String readRepositoryBranch() throws ExceptionZZZ {
 		return "master";
 	}
+
 	
 	//++++++++++++++++++++++++++++++++++++++++++++++++	
 	@Override
 	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
-		return "origin";
-	}
-
-	//++++++++++++++++++++++++++++++++++++++++++				
-
-	@Override
-	public String readComment() throws ExceptionZZZ {
-		return "Comment by JUnitTest";
-	}
-			
-	//########################################
-	//### aus IConfigStarterRemoteJGIT
-	@Override
-	public String readActionPull() throws ExceptionZZZ {
 		return null;
 	}
-
-	@Override
-	public String readActionPush() throws ExceptionZZZ {
-		return null;
-	}
-
-	@Override
-	public String readActionCommitPush() throws ExceptionZZZ {
-		return null;
-	}
-
-	@Override
-	public String getConnectionTypeDefault() throws ExceptionZZZ {
-		return null;
-	}
-
-	@Override
-	public String readConnectionType() throws ExceptionZZZ {
-		return null;
-	}
-
-	@Override
-	public boolean isConnectionTypeSSH() throws ExceptionZZZ {
-		return false;
-	}
-
-	@Override
-	public boolean isConnectionTypeHTTPS() throws ExceptionZZZ {
-		return false;
-	}
-
-	@Override
-	public boolean isConnectionTypeGIT() throws ExceptionZZZ {
-		return false;
-	}
-
-	@Override
-	public String readPersonalAccessToken() throws ExceptionZZZ {
-		return null;
-	}
-
+		
 	@Override
 	public String readRepositoryRemoteHost() throws ExceptionZZZ {
 		return null;
@@ -129,6 +63,18 @@ public class ConfigStarterRemote4TestJGIT  extends AbstractConfigStarterRemoteJG
 
 	@Override
 	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
+		return null;
+	}
+	
+	@Override
+	public String getPatternStringDefault() throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getArgumentArrayDefault() throws ExceptionZZZ {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

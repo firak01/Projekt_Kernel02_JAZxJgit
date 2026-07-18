@@ -33,13 +33,17 @@ import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
  * @author lindhauer
  *
  */
-public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepositoryJGIT implements IConfigStarterLocalJGIT{
+public abstract class AbstractConfigRepositoryManagerJGIT extends AbstractConfigRepositoryJGIT implements IConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 1229381223690096548L;
-		
-	public AbstractConfigStarterLocalJGIT() throws ExceptionZZZ{
+	
+	protected boolean bRepositoryBare = false;
+	
+	
+	
+	public AbstractConfigRepositoryManagerJGIT() throws ExceptionZZZ{
 		super();
 	}
-	public AbstractConfigStarterLocalJGIT(String[] saArg) throws ExceptionZZZ {
+	public AbstractConfigRepositoryManagerJGIT(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 			
@@ -66,56 +70,27 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 	}
 
 	
-	//### aus IConfigJGIT
-	
-	//### aus IConfigStarterLocalJGIT	
-	
-	//+++++++++++++++++++++++++++++++++++++
-	@Override
-	public String readActionStatus() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("status");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	
-	@Override
-	public String readActionCommit() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("commit");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String readActionFetch() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("fetch");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	//++++++++++++++++++++++++++++++++++++++++++++++++
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
+
+	//### aus IConfigJGIT
+	
+	//### aus IConfigStarterLocalJGIT	
+	
+	//siehe dort...
+	@Override
+	public void isRepositoryBare(boolean bRepositoryBare) throws ExceptionZZZ {
+		this.bRepositoryBare = bRepositoryBare;
+	}
+	@Override
+	public boolean isRepositoryBare() throws ExceptionZZZ {
+		return this.bRepositoryBare;
+	}
+	
+	//+++++++++++++++++++++++++++++++++++++
+	
 	
 //	//### aus IConfigStarterLocalJGIT	
 //	@Override
@@ -197,29 +172,25 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 //		}//end main:		
 //		return sReturn;
 //	}
-	
-	
-
-	
-	//++++++++++++++++++++++++++++++++++++++++++				
-	@Override
-	public String getCommentDefault() throws ExceptionZZZ {
-		return "";
-	}
-	@Override
-	public String readComment() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("comment");
-			if(sReturn==null){
-				sReturn = this.getCommentDefault();
-			}
-		}//end main:		
-		return sReturn;
-
-	}
+//		
+//	//++++++++++++++++++++++++++++++++++++++++++++++++	
+//	@Override
+//	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("rra");
+//			if(sReturn==null){
+//				sReturn = this.getRepositoryRemoteAliasDefault();
+//			}
+//		}//end main:		
+//		return sReturn;
+//	}
+//	@Override
+//	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
+//		return IConfigJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
+//	}
 }
