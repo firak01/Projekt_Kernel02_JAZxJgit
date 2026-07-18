@@ -185,49 +185,6 @@ public abstract class AbstractConfigRepositoryJGIT extends AbstractConfigJGIT im
 	
 	//################
 	//++++++++++++++++++++++++++++++++++++++++++++++++
-	@Override
-	public String readRepositoryRemoteHost() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sHost = objOpt.readValue("rrh");
-			if(StringZZZ.isEmpty(sHost)) {
-				sHost = this.getRepositoryRemoteHostDefault();				
-			}
-			
-			sReturn = sHost;
-		}//end main:		
-		return sReturn;
-	}
 	
-	@Override
-	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ{
-		return "github.com";
-	}
 	
-	@Override
-	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			String sHost = objOpt.readValue("rrac");
-			if(StringZZZ.isEmpty(sHost)) {
-				sHost = this.getRepositoryRemoteAccountDefault();				
-			}
-			
-			sReturn = sHost;
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ{
-		return "firak01";
-	}
 }

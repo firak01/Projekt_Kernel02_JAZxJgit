@@ -43,12 +43,12 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 		super(saArg); 
 	} 
 			
-	
-	
+
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	
-	//### aus 
+	//### aus IConfigJGIT
+	
 	//Gib die Hilfsinfos als String zurück
 	@Override
 	public String createHelp() throws ExceptionZZZ{
@@ -66,11 +66,14 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 	}
 
 	
-	//### aus IConfigJGIT
 	
-	//### aus IConfigStarterLocalJGIT	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
+	//######################################
+	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
+	//    LOKALE KONFIGURATION
+	//++++++++++++++++++++++++++++++++++++++++++
 	
-	//+++++++++++++++++++++++++++++++++++++
+	//### aus IConfigStarterLocal
 	@Override
 	public String readActionStatus() throws ExceptionZZZ {
 		String sReturn = null;
@@ -111,98 +114,6 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 		return sReturn;
 	}
 	
-	//++++++++++++++++++++++++++++++++++++++++++++++++
-	//######################################
-	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
-	//    LOKALE KONFIGURATION
-	//++++++++++++++++++++++++++++++++++++++++++
-	
-//	//### aus IConfigStarterLocalJGIT	
-//	@Override
-//	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
-//		return "."; //Das eigene Projekt-Verzeichnis als Default
-//	}
-//	
-//	@Override
-//	public File getRepositoryLocalBaseDirectoryDefault() throws ExceptionZZZ {
-//		return new File(this.getRepositoryLocalBaseDefault()); //Also das eigene Projekt-Verzeichnis als Default
-//	}
-//	
-//	@Override
-//	public String readRepositoryLocal() throws ExceptionZZZ {		
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("rl");
-//			if(sReturn==null){
-//				sReturn = this.getRepositoryLocalBaseDefault();
-//			}
-//		}//end main:		
-//		return sReturn;
-//	}		
-//	
-//	//++++++++++++++++++++++++++++++++++++++++++++
-//	@Override
-//	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
-//		return this.getProjectName(); //Einfach als Default, kann ja überschrieben werden.
-//	}
-//		
-//	//++++++++++++++++++++++++++++++++++++++
-//	@Override
-//	public String readRepositoryProjectName() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			String sProject = objOpt.readValue("project");
-//			if(StringZZZ.isEmpty(sProject)) {
-//				sProject = this.getRepositoryProjectNameDefault();				
-//			}
-//			
-//			sReturn = sProject;
-//		}//end main:		
-//		return sReturn;
-//	}
-//	
-//	//++++++++++++++++++++++++++++++++++++++++++++
-//	@Override
-//	public String getRepositoryBranchDefault() throws ExceptionZZZ {		
-//		return IConfigJGIT.sBRANCH_DEFAULT;
-//	}
-//
-//	@Override
-//	public String getRepositoryBranchAll() throws ExceptionZZZ {		
-//		return IConfigJGIT.sBRANCH_ALL;
-//	}
-//	
-//	//++++++++++++++++++++++++++++++++++++++
-//	@Override
-//	public String readRepositoryBranch() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			String sBranch = objOpt.readValue("branch");
-//			if(StringZZZ.isEmpty(sBranch)) {
-//				sBranch = this.getRepositoryBranchAll();				
-//			}
-//			sReturn = sBranch;
-//		}//end main:		
-//		return sReturn;
-//	}
-	
-	
-
-	
-	//++++++++++++++++++++++++++++++++++++++++++				
-	@Override
 	public String getCommentDefault() throws ExceptionZZZ {
 		return "";
 	}

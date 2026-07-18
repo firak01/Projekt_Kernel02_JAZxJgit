@@ -24,8 +24,11 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 		super(saArg);
 	}
 
-	//### aus IConfigStarterRemoteJGIT
-	//siehe dort...
+	//######################################
+	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
+		
+	
+	//#### aus IConfigZZZ
 	@Override
 	public String getPatternStringDefault() throws ExceptionZZZ{
 		return IConfigStarterRemoteJGIT.sPATTERN_DEFAULT;
@@ -46,10 +49,6 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 		return saArg;
 	}
 	
-	//######################################
-	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
-		
-	//### aus IConfigZZZ
 	@Override
 	public String getProjectDirectory() throws ExceptionZZZ {
 		return IConfigJGIT.sPROJECT_DIRECTORY;
@@ -60,11 +59,13 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 		return IConfigJGIT.sPROJECT_NAME;
 	}
 	
+
 	//Merke 20260615: Besser eine Liste von Hilf-Objekt-Zeilen auch kein Enum, der Ansatz mit der einfachen Liste der Objekte läßt sich einfacher 
 	//                über mehrere Projekte und Vererbungstrukturen umsetzen
 	//Also nicht so etwas nutzen wie:
 	//public enum LOGSTRINGFORMAT implements IEnumSetMappedStringFormatZZZ{		
 	//            und darin:    STRINGTYPE01_STRING_BY_STRING("stringtype01",IStringFormatZZZ.iFACTOR_STRINGTYPE01_STRING_BY_STRING, IStringFormatZZZ.sSEPARATOR_PREFIX_DEFAULT + "[A01]", "%s",IStringFormatZZZ.iARG_STRING,  "[/A01]" + IStringFormatZZZ.sSEPARATOR_POSTFIX_DEFAULT, "Gib den naechsten Log String - sofern vorhanden - in diesem Format aus."),			
+
 	@Override
 	public List<IKernelConfigHelpLineZZZ>getHelpList() throws ExceptionZZZ{
 		ArrayList<IKernelConfigHelpLineZZZ>listaReturn=new ArrayList<IKernelConfigHelpLineZZZ>();
@@ -133,13 +134,20 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 	}
 	
 	//### aus IConfigJGIT
+
+	
+	
+	
+	//### aus IConfigStarterLocalJGIT
+
 	@Override
 	public String getCommentDefault() throws ExceptionZZZ {
 		return "";
 	}
 	
+	
 	//### aus IConfigStarterRemoteJGIT
-	//siehe dort...
+
 	@Override
 	public String readActionPull() throws ExceptionZZZ {
 		String sReturn = null;
@@ -284,5 +292,52 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 			}
 		}//end main:		
 		return sReturn;
+	}
+	
+	//######################################
+	@Override
+	public String readRepositoryRemoteHost() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sHost = objOpt.readValue("rrh");
+			if(StringZZZ.isEmpty(sHost)) {
+				sHost = this.getRepositoryRemoteHostDefault();				
+			}
+			
+			sReturn = sHost;
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ{
+		return "github.com";
+	}
+	
+	@Override
+	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sHost = objOpt.readValue("rrac");
+			if(StringZZZ.isEmpty(sHost)) {
+				sHost = this.getRepositoryRemoteAccountDefault();				
+			}
+			
+			sReturn = sHost;
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ{
+		return "firak01";
 	}
 }

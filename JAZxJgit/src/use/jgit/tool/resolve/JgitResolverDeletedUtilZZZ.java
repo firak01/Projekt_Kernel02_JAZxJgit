@@ -22,7 +22,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.system.Syso;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
-import use.jgit.resolve.JgitResolverLocal;
+import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.util.JgitUtilZZZ;
 
 public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
@@ -131,7 +131,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
      	   try {
  	    	 
  	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepositoryIn)) {
- 	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+ 	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
  	    	   }
  	    	   
@@ -281,7 +281,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
         main:{
      	   try {
  	    	   if(StringZZZ.isEmptyTrimmed(sFilePathInRepositoryIn)) {
- 	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+ 	    		  ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
  	    		  throw ez;
  	    	   }
  	    	   
@@ -326,24 +326,24 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
        main:{
     	   try {
 	    	   if(objFile==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("FileObject", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("FileObject", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 	    	   
 	    	   if(strategy==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("StrategyObject", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("StrategyObject", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 	    	   
 	    	   boolean bFileExists = FileEasyZZZ.exists(objFile);
 				if(!bFileExists) {
-					ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + objFile.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + objFile.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 				if(!bIsFile) {
-					ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + objFile.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + objFile.getAbsolutePath() + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -390,7 +390,7 @@ public class JgitResolverDeletedUtilZZZ implements IConstantZZZ {
 					}
 				 }else {
 					 Syso.println(ReflectCodeZZZ.getPositionCurrent() + ": Unerwartetet Strategy: '" + strategy.getName() + "'", bPrintOutput);
-					 ExceptionZZZ ez = new ExceptionZZZ("Unerwartete Strategy: '" +strategy.getName() + "'", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					 ExceptionZZZ ez = new ExceptionZZZ("Unerwartete Strategy: '" +strategy.getName() + "'", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					 throw ez;
 				 }	
 				 

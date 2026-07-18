@@ -13,8 +13,10 @@ import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigRepository4TestJGIT;
+import use.jgit.config.ConfigStarterLocal4TestJGIT;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
-import use.jgit.manager.JgitRepositoryManagerZZZ;
+import use.jgit.manager.JgitRepositoryManagerGIT;
+import use.jgit.resolve.JgitResolverLocalGIT;
 
 public class JgitStarterGITTest extends TestCase{
 	
@@ -35,16 +37,16 @@ public class JgitStarterGITTest extends TestCase{
 //			try {
 				ConfigRepository4TestJGIT objConfigRepo = new ConfigRepository4TestJGIT();
 							
-				JgitRepositoryManagerZZZ objRepostitoryManager = new JgitRepositoryManagerZZZ();
-				objRepostitoryManager.configureGit(objConfigRepo);
-				Git gitByManager = objRepostitoryManager.getGitObject();
+				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
+				objRepositoryManager.configureGit(objConfigRepo);
+				Git gitByManager = objRepositoryManager.getGitObject();
 				
-				//+++++++++++++++++
-				ConfigStarterRemote4TestJGIT objConfigRemote = new ConfigStarterRemote4TestJGIT();
+				File objFileDirectoryANew = new File("c:\\temp\\RepoA");
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);
 				
-				JgitStarterGIT objStarterGIT = new JgitStarterGIT();
-				objStarterGIT.configureGit(objConfigRemote);
-				Git gitByStarter = objStarterGIT.getGitObject();
+				File objFileDirectoryBNew = new File("c:\\temp\\RepoB");
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);
+				
 				
 //				File remoteRepoDir = new File(sTempDir, "remote.git");
 //				Git.init()
@@ -65,6 +67,23 @@ public class JgitStarterGITTest extends TestCase{
 //				   .setURI(remoteRepoDir.toURI().toString())
 //				   .setDirectory(localBRepoDir)
 //				   .call();
+				
+				
+				//+++++++++++++++++
+				ConfigStarterLocal4TestJGIT objConfigLocal = new ConfigStarterLocal4TestJGIT();
+				
+				JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
+				objResolver.configureGit(objConfigLocal);
+				Git gitByResolver = objResolver.getGitObject();
+				
+				//+++++++++++++++++
+				ConfigStarterRemote4TestJGIT objConfigRemote = new ConfigStarterRemote4TestJGIT();
+				
+				JgitStarterGIT objStarter = new JgitStarterGIT();
+				objStarter.configureGit(objConfigRemote);
+				Git gitByStarter = objStarter.getGitObject();
+				
+
 //			} catch (InvalidRemoteException e) {
 //				ExceptionZZZ ez = new ExceptionZZZ(e);
 //				throw ez;
@@ -110,4 +129,5 @@ public class JgitStarterGITTest extends TestCase{
 //			fail("Method throws an exception." + ez.getMessageLast());			
 //		}
 	}//END testConstructor
+	
 }

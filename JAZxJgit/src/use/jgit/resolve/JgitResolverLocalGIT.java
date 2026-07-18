@@ -35,7 +35,7 @@ import use.jgit.util.JgitUtilZZZ;
 //public class JgitResolver<T> extends AbstractJgitStarter<T> implements IJgitResolver, IJgitResolverEnabled{
 
 //Also nutze daraus alles was für den Commit wichtig ist.
-public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements IJgitResolver, IJgitResolverEnabled{
+public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> implements IJgitResolver, IJgitResolverEnabled{
 	private static final long serialVersionUID = 521157607363069534L;	
 	private List<File> listFile=null; //Liste von Dateien, hier die Dateien mit Konfliktmarker
 	private List<String> listasFileSuccess=null; //Liste von Strings, als absoluter Dateipfad
@@ -46,7 +46,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	private List<String> listasRepositoryPathsFailed=null; //Liste von Strings, die Dateipfaden im Repository entsprechen.	
 	
 	//### Konstruktor
-	public JgitResolverLocal() {	
+	public JgitResolverLocalGIT() {	
 		super();			
 	}
 	
@@ -137,7 +137,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 				
 				if(objEnumStrategyMergeConflict==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 								
@@ -170,12 +170,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			String sConflictType = sConflictTypeIn.toUpperCase();
@@ -251,12 +251,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	        }
 			
 			if(StringZZZ.isEmptyTrimmed(sProjectName)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			String sConflictType = sConflictTypeIn.toUpperCase();
@@ -317,12 +317,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			String sConflictType = sConflictTypeIn.toUpperCase();
@@ -387,7 +387,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		        }
 				
 				if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("ConflictType, ggfs. als Argument der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				String sConflictType = sConflictTypeIn.toUpperCase();
@@ -444,7 +444,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				    	}
 				    	break;
 				    default:
-				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht impelmentierter Konflikt-Typ '"+ info.getConflictType().name(), iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht impelmentierter Konflikt-Typ '"+ info.getConflictType().name(), iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 				    }
 				} //end for
@@ -502,7 +502,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				if(StringZZZ.isEmpty(sFilePath)) {
 					listasPathInRepository = this.getRepositoryPathStrings();
 					if(listasPathInRepository.isEmpty()) {
-						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}else {
 						bUseList = true;
@@ -580,7 +580,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	        }
 			
 			if(StringZZZ.isEmpty(sFilePathInRepository)) {
-				ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("sFilePathInRepository", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -599,7 +599,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			}else {
 				//Default
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 				
 			}			
@@ -861,7 +861,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				if(StringZZZ.isEmpty(sFilePath)) {
 					listFile = this.getFiles();
 					if(listFile.isEmpty()) {
-						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+						ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}else {
 						bUseListFile = true;
@@ -1018,7 +1018,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		boolean bReturn = false;
 		main:{
 			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -1035,13 +1035,13 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -1061,7 +1061,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
 			}else {
 				Syso.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
@@ -1097,7 +1097,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 			if(StringZZZ.isEmpty(sFilePath)) {
 				listFile = this.getFiles();
 				if(listFile.isEmpty()) {
-					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath, ggfs. per Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}else {
 					bUseListFile = true;
@@ -1199,20 +1199,20 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	        }
 			
 			if(StringZZZ.isEmpty(sFilePathTotal)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			File objFile = new File(sFilePathTotal);
 			boolean bFileExists = FileEasyZZZ.exists(objFile);
 			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
 			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePath='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -1233,7 +1233,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);						
 			}else {
 				System.out.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
@@ -1282,12 +1282,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		main:{
 			try {
 				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				if(StringZZZ.isEmptyTrimmed(sConflictType)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -1338,12 +1338,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	        }
 			
 			if(StringZZZ.isEmptyTrimmed(sProjectName)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
 			if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}			
 			String sConflictType = sConflictTypeIn.trim().toUpperCase();
@@ -1367,7 +1367,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		main:{
 			try {
 				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -1416,7 +1416,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 	        }
 			
 			if(StringZZZ.isEmptyTrimmed(sProjectName)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -1448,12 +1448,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		main:{
 			try {
 				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				String sConflictType = sConflictTypeIn.trim().toUpperCase();
@@ -1504,12 +1504,12 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		        }
 				
 				if(StringZZZ.isEmptyTrimmed(sProjectName)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Name des Projekts im Repository, Argument aus der Kommandozeile, oder '*' für alle.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
 				if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				String sConflictType = sConflictTypeIn.trim().toUpperCase();
@@ -1541,7 +1541,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 				    	}
 				    	break;
 				    default:
-				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht implementierter Konflikt-Typ '"+ info.getConflictType().name() +"', Argument aus der Kommandozeile.'" + sConflictTypeIn + "'", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+				    	ExceptionZZZ ez = new ExceptionZZZ("Noch nicht implementierter Konflikt-Typ '"+ info.getConflictType().name() +"', Argument aus der Kommandozeile.'" + sConflictTypeIn + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 				    }
 				}//end for
@@ -1562,7 +1562,7 @@ public class JgitResolverLocal<T> extends AbstractJgitStarterLocal<T> implements
 		main:{
 			try {
 				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocal.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				

@@ -1,5 +1,8 @@
 package use.jgit;
 
-public interface IJgitRepositoryManagerZZZ {
+import basic.zBasic.ExceptionZZZ;
 
+public interface IJgitRepositoryManagerZZZ {
+	public boolean isRepositoryBare() throws ExceptionZZZ;
+	public void isRepositoryBare(boolean bRepositoryBare) throws ExceptionZZZ;
 }

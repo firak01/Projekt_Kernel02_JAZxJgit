@@ -57,6 +57,16 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractJgitRepository
 	protected volatile String sCommentCommitDefault=null; //Ggfs. in überschreibender Klasse ein besonderer Wert.
 	protected volatile String sCommentCommit=null; //Der per ArgumentString übergebene Kommentar sollte hier rein.
 	
+	//### aus IJgitRepository
+	@Override
+	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			
+		}//end main:
+		return bReturn;
+	}
+	
 	//### aus IJgitStarterCommit	
 	@Override 
 	public String getCommentCommitDefault() throws ExceptionZZZ {

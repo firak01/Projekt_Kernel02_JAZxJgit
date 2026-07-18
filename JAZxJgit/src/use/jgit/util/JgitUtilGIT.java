@@ -34,7 +34,7 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
-import use.jgit.resolve.JgitResolverLocal;
+import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.resolve.JgitResolverLocalUI;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;

@@ -2,23 +2,28 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 
-public class ConfigRepository4TestJGIT  extends AbstractConfigRepositoryManagerJGIT{
-	private static final long serialVersionUID = 662451230649662545L;
-
-	public ConfigRepository4TestJGIT() throws ExceptionZZZ {
+public class ConfigStarterLocal4TestJGIT  extends AbstractConfigStarterLocalJGIT{
+	
+	public ConfigStarterLocal4TestJGIT() throws ExceptionZZZ {
 		super();		
 	}
 	
 	//Merke: Für die JUnit Tests werden die Argumente nicht über die Kommandozeile übergeben, sondern sind hier "hart" verdrahtet.
 	//       Darum sind die ...Default... Methoden hier überflüssig.
 	
-	//##########################################
-	//### aus IConfigStarterLocalJGIT	
+	//### aus IConfigZZZ
 	@Override
-	public boolean isRepositoryBare() throws ExceptionZZZ {
-			return true;
+	public String getPatternStringDefault() throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
+	@Override
+	public String[] getArgumentArrayDefault() throws ExceptionZZZ {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	//++++++++++++++++++++++++++++++++++++++++++++++++
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
@@ -43,24 +48,37 @@ public class ConfigRepository4TestJGIT  extends AbstractConfigRepositoryManagerJ
 	public String readRepositoryBranch() throws ExceptionZZZ {
 		return "master";
 	}
-
 	
 	//++++++++++++++++++++++++++++++++++++++++++++++++	
 	@Override
 	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
-		return null;
-	}
-		
-	
-	@Override
-	public String getPatternStringDefault() throws ExceptionZZZ {
-		// TODO Auto-generated method stub
-		return null;
+		return "origin";
 	}
 
+	//++++++++++++++++++++++++++++++++++++++++++				
+
 	@Override
-	public String[] getArgumentArrayDefault() throws ExceptionZZZ {
-		// TODO Auto-generated method stub
+	public String readComment() throws ExceptionZZZ {
+		return "Comment by JUnitTest";
+	}
+			
+	//##########################################
+	//### aus IConfigStarterLocalJGIT	
+	
+	//+++++++++++++++++++++++++++++++++++++
+	@Override
+	public String readActionStatus() throws ExceptionZZZ {
+		return null;
+	}
+	
+	
+	@Override
+	public String readActionCommit() throws ExceptionZZZ {
+		return null;
+	}
+	
+	@Override
+	public String readActionFetch() throws ExceptionZZZ {
 		return null;
 	}
 }

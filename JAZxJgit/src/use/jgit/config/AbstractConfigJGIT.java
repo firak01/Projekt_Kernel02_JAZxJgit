@@ -18,6 +18,7 @@ public abstract class AbstractConfigJGIT extends AbstractConfigZZZ implements IC
 		//###############################################
 		
 		//### aus IConfigZZZ
+
 		@Override
 		public String getProjectName() throws ExceptionZZZ {
 			return IConfigJGIT.sPROJECT_NAME;

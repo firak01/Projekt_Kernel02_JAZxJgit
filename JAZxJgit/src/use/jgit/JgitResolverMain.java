@@ -20,7 +20,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.system.SystemZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigResolverLocalJGIT;
-import use.jgit.resolve.JgitResolverLocal;
+import use.jgit.resolve.JgitResolverLocalGIT;
 
 public class JgitResolverMain implements IConstantZZZ{
 
@@ -313,7 +313,7 @@ public class JgitResolverMain implements IConstantZZZ{
 			
 				//##############################################################
 				//Starte die passende Klasse mit der passenden Methode
-				JgitResolverLocal objResolver = new JgitResolverLocal();
+				JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
 								
 				//Ggfs. uebergebene Flags setzen
 				hmFlag = objConfig.getHashMapFlagPassed();

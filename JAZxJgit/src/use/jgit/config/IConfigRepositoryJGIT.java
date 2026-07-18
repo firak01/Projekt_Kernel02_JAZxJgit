@@ -25,13 +25,4 @@ public interface IConfigRepositoryJGIT  extends IConfigJGIT{
 	//Verwende das ueber diesen Alias definerte remote Repository
 	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
 	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
-	
-	//Die URL zum Repository direkte angeben als Alternative zum in .git/config ueber einen Alias definierte remote Repository.
-	//Hier erst einmal eine Basis URL/ein Basis Verzeichnis....
-	public String readRepositoryRemoteHost() throws ExceptionZZZ;
-	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ;
-					
-	//Verwende den Accountnamen
-	public String readRepositoryRemoteAccount() throws ExceptionZZZ;
-	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ;
 }

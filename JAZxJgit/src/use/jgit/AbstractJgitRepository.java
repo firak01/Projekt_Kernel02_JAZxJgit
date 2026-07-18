@@ -17,7 +17,7 @@ import use.jgit.config.IConfigRepositoryJGIT;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilZZZ;
 
-public class AbstractJgitRepository <T> extends AbstractObjectWithFlagZZZ<T> implements IJgitRepository, IJgitRepositoryEnabledZZZ{
+public abstract class AbstractJgitRepository <T> extends AbstractObjectWithFlagZZZ<T> implements IJgitRepository, IJgitRepositoryEnabledZZZ{
 	protected volatile Git gitObject = null;
 	
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
@@ -201,7 +201,7 @@ public class AbstractJgitRepository <T> extends AbstractObjectWithFlagZZZ<T> imp
 		}//end main:
 		return bReturn;
 	}
-	
+		
 	/** Ohne ein IConfig - Objekt als Argument, muss alles aus den Properties des Objekts gelesen werden.
 	 * @return
 	 * @throws ExceptionZZZ
@@ -373,6 +373,9 @@ public class AbstractJgitRepository <T> extends AbstractObjectWithFlagZZZ<T> imp
 				InitCommand gitCommandInit = Git.init();
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
+				//Ergänze custom-Eigenschaften
+				this.configureGitCustom(gitCommandInit);
+				
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);
 			
@@ -391,6 +394,8 @@ public class AbstractJgitRepository <T> extends AbstractObjectWithFlagZZZ<T> imp
 		}//end main:
 		return bReturn;
 	}
+
+	public abstract boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ;
 	
 	//############# STATIC METHODEN
 
