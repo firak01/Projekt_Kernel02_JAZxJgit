@@ -3,6 +3,7 @@ package use.jgit.protocol.https;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
@@ -54,6 +55,10 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 		super();			
 	}
 
+	@Override
+	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {		
+		return false;
+	}
 	
 	//### aus IJgitStarterHTTPS
 	@Override
@@ -76,14 +81,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 		}
 		return this.credentialsProviderObject;
 	}
-	
-	@Override
-	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ{
-		this.credentialsProviderObject = objCredentialsProvider;
-	}
-	
-	
-	
+		
 	//### aus IJgitStarterRemote
 	@Override 
 	public String getRepositoryRemoteProtocol() throws ExceptionZZZ {

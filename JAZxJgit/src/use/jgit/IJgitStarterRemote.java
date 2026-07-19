@@ -10,7 +10,7 @@ import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
-public interface IJgitStarterRemote extends IJgitStarterLocal {
+public interface IJgitStarterRemote extends IJgitStarterAuthentificated {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterRemoteJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 	
 	//+++ In der Klasse definerte Werte
@@ -48,9 +48,6 @@ public interface IJgitStarterRemote extends IJgitStarterLocal {
 	
 	//+++ Arbeit mit dem GitObject, etc.	
 	//nur HTTPS+SSH Objekte
-	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
-	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
-	
 	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
 	

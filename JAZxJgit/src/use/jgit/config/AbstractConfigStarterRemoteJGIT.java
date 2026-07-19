@@ -14,7 +14,7 @@ import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
-public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStarterLocalJGIT implements IConfigStarterRemoteJGIT{
+public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStarterAuthentificatedJGIT implements IConfigStarterRemoteJGIT{
 	
 	public AbstractConfigStarterRemoteJGIT() throws ExceptionZZZ {
 		super();		
@@ -193,38 +193,7 @@ public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStar
 	public String getConnectionTypeDefault() throws ExceptionZZZ{
 		return "ssh";
 	}
-	@Override
-	public String readConnectionType() throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			boolean bReturn = false;
-			
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			bReturn = this.isConnectionTypeGIT();
-			if(bReturn) {
-				sReturn = JgitStarterGIT.sPROTOCOL;
-				break main;
-			}
-			
-			bReturn = this.isConnectionTypeHTTPS();
-			if(bReturn) {
-				sReturn = JgitStarterHTTPS.sPROTOCOL;
-				break main;
-			}
-			
-			bReturn = this.isConnectionTypeSSH();
-			if(bReturn) {
-				sReturn = JgitStarterSSH.sPROTOCOL;
-				break main;
-			}
-			
-			sReturn = this.getConnectionTypeDefault();			
-		}//end main:		
-		return sReturn;
-	}
+	
 	
 	@Override
 	public boolean isConnectionTypeSSH() throws ExceptionZZZ{

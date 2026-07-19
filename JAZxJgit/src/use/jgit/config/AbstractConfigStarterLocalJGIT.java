@@ -33,9 +33,13 @@ import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
  * @author lindhauer
  *
  */
-public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepositoryJGIT implements IConfigStarterLocalJGIT{
+public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT implements IConfigStarterLocalJGIT{
 	private static final long serialVersionUID = 1229381223690096548L;
-		
+	
+	protected boolean bRepositoryBare = false;
+	
+	
+	
 	public AbstractConfigStarterLocalJGIT() throws ExceptionZZZ{
 		super();
 	}
@@ -43,12 +47,12 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 		super(saArg); 
 	} 
 			
-
+	
+	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	
-	//### aus IConfigJGIT
-	
+	//### aus 
 	//Gib die Hilfsinfos als String zurück
 	@Override
 	public String createHelp() throws ExceptionZZZ{
@@ -66,6 +70,9 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 	}
 
 	
+	//### aus IConfigJGIT
+	
+	
 	
 	//++++++++++++++++++++++++++++++++++++++++++++++++
 	//######################################
@@ -73,64 +80,170 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigRepos
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
-	//### aus IConfigStarterLocal
+	//### aus IConfigRepositoryJGIT	
 	@Override
-	public String readActionStatus() throws ExceptionZZZ {
+	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
+		return "."; //Das eigene Projekt-Verzeichnis als Default
+	}
+	
+	@Override
+	public File getRepositoryLocalBaseDirectoryDefault() throws ExceptionZZZ {
+		return new File(this.getRepositoryLocalBaseDefault()); //Also das eigene Projekt-Verzeichnis als Default
+	}
+	
+	@Override
+	public String readRepositoryLocal() throws ExceptionZZZ {		
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("status");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	
-	@Override
-	public String readActionCommit() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("commit");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	@Override
-	public String readActionFetch() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("fetch");			
-		}//end main:		
-		return sReturn;
-	}
-	
-	public String getCommentDefault() throws ExceptionZZZ {
-		return "";
-	}
-	@Override
-	public String readComment() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			GetOptZZZ objOpt = this.getOptObject();
-			if(objOpt==null) break main;
-			if(objOpt.getFlag("isLoaded")==false) break main;
-			
-			sReturn = objOpt.readValue("comment");
+			sReturn = objOpt.readValue("rl");
 			if(sReturn==null){
-				sReturn = this.getCommentDefault();
+				sReturn = this.getRepositoryLocalBaseDefault();
 			}
 		}//end main:		
 		return sReturn;
-
+	}		
+	
+	//++++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getRepositoryProjectNameDefault() throws ExceptionZZZ {		
+		return this.getProjectName(); //Einfach als Default, kann ja überschrieben werden.
 	}
+		
+	//++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String readRepositoryProjectName() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sProject = objOpt.readValue("project");
+			if(StringZZZ.isEmpty(sProject)) {
+				sProject = this.getRepositoryProjectNameDefault();				
+			}
+			
+			sReturn = sProject;
+		}//end main:		
+		return sReturn;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getRepositoryBranchDefault() throws ExceptionZZZ {		
+		return IConfigJGIT.sBRANCH_DEFAULT;
+	}
+
+	@Override
+	public String getRepositoryBranchAll() throws ExceptionZZZ {		
+		return IConfigJGIT.sBRANCH_ALL;
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String readRepositoryBranch() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sBranch = objOpt.readValue("branch");
+			if(StringZZZ.isEmpty(sBranch)) {
+				sBranch = this.getRepositoryBranchAll();				
+			}
+			sReturn = sBranch;
+		}//end main:		
+		return sReturn;
+	}
+	
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++	
+	@Override
+	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("rra");
+			if(sReturn==null){
+				sReturn = this.getRepositoryRemoteAliasDefault();
+			}
+		}//end main:		
+		return sReturn;
+	}
+	@Override
+	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
+		return IConfigJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
+	}
+	
+	//################
+	//++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	//### aus IConfigStarterLocal
+		@Override
+		public String readActionStatus() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				sReturn = objOpt.readValue("status");			
+			}//end main:		
+			return sReturn;
+		}
+		
+		
+		@Override
+		public String readActionCommit() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				sReturn = objOpt.readValue("commit");			
+			}//end main:		
+			return sReturn;
+		}
+		
+		@Override
+		public String readActionFetch() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				sReturn = objOpt.readValue("fetch");			
+			}//end main:		
+			return sReturn;
+		}
+		
+		public String getCommentDefault() throws ExceptionZZZ {
+			return "";
+		}
+		@Override
+		public String readComment() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				sReturn = objOpt.readValue("comment");
+				if(sReturn==null){
+					sReturn = this.getCommentDefault();
+				}
+			}//end main:		
+			return sReturn;
+
+		}
 }

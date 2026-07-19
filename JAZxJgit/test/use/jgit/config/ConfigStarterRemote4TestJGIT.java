@@ -5,7 +5,7 @@ import java.io.File;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.GetOptZZZ;
-import use.jgit.config.AbstractConfigStarterLocalJGIT;
+import use.jgit.config.AbstractConfigStarterAuthentificatedJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public class ConfigStarterRemote4TestJGIT  extends AbstractConfigStarterRemoteJGIT{

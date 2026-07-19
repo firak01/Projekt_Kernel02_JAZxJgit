@@ -12,7 +12,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepository4TestJGIT;
+import use.jgit.config.ConfigRepositoryManager4TestJGIT;
 import use.jgit.config.ConfigStarterLocal4TestJGIT;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.manager.JgitRepositoryManagerGIT;
@@ -35,10 +35,10 @@ public class JgitStarterGITTest extends TestCase{
 	protected void setUp(){
 		try {
 //			try {
-				ConfigRepository4TestJGIT objConfigRepo = new ConfigRepository4TestJGIT();
+				ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
 							
 				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.configureGit(objConfigRepo);
+				objRepositoryManager.configureGit(objConfigRepoManager);
 				Git gitByManager = objRepositoryManager.getGitObject();
 				
 				File objFileDirectoryANew = new File("c:\\temp\\RepoA");

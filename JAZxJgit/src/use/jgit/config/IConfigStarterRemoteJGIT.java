@@ -6,7 +6,7 @@ import use.jgit.protocol.git.JgitStarterGIT;
 import use.jgit.protocol.https.JgitStarterHTTPS;
 import use.jgit.protocol.ssh.JgitStarterSSH;
 
-public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
+public interface IConfigStarterRemoteJGIT extends IConfigWithAuthentificationJGIT{
 
 	//#####################################################################
 	//####### Konfiguration der Argumgentuebergabe von aussen an das Program (s. GetOptZZZ).
@@ -44,27 +44,6 @@ public interface IConfigStarterRemoteJGIT extends IConfigStarterLocalJGIT{
 	public String readActionPush() throws ExceptionZZZ;
 	public String readActionCommitPush() throws ExceptionZZZ;
 	
-	public String getConnectionTypeDefault() throws ExceptionZZZ;
-	public String readConnectionType() throws ExceptionZZZ;	
-	public boolean isConnectionTypeSSH() throws ExceptionZZZ;
-	public boolean isConnectionTypeHTTPS() throws ExceptionZZZ;
-	public boolean isConnectionTypeGIT() throws ExceptionZZZ;
-	
-	public String readPersonalAccessToken() throws ExceptionZZZ;
-	public String getPersonalAccessTokenDefault() throws ExceptionZZZ;
-
-	
-	
-	//Die URL zum Repository direkte angeben als Alternative zum in .git/config ueber einen Alias definierte remote Repository.
-	//Hier erst einmal eine Basis URL/ein Basis Verzeichnis....
-	public String readRepositoryRemoteHost() throws ExceptionZZZ;
-	public String getRepositoryRemoteHostDefault() throws ExceptionZZZ;
-					
-	//Verwende den Accountnamen
-	public String readRepositoryRemoteAccount() throws ExceptionZZZ;
-	public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ;
-	
-
 	////Verwende das ueber diesen Alias definerte remote Repository
 	//public String readRepositoryRemoteAlias() throws ExceptionZZZ;
 	//public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;

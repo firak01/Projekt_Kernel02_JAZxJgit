@@ -2,7 +2,7 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 
-public class ConfigStarterLocal4TestJGIT  extends AbstractConfigStarterLocalJGIT{
+public class ConfigStarterLocal4TestJGIT  extends AbstractConfigStarterAuthentificatedJGIT{
 	
 	public ConfigStarterLocal4TestJGIT() throws ExceptionZZZ {
 		super();		

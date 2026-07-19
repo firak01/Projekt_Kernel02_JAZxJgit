@@ -34,7 +34,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigRepositoryJGIT;
+import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.protocol.ssh.JGitSshConfigZZZ;
@@ -43,13 +43,10 @@ import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
-public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLocal<T> implements IJgitStarterRemote{
+public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAuthentificated<T> implements IJgitStarterRemote{
 	private static final long serialVersionUID = -1998325674945232389L;
-	
-	protected volatile CredentialsProvider credentialsProviderObject = null;
-	
-	protected volatile String sConnectionType=null;
 
+	protected volatile String sConnectionType=null;
 	
 	protected volatile String sRepositoryRemoteHost=null;
 	protected volatile String sRepositoryRemoteAccount=null;
@@ -62,7 +59,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 		boolean bReturn = false;
 		main:{		
 			//bReturn = super.configureGit((IConfigStarterLocalJGIT) objConfig);
-			bReturn = super.configureGit((IConfigRepositoryJGIT) objConfig);
+			bReturn = super.configureGit((IConfigWithAuthentificationJGIT) objConfig);
 			
 			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 			//Stelle sicher, dass das gewünschte Protokoll passt. Also: Die URL in die Konfiguration eintragen.
@@ -160,6 +157,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 				ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			String sConnectionType = sConnectionTypeIn.toLowerCase();
 			
 			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 			if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
@@ -180,7 +178,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 			//+++ Zugriff sicherstellen
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
 			//Das müsste eigentlich für HTTPS nicht gemacht werden.
-			if(sConnectionTypeIn.equalsIgnoreCase("https")) {
+			if(sConnectionType.equalsIgnoreCase("https")) {
 				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
 			}else {
 				JGitSshConfigZZZ.configure();
@@ -212,16 +210,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterLo
 		this.sRepositoryRemoteAccount = sRepositoryRemoteAccount;
 	}
 	
-	@Override 
-	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ{
-		return this.credentialsProviderObject;
-	}
 	
-	@Override
-	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ{
-		this.credentialsProviderObject = objCredentialsProvider;
-	}
-
 	@Override
 	public String getConnectionType() throws ExceptionZZZ {
 		return this.sConnectionType;

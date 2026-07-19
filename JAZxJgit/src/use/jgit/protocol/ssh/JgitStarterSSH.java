@@ -3,6 +3,7 @@ package use.jgit.protocol.ssh;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PushCommand;
@@ -49,6 +50,11 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 	//### Konstruktor
 	public JgitStarterSSH() {	
 		super();			
+	}
+	
+	@Override
+	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {
+		return false;
 	}
 	
 	//### aus IJgitStarterRemote

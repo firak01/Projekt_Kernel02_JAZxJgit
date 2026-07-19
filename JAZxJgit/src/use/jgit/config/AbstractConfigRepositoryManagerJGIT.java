@@ -33,7 +33,7 @@ import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
  * @author lindhauer
  *
  */
-public abstract class AbstractConfigRepositoryManagerJGIT extends AbstractConfigRepositoryJGIT implements IConfigRepositoryManagerJGIT{
+public abstract class AbstractConfigRepositoryManagerJGIT extends AbstractConfigStarterAuthentificatedJGIT implements IConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 1229381223690096548L;
 	
 	protected boolean bRepositoryBare = false;

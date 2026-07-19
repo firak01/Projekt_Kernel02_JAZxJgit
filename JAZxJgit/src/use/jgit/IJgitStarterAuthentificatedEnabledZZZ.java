@@ -3,7 +3,7 @@ package use.jgit;
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.flag.IFlagZEnabledZZZ;
 
-public interface IJgitRepositoryEnabledZZZ  extends IFlagZEnabledZZZ{
+public interface IJgitStarterAuthentificatedEnabledZZZ  extends IFlagZEnabledZZZ{
 	//Merke: Die Strategie, wie mit Konflikten umgegangen wird, ist in IJgitResolverEnabled	
 	
 	public enum FLAGZLOCAL {

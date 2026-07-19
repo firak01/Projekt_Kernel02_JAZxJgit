@@ -2,10 +2,10 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 
-public class ConfigRepository4TestJGIT  extends AbstractConfigRepositoryManagerJGIT{
+public class ConfigRepositoryManager4TestJGIT  extends AbstractConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 662451230649662545L;
 
-	public ConfigRepository4TestJGIT() throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestJGIT() throws ExceptionZZZ {
 		super();		
 	}
 	

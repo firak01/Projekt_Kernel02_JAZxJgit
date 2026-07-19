@@ -21,6 +21,7 @@ import basic.zBasic.util.system.SystemZZZ;
 import use.jgit.AbstractJgitStarterLocal;
 import use.jgit.JgitResolverMain;
 import use.jgit.JgitStarterMain;
+import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.config.IConfigResolverJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.tool.resolve.JgitResolverConflictPostUtilZZZ;
