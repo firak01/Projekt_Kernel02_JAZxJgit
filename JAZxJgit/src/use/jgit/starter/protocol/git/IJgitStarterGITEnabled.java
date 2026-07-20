@@ -1,4 +1,4 @@
-package use.jgit.protocol.git;
+package use.jgit.starter.protocol.git;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.IJgitStarterEnabledZZZ;

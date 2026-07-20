@@ -36,8 +36,6 @@ import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
 public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT implements IConfigStarterLocalJGIT{
 	private static final long serialVersionUID = 1229381223690096548L;
 	
-	protected boolean bRepositoryBare = false;
-	
 	
 	
 	public AbstractConfigStarterLocalJGIT() throws ExceptionZZZ{

@@ -1,4 +1,4 @@
-package use.jgit.protocol.ssh;
+package use.jgit.starter.protocol.ssh;
 
 import org.eclipse.jgit.transport.SshSessionFactory;
 

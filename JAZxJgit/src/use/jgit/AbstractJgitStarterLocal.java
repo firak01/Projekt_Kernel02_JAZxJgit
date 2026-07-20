@@ -33,10 +33,10 @@ import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
+import use.jgit.starter.protocol.ssh.IJgitStarterSSHEnabled;
+import use.jgit.starter.protocol.ssh.JgitStarterSSH;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.protocol.ssh.IJgitStarterSSHEnabled;
-import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.tool.status.GitAutoStageService;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
@@ -54,6 +54,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 
 	protected volatile Git gitObject = null;
 
+	protected volatile String sProjectName=null;
 
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
 	protected volatile String sRepositoryBranch=null; //Der Name des Branch, wenn man es nicht auf alle Branches beziehen will.
@@ -84,6 +85,15 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		this.gitObject = objGit;
 	}
 	
+	@Override
+	public String getProjectName() throws ExceptionZZZ {
+		return this.sProjectName;
+	}
+	
+	@Override
+	public void setProjectName(String sProjectName) throws ExceptionZZZ {
+		this.sProjectName = sProjectName;
+	}
 
 	@Override
 	public String getRepositoryTotalRemote() throws ExceptionZZZ {
@@ -255,7 +265,14 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			String sRepositoryBranch = objConfig.readRepositoryBranch();
 			this.setRepositoryBranch(sRepositoryBranch);
 			
-			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sRepositoryProject);
+			String sProjectNameLocal = objConfig.readProjectName();
+			if(StringZZZ.isEmpty(sProjectNameLocal)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projektname des Eclipse Projekts", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setProjectName(sProjectNameLocal);
+			
+			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sProjectNameLocal);
 			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
 			if(!objDirectoryRepositoryLocalTotal.exists()){
 				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());

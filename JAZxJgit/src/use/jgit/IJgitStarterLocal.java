@@ -11,6 +11,10 @@ import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitStarterLocal{
+	
+	public String getProjectName() throws ExceptionZZZ;
+	public void setProjectName(String sProjectName) throws ExceptionZZZ;
+	
 	//+++ Argumente, ggfs. aus einer Kommandozeilenübergabe
 	public String getRepositoryProject() throws ExceptionZZZ;
 	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;

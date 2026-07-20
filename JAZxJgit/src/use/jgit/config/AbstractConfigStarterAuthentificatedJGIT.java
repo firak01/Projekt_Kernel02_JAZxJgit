@@ -9,9 +9,9 @@ import basic.zBasic.util.abstractList.ListUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
-import use.jgit.protocol.git.JgitStarterGIT;
-import use.jgit.protocol.https.JgitStarterHTTPS;
-import use.jgit.protocol.ssh.JgitStarterSSH;
+import use.jgit.starter.protocol.git.JgitStarterGIT;
+import use.jgit.starter.protocol.https.JgitStarterHTTPS;
+import use.jgit.starter.protocol.ssh.JgitStarterSSH;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.
@@ -75,10 +75,7 @@ public abstract class AbstractConfigStarterAuthentificatedJGIT extends AbstractC
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
-	
-	TODOGOON Weitere Methoden hierher verschieben, die mit der Connection zu tun haben
-	und der Authentifizierung.
-	
+		
 	@Override
 	public String readConnectionType() throws ExceptionZZZ{
 		String sReturn = null;
@@ -111,4 +108,126 @@ public abstract class AbstractConfigStarterAuthentificatedJGIT extends AbstractC
 		}//end main:		
 		return sReturn;
 	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
+		@Override
+		public String getConnectionTypeDefault() throws ExceptionZZZ{
+			return "ssh";
+		}
+		
+		
+		@Override
+		public boolean isConnectionTypeSSH() throws ExceptionZZZ{
+			boolean bReturn = false;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sReturn = objOpt.readValue(JgitStarterGIT.sPROTOCOL);	
+				if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+				
+			}//end main:		
+			return bReturn;
+		}
+		
+		@Override
+		public boolean isConnectionTypeHTTPS() throws ExceptionZZZ{
+			boolean bReturn = false;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sReturn = objOpt.readValue(JgitStarterHTTPS.sPROTOCOL);
+				if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+				
+			}//end main:		
+			return bReturn;
+		}
+		
+		@Override
+		public boolean isConnectionTypeGIT() throws ExceptionZZZ{
+			boolean bReturn = false;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sReturn = objOpt.readValue(JgitStarterGIT.sPROTOCOL);	
+				if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+				
+			}//end main:		
+			return bReturn;
+		}
+			
+			
+		
+		//++++++++++++++++++++++++++++++++++++++++++++++
+		@Override
+		public String getPersonalAccessTokenDefault() {
+			return ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
+		}
+		@Override
+		public String readPersonalAccessToken() throws ExceptionZZZ{
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				sReturn = objOpt.readValue("pat");
+				if(sReturn==null){
+					sReturn = this.getPersonalAccessTokenDefault();
+				}
+			}//end main:		
+			return sReturn;
+		}
+		
+		//######################################
+		@Override
+		public String readRepositoryRemoteHost() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sHost = objOpt.readValue("rrh");
+				if(StringZZZ.isEmpty(sHost)) {
+					sHost = this.getRepositoryRemoteHostDefault();				
+				}
+				
+				sReturn = sHost;
+			}//end main:		
+			return sReturn;
+		}
+		
+		@Override
+		public String getRepositoryRemoteHostDefault() throws ExceptionZZZ{
+			return "github.com";
+		}
+		
+		@Override
+		public String readRepositoryRemoteAccount() throws ExceptionZZZ {
+			String sReturn = null;
+			main:{
+				GetOptZZZ objOpt = this.getOptObject();
+				if(objOpt==null) break main;
+				if(objOpt.getFlag("isLoaded")==false) break main;
+				
+				String sHost = objOpt.readValue("rrac");
+				if(StringZZZ.isEmpty(sHost)) {
+					sHost = this.getRepositoryRemoteAccountDefault();				
+				}
+				
+				sReturn = sHost;
+			}//end main:		
+			return sReturn;
+		}
+		
+		@Override
+		public String getRepositoryRemoteAccountDefault() throws ExceptionZZZ{
+			return "firak01";
+		}
 }

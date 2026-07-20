@@ -2,14 +2,14 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 
-public class ConfigRepositoryManager4TestJGIT  extends AbstractConfigRepositoryManagerJGIT{
+public class ConfigRepositoryManager4TestJGIT_onTUBAF  extends AbstractConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 662451230649662545L;
 
-	public ConfigRepositoryManager4TestJGIT() throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestJGIT_onTUBAF() throws ExceptionZZZ {
 		super();		
 	}
 	
-	public ConfigRepositoryManager4TestJGIT(String[] saArg) throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestJGIT_onTUBAF(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 	
@@ -27,25 +27,37 @@ public class ConfigRepositoryManager4TestJGIT  extends AbstractConfigRepositoryM
 		// TODO Auto-generated method stub
 		return null;
 	}
-		
-
+	
+	
+	
+	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
+	//###
+	@Override
+	public String getProjectName() throws ExceptionZZZ {
+		return "Test_repo_JAZxJgit";
+	}
+	
 	//### aus IConfigStarterLocalJGIT	
 	@Override
 	public String readRepositoryLocal() throws ExceptionZZZ {				
-		return "C:\\1fgl\\repo\\EclipseOxygen_V02\\1fgl_Test_repo_JAZxJgit";
+		return "C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\1fgl_Test_repo_JAZxJgit";
 	}		
 
 	//++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readRepositoryProjectName() throws ExceptionZZZ {
-		return "Test_repo_JAZxJgit";
+		return "1fgl_Test_repo_JAZxJgit";
 	}
 	
+	@Override
+	public String readProjectName() {
+		return "Test_repo_JAZxJgit";
+	}
 	
 	//++++++++++++++++++++++++++++++++++++++
 	@Override
@@ -53,12 +65,13 @@ public class ConfigRepositoryManager4TestJGIT  extends AbstractConfigRepositoryM
 		return "master";
 	}
 
+	
 	//++++++++++++++++++++++++++++++++++++++++++++++++	
 	@Override
 	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
 		return "origin";
 	}
-		
+	
 	
 	//### aus IConfigWithAuthentificationJGIT
 	@Override

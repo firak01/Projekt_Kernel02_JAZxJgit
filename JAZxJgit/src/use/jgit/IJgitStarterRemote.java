@@ -12,37 +12,7 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitStarterRemote extends IJgitStarterAuthentificated {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterRemoteJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
-	
-	//+++ In der Klasse definerte Werte
-	public String getRepositoryRemoteProtocol() throws ExceptionZZZ;
 		
-	//+++ Per Argument übergebene Werte	
-	public String getRepositoryRemoteHost() throws ExceptionZZZ;
-	public void setRepositoryRemoteHost(String sRepositoryRemoteHost) throws ExceptionZZZ;
-	
-	public String getRepositoryRemoteAccount() throws ExceptionZZZ;
-	public void setRepositoryRemoteAccount(String sRepositoryRemoteAccount) throws ExceptionZZZ;
-	
-	public String getConnectionType() throws ExceptionZZZ;
-	public void setConnectionType(String sConnectionType) throws ExceptionZZZ;
-	
-	//+++ Errechnete Werte
-	public String getRepositoryBaseRemote() throws ExceptionZZZ;
-	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ;
-
-	public String searchRepositoryRemote() throws ExceptionZZZ;
-	public String searchRepositoryRemote(String sRepositoryRemoteAlias) throws ExceptionZZZ;
-	
-	public String getRepositoryTotalRemote() throws ExceptionZZZ;
-	public void setRepositoryTotalRemote(String sRepositoryTotalRemote) throws ExceptionZZZ;
-		
-	public String computeRepositoryBaseRemote() throws ExceptionZZZ;
-	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ;
-	
-	public String computeRepositoryRemoteUrl() throws ExceptionZZZ;
-	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
-	public String computeRepositoryRemoteUrl(String sRepositoryRemoteHost, String sRepositoryRemoteAccount, String sRepositoryProject) throws ExceptionZZZ;
-	
 	//+++ Arbeiten mit dem REMOTE Repository-Object, etc.
 	public boolean configureGit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;	
 	

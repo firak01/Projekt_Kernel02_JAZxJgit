@@ -1,4 +1,4 @@
-package use.jgit.protocol.https;
+package use.jgit.starter.protocol.https;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
@@ -10,12 +10,9 @@ import use.jgit.IJgitStarterRemote;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.util.JgitUtilHTTPS;
 
-public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarterRemote{
-	public void 	setPersonalAccessToken(String sPat) throws ExceptionZZZ;
-	public String getPersonalAccessToken() throws ExceptionZZZ;
-	
-	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
-	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
+public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarterRemote{	
+//	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
+//	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
 	
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ;
 	

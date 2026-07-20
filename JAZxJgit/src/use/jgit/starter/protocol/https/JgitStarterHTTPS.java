@@ -1,4 +1,4 @@
-package use.jgit.protocol.https;
+package use.jgit.starter.protocol.https;
 
 import java.io.File;
 
@@ -23,10 +23,10 @@ import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.protocol.git.IJgitStarterGITEnabled;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
+import use.jgit.starter.protocol.git.IJgitStarterGITEnabled;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
@@ -46,9 +46,6 @@ import use.jgit.util.JgitUtilZZZ;
 public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterHTTPS{
 	private static final long serialVersionUID = -3594348507412511385L;
 	public static final String sPROTOCOL="https";
-	
-	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
-	public String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PAT-Werts durch sein Regelwerk, hier kann also keine statische Variable final definiert sein!!!
 	
 	//### Konstruktor
 	public JgitStarterHTTPS() {	
@@ -514,7 +511,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
 				String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und remote Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterHTTPS.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -724,7 +721,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 					//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
 					String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
 					if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und remote Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}
 					
@@ -880,7 +877,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
 				String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und remote Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				

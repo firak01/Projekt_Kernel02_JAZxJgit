@@ -23,9 +23,9 @@ import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.config.ConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.protocol.git.JgitStarterGIT;
-import use.jgit.protocol.https.JgitStarterHTTPS;
-import use.jgit.protocol.ssh.JgitStarterSSH;
+import use.jgit.starter.protocol.git.JgitStarterGIT;
+import use.jgit.starter.protocol.https.JgitStarterHTTPS;
+import use.jgit.starter.protocol.ssh.JgitStarterSSH;
 
 /**Klasse, mit der man mit einem GitHub Repository arbeiten kann.
  * Gesteuert wird dies über Übergabeparameter, z.B. aus einer Batch heraus.
@@ -303,11 +303,12 @@ public class JgitStarterMain implements IConstantZZZ{
 			
 				//++++++++++++++++++++++++++++++++
 				//Steuerung der Verbindung
-				String sConnectionType = objConfig.readConnectionType();
-				if(StringZZZ.isEmpty(sConnectionType)){
+				String sConnectionTypeIn = objConfig.readConnectionType();
+				if(StringZZZ.isEmpty(sConnectionTypeIn)){
 					ExceptionZZZ ez = new ExceptionZZZ("Verbindungstyp", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
 				}
+				String sConnectionType = sConnectionTypeIn.toLowerCase();
 				
 				//Unterschiedliche Wege: 
 				//-https, -git oder -ssh

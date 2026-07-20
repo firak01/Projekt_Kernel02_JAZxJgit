@@ -35,23 +35,17 @@ import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
+import use.jgit.starter.protocol.ssh.JGitSshConfigZZZ;
+import use.jgit.starter.protocol.ssh.JgitStarterSSH;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.protocol.ssh.JGitSshConfigZZZ;
-import use.jgit.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
 public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAuthentificated<T> implements IJgitStarterRemote{
 	private static final long serialVersionUID = -1998325674945232389L;
-
-	protected volatile String sConnectionType=null;
 	
-	protected volatile String sRepositoryRemoteHost=null;
-	protected volatile String sRepositoryRemoteAccount=null;
-	protected volatile String sRepositoryBaseRemote=null; //Basis URL	
-		
 
 	//### aus IJgitStarterLocal
 	@Override
@@ -146,7 +140,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 				//Diese Detail aus der .git\config Datei unter dem Alias auslesen.
 				String sDirectoryRepositoryLocalRemote = this.getRepositoryTotalRemote();
 				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und lokales Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("ConnectionType fehlt und remote Repository ist unerwartet nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 				
@@ -192,211 +186,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 	}
 	
 	//### aus IJgitStarter	
-	@Override
-	public abstract String getRepositoryRemoteProtocol() throws ExceptionZZZ;
-	
-	@Override
-	public String getRepositoryRemoteAccount() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sRepositoryRemoteAccount)) {
-			String sUrlRepo = this.searchRepositoryRemote();			
-			String sRepositoryRemoteAccount = JgitUtilZZZ.computeRepositoryAccountFromUrlRepo(sUrlRepo);
-			this.setRepositoryRemoteAccount(sRepositoryRemoteAccount);
-		}		
-		return this.sRepositoryRemoteAccount;
-	}
-	
-	@Override
-	public void setRepositoryRemoteAccount(String sRepositoryRemoteAccount) throws ExceptionZZZ {
-		this.sRepositoryRemoteAccount = sRepositoryRemoteAccount;
-	}
-	
-	
-	@Override
-	public String getConnectionType() throws ExceptionZZZ {
-		return this.sConnectionType;
-	}
 
-	@Override
-	public void setConnectionType(String sConnectionType) throws ExceptionZZZ {
-		this.sConnectionType = sConnectionType;
-	}
-	
-	@Override
-	public String getRepositoryRemoteHost() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sRepositoryRemoteHost)) {
-			String sUrlRepo = this.searchRepositoryRemote();
-			
-			String sRepositoryRemoteHost = JgitUtilZZZ.computeRepositoryHostFromUrlRepo(sUrlRepo);
-			this.setRepositoryRemoteHost(sRepositoryRemoteHost);
-		}
-		return this.sRepositoryRemoteHost;
-	}
-
-	@Override
-	public void setRepositoryRemoteHost(String sRepositoryRemoteHost) throws ExceptionZZZ {
-		this.sRepositoryRemoteHost = sRepositoryRemoteHost;
-	}
-	
-	@Override
-	public String getRepositoryBaseRemote() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-			String sHost=this.getRepositoryRemoteHost();
-			String sAccount=this.getRepositoryRemoteAccount();
-			if(!(StringZZZ.isEmpty(sHost) | StringZZZ.isEmpty(sAccount))){
-				this.sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sHost, sAccount);
-			}
-			
-			//immer noch nix - weil z.B. kein Hostangaben, dann suchen im lokalen Git-Repository nach dem alias
-			if(StringZZZ.isEmpty(this.sRepositoryBaseRemote)) {
-				String sRepositoryTotalRemote = this.searchRepositoryRemote();
-				if(JgitUtilZZZ.isUrlHTTPS(sRepositoryTotalRemote)){
-					JgitUtilHTTPS.computeRepositoryUrlBaseFromUrlHTTPS(sRepositoryTotalRemote);
-				}else if(JgitUtilZZZ.isUrlSSH(sRepositoryTotalRemote)){
-					JgitUtilSSH.computeRepositoryUrlBaseFromUrlSSH(sRepositoryTotalRemote);
-				}else {
-					ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekannter Typ: '" + sRepositoryTotalRemote + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-			}
-		}
-		return this.sRepositoryBaseRemote;
-	}
-
-	@Override
-	public void setRepositoryBaseRemote(String sRepositoryBaseRemote) throws ExceptionZZZ {
-		this.sRepositoryBaseRemote = sRepositoryBaseRemote;
-	}
-	
-	@Override
-	public String computeRepositoryBaseRemote() throws ExceptionZZZ{
-		String sHost = this.getRepositoryRemoteHost();
-		String sAccount = this.getRepositoryRemoteAccount();
-		return this.computeRepositoryBaseRemote(sHost, sAccount);
-	}
-	
-	@Override
-	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
-		String sRepositoryBaseRemoteIn = this.computeRepositoryBaseRemote();
-		String sRepositoryProjectIn = this.getRepositoryProject();
-		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
-	}
-	
-	@Override
-	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemoteIn, String sRepositoryProjectIn) throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			String sRepositoryBaseRemote; 
-			if(StringZZZ.isEmpty(sRepositoryBaseRemoteIn)) {
-				sRepositoryBaseRemote = this.computeRepositoryBaseRemote();
-				if(StringZZZ.isEmpty(sRepositoryBaseRemote)) {
-					ExceptionZZZ ez = new ExceptionZZZ("RepositoryBaseRemote", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;	
-				}
-			}else {
-				sRepositoryBaseRemote = sRepositoryBaseRemoteIn;
-			}
-			
-			
-			String sRepositoryProject;
-			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-				sRepositoryProject = this.getRepositoryProject();
-				if(StringZZZ.isEmpty(sRepositoryProject)) {
-					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;	
-				}
-			}else {
-				sRepositoryProject = sRepositoryProjectIn;				
-			}
-			
-			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemoteIn);
-			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
-			
-		}//end main:
-		return sReturn;
-	}
-	
-	@Override
-	public String computeRepositoryRemoteUrl(String sRepositoryRemoteHostIn, String sRepositoryRemoteAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
-		String sReturn = null;
-		main:{
-			String sRepositoryRemoteHost; 
-			if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)) {
-				sRepositoryRemoteHost = this.getRepositoryRemoteHost();
-				if(StringZZZ.isEmpty(sRepositoryRemoteHost)) {
-					ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteHost", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;	
-				}
-			}else {
-				sRepositoryRemoteHost = sRepositoryRemoteHostIn;
-			}
-			
-			String sRepositoryRemoteAccount;
-			if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
-				sRepositoryRemoteAccount = this.getRepositoryRemoteAccount();
-				if(StringZZZ.isEmpty(sRepositoryRemoteAccount)) {
-					ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteAccount", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;	
-				}
-			}else {
-				sRepositoryRemoteAccount = sRepositoryRemoteAccountIn;
-			}
-			
-			
-			String sRepositoryProject;
-			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-				sRepositoryProject = this.getRepositoryProject();
-				if(StringZZZ.isEmpty(sRepositoryProject)) {
-					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;	
-				}
-			}else {
-				sRepositoryProject = sRepositoryProjectIn;				
-			}
-			//############################################################################
-			
-			//Die jeweilige Klasse kennt ihr Protokoll, das dann vorangestellt wird.
-			String sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sRepositoryRemoteHost, sRepositoryRemoteAccount);
-			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemote);
-			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
-			
-		}//end main:
-		return sReturn;
-	}
-	
-	@Override
-	public String searchRepositoryRemote() throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();					
-			sReturn = this.searchRepositoryRemote(sRepositoryRemoteAlias);
-		}//end main:
-		return sReturn;
-	}
-	
-	@Override
-	public String searchRepositoryRemote(String sRepositoryRemoteAlias) throws ExceptionZZZ {
-		String sReturn = null;
-		main:{
-			Git git = this.getGitObject();			
-			if(git==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Git Object", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;	
-			}
-			
-			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)) {
-				ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteAlias", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;	
-			}
-			
-			
-			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
-			String sRepositoryRemoteByAlias = git.getRepository().getConfig()
-					       .getString("remote",sRepositoryRemoteAlias,"url");
-			System.out.println(ReflectCodeZZZ.getPositionCurrent() + ": Git-Repository verwendet folgendes Remote URL (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAlias +"'");											
-			sReturn = sRepositoryRemoteByAlias;
-		}//end main:
-		return sReturn;
-	}
 	
 	
 	//######################################	

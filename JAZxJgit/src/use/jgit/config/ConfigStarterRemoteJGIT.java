@@ -10,9 +10,9 @@ import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
 import basic.zKernel.config.help.KernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
-import use.jgit.protocol.git.JgitStarterGIT;
-import use.jgit.protocol.https.JgitStarterHTTPS;
-import use.jgit.protocol.ssh.JgitStarterSSH;
+import use.jgit.starter.protocol.git.JgitStarterGIT;
+import use.jgit.starter.protocol.https.JgitStarterHTTPS;
+import use.jgit.starter.protocol.ssh.JgitStarterSSH;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.

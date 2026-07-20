@@ -13,10 +13,12 @@ import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigRepositoryManager4TestJGIT;
+import use.jgit.config.ConfigRepositoryManager4TestJGIT_onTUBAF;
 import use.jgit.config.ConfigStarterLocal4TestJGIT;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
-import use.jgit.manager.JgitRepositoryManagerGIT;
+import use.jgit.manager.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.resolve.JgitResolverLocalGIT;
+import use.jgit.starter.protocol.git.JgitStarterGIT;
 
 public class JgitStarterGITTest extends TestCase{
 	
@@ -35,11 +37,15 @@ public class JgitStarterGITTest extends TestCase{
 	protected void setUp(){
 		try {
 //			try {
-				ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
+				//ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
+				ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
 							
 				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
 				objRepositoryManager.configureGit(objConfigRepoManager);
 				Git gitByManager = objRepositoryManager.getGitObject();
+				
+				TODOGOON20260720;//Mache das Verkürzen möglich..
+				Git gitByManager = objRepositoryManager.createGitObject(objConfigRepoManager);
 				
 				File objFileDirectoryANew = new File("c:\\temp\\RepoA");
 				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);

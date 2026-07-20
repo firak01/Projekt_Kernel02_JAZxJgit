@@ -18,14 +18,24 @@ public abstract class AbstractConfigJGIT extends AbstractConfigZZZ implements IC
 		//###############################################
 		
 		//### aus IConfigZZZ
-
 		@Override
-		public String getProjectName() throws ExceptionZZZ {
+		public String getProjectNameDefault() throws ExceptionZZZ {
 			return IConfigJGIT.sPROJECT_NAME;
 		}
+		
+		@Override
+		public String getProjectName() throws ExceptionZZZ {
+			return this.getProjectNameDefault();
+		}
+		
+		@Override
+		public String getProjectDirectoryDefault() throws ExceptionZZZ {
+			return IConfigJGIT.sPROJECT_DIRECTORY;
+		}
+		
 		@Override
 		public String getProjectDirectory() throws ExceptionZZZ {
-			return IConfigJGIT.sPROJECT_DIRECTORY;
+			return this.getProjectDirectoryDefault();
 		}
 		
 	
