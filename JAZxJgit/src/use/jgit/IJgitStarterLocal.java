@@ -17,7 +17,7 @@ public interface IJgitStarterLocal{
 	
 	//+++ Argumente, ggfs. aus einer Kommandozeilenübergabe
 	public String getRepositoryProject() throws ExceptionZZZ;
-	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ;
+	public void setRepositoryProjectName(String sRepositoryProject) throws ExceptionZZZ;
 	
 	public String getRepositoryBranch() throws ExceptionZZZ;
 	public void setRepositoryBranch(String sRepositoryBranch) throws ExceptionZZZ;

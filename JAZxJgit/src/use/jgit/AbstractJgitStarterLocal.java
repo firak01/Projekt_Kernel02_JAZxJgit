@@ -123,7 +123,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	}
 	
 	@Override 
-	public void setRepositoryProject(String sRepositoryProject) throws ExceptionZZZ {
+	public void setRepositoryProjectName(String sRepositoryProject) throws ExceptionZZZ {
 		this.sRepositoryProject = sRepositoryProject;
 	}
 	
@@ -246,20 +246,28 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			this.setRepositoryRemoteAlias(sRepositoryRemoteAlias);
 			
 			
-			String sRepositoryLocal = objConfig.readRepositoryLocal();
-			if(StringZZZ.isEmpty(sRepositoryLocal)){
-				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+			String sRepositoryLocalBase = objConfig.readRepositoryLocalBaseDirectory();
+			if(StringZZZ.isEmpty(sRepositoryLocalBase)){
+				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Basis Repository", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryLocalBase(sRepositoryLocal);
+			this.setRepositoryLocalBase(sRepositoryLocalBase);
 			
 			
-			String sRepositoryProject = objConfig.readRepositoryProjectName();
-			if(StringZZZ.isEmpty(sRepositoryProject) & !bRemoteAliasAvailable){
+			String sRepositoryProjectName = objConfig.readRepositoryProjectName();
+			if(StringZZZ.isEmpty(sRepositoryProjectName) & !bRemoteAliasAvailable){
 				ExceptionZZZ ez = new ExceptionZZZ("Projektname der Repositories", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			this.setRepositoryProject(sRepositoryProject);
+			this.setRepositoryProjectName(sRepositoryProjectName);
+			
+			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocalBase, sRepositoryProjectName);
+			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
+			if(!objDirectoryRepositoryLocalTotal.exists()){
+				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
 			
 			//Merke: Branch darf leer sein
 			String sRepositoryBranch = objConfig.readRepositoryBranch();
@@ -272,13 +280,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			}
 			this.setProjectName(sProjectNameLocal);
 			
-			String sDirectoryRepositoryTotalLocal = FileEasyZZZ.joinFilePathName(sRepositoryLocal, sProjectNameLocal);
-			File objDirectoryRepositoryLocalTotal = new File(sDirectoryRepositoryTotalLocal);
-			if(!objDirectoryRepositoryLocalTotal.exists()){
-				ExceptionZZZ ez = new ExceptionZZZ("Verzeichnis des Repositories existiert nicht '" + sDirectoryRepositoryTotalLocal + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterRemote.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
+			
 			
 			bReturn = true;
 		}//end main:

@@ -80,17 +80,17 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 	
 	//### aus IConfigRepositoryJGIT	
 	@Override
-	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ {
+	public String getRepositoryLocalBaseStringDefault() throws ExceptionZZZ {
 		return "."; //Das eigene Projekt-Verzeichnis als Default
 	}
 	
 	@Override
 	public File getRepositoryLocalBaseDirectoryDefault() throws ExceptionZZZ {
-		return new File(this.getRepositoryLocalBaseDefault()); //Also das eigene Projekt-Verzeichnis als Default
+		return new File(this.getRepositoryLocalBaseStringDefault()); //Also das eigene Projekt-Verzeichnis als Default
 	}
 	
 	@Override
-	public String readRepositoryLocal() throws ExceptionZZZ {		
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {		
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
@@ -99,7 +99,9 @@ public abstract class AbstractConfigStarterLocalJGIT extends AbstractConfigJGIT 
 			
 			sReturn = objOpt.readValue("rl");
 			if(sReturn==null){
-				sReturn = this.getRepositoryLocalBaseDefault();
+				//sReturn = this.getRepositoryLocalBaseStringDefault();
+				File objFileDirectory = this.getRepositoryLocalBaseDirectoryDefault();
+				sReturn = objFileDirectory.getAbsolutePath();
 			}
 		}//end main:		
 		return sReturn;

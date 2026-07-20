@@ -36,28 +36,28 @@ public class ConfigRepositoryManager4TestJGIT_onTUBAF  extends AbstractConfigRep
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
-	//###
+	//### IConfigProjectZZZ
+//	@Override
+//	public String getProjectName() throws ExceptionZZZ {
+//		return "Test_repo_JAZxJgit";
+//	}
+	
 	@Override
-	public String getProjectName() throws ExceptionZZZ {
+	public String readProjectName() throws ExceptionZZZ {
 		return "Test_repo_JAZxJgit";
 	}
 	
 	//### aus IConfigStarterLocalJGIT	
 	@Override
-	public String readRepositoryLocal() throws ExceptionZZZ {				
-		return "C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\1fgl_Test_repo_JAZxJgit";
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
+		return "C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen";
 	}		
 
-	//++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readRepositoryProjectName() throws ExceptionZZZ {
 		return "1fgl_Test_repo_JAZxJgit";
 	}
 	
-	@Override
-	public String readProjectName() {
-		return "Test_repo_JAZxJgit";
-	}
 	
 	//++++++++++++++++++++++++++++++++++++++
 	@Override

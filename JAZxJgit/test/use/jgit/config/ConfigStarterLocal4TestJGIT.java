@@ -30,16 +30,27 @@ public class ConfigStarterLocal4TestJGIT  extends AbstractConfigStarterAuthentif
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
+	//### IConfigProjectZZZ
+//	@Override
+//	public String getProjectName() throws ExceptionZZZ {
+//		return "Test_repo_JAZxJgit";
+//	}
+	
+	@Override
+	public String readProjectName() throws ExceptionZZZ {
+		return "Test_repo_JAZxJgit";
+	}
+	
 	//### aus IConfigStarterLocalJGIT	
 	@Override
-	public String readRepositoryLocal() throws ExceptionZZZ {				
-		return "C:\\1fgl\\repo\\EclipseOxygen_V02\\1fgl_Test_repo_JAZxJgit";
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
+		return "C:\\1fgl\\repo\\EclipseOxygen_V02";
 	}		
 
 	//++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readRepositoryProjectName() throws ExceptionZZZ {
-		return "Test_repo_JAZxJgit";
+		return "1fgl_Test_repo_JAZxJgit";
 	}
 	
 	

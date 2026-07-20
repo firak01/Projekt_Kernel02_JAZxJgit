@@ -9,12 +9,9 @@ public interface IConfigStarterLocalJGIT extends IConfigJGIT{
 	//##################################
 	//Auslesen von Argumenten aus der Kommandozeile
 	
-	//ergänzend zu den definierten Methodne in IConfigProjectZZZ
-	public String readProjectName();
-	
 	//das lokale Repository-Verzeichnis
-	public String readRepositoryLocal() throws ExceptionZZZ;
-	public String getRepositoryLocalBaseDefault() throws ExceptionZZZ;
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ;
+	public String getRepositoryLocalBaseStringDefault() throws ExceptionZZZ;
 	public File getRepositoryLocalBaseDirectoryDefault() throws ExceptionZZZ;
 	
 	//... daran kommt dann noch das Projektverzeichnis

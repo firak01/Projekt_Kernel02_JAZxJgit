@@ -82,7 +82,7 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 		main:{
 			try {
 				Git git = this.getGitObject();
-				//remoteRepoDir.toURI().toString()
+
 				String sUriRemote = this.getRepositoryTotalRemote();
 				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 		
