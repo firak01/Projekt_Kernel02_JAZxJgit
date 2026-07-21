@@ -14,7 +14,7 @@ import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestJGIT;
+import use.jgit.config.ConfigRepositoryManager4TestJGIT_onDEV04;
 import use.jgit.config.ConfigRepositoryManager4TestJGIT_onTUBAF;
 import use.jgit.config.ConfigStarterLocal4TestJGIT;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
@@ -122,8 +122,8 @@ public class JgitStarterGITTest extends TestCase{
 	public void testManager_cloneRepositoryTo() {
 		try {
 
-				//ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
-				ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
+				ConfigRepositoryManager4TestJGIT_onDEV04 objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onDEV04();
+				//ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
 							
 				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
 				objRepositoryManager.configureGit(objConfigRepoManager);
