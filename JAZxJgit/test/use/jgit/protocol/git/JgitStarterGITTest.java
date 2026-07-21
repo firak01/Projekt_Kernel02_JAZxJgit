@@ -119,18 +119,30 @@ public class JgitStarterGITTest extends TestCase{
 //		}
 	}//END testConstructor
 	
+	public void testManager_createGit() {
+		try {
+			ConfigRepositoryManager4TestJGIT_onDEV04 objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onDEV04();
+			//ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
+			//objRepositoryManager.configureGit(objConfigRepoManager);
+						
+			JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);
+			
+			Git gitByManager = objRepositoryManager.createGitObject();
+			assertNotNull(gitByManager);
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}
+	}
+	
 	public void testManager_cloneRepositoryTo() {
 		try {
-
+				//TODOGOON : Hier irgendwie von der Konkreten Umgebung etwas unabhängiges machen.
 				ConfigRepositoryManager4TestJGIT_onDEV04 objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onDEV04();
 				//ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
+				//objRepositoryManager.configureGit(objConfigRepoManager);
 							
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.configureGit(objConfigRepoManager);
-				Git gitByManager = objRepositoryManager.getGitObject();
-				
-				//TODOGOON20260720;//Mache das Verkürzen möglich..
-				//Git gitByManager = objRepositoryManager.createGitObject(objConfigRepoManager);
+				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);						
+				//Man braucht das Git-Objekt hier nicht... Git gitByManager = objRepositoryManager.createGitObject();
 				
 				File objFileDirectoryANew = new File(sDirectoryRepoA);
 				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);
@@ -138,9 +150,9 @@ public class JgitStarterGITTest extends TestCase{
 				File objFileDirectoryBNew = new File(sDirectoryRepoB);
 				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);
 
-	}catch(ExceptionZZZ ez){
-		fail("Method throws an exception." + ez.getMessageLast());
-	}
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}
 	}
 	
 	public void testResolverLocal_ConfigureGit() {

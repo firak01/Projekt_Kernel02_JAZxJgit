@@ -25,6 +25,8 @@ import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IObjectWithExpressionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.config.IConfigUserZZZ;
+import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
@@ -49,11 +51,12 @@ import use.jgit.util.JgitUtilZZZ;
  *
  * @param <T>
  */
-public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarterLocal, IJgitStarterEnabledZZZ{
+public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlagZZZ<T> implements IJgitStarterLocal, IJgitStarterEnabledZZZ, IConfigUserZZZ{
 	private static final long serialVersionUID = -1998325674945232389L;
 
 	protected volatile Git gitObject = null;
-
+	protected volatile IConfigZZZ objConfig = null;
+	
 	protected volatile String sProjectName=null;
 
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
@@ -87,7 +90,12 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	@Override
 	public String getProjectName() throws ExceptionZZZ {
-		return this.sProjectName;
+		if(this.sProjectName==null) {
+			IConfigZZZ objConfig = this.getConfiguration();			
+			return objConfig.getProjectName();
+		}else {
+			return this.sProjectName;
+		}
 	}
 	
 	@Override
@@ -97,6 +105,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 
 	@Override
 	public String getRepositoryTotalRemote() throws ExceptionZZZ {
+		//wird bei der lokalen Konfiguration ausgerechnet und nicht per Konfiguration übergeben
 		return this.sRepositoryTotalRemote;
 	}
 
@@ -107,7 +116,12 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	@Override
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
-		return this.sRepositoryRemoteAlias;
+		if(StringZZZ.isEmpty(this.sRepositoryRemoteAlias)) {
+			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+			return objConfig.readRepositoryRemoteAlias();
+		}else {
+			return this.sRepositoryRemoteAlias;
+		}		
 	}
 
 	@Override
@@ -118,8 +132,13 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	//+++++++++++++++++++++++
 	@Override
-	public String getRepositoryProject() throws ExceptionZZZ {
-		return this.sRepositoryProject;
+	public String getRepositoryProject() throws ExceptionZZZ {		
+		if(StringZZZ.isEmpty(this.sRepositoryProject)) {
+			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+			return objConfig.readRepositoryProjectName();
+		}else {
+			return this.sRepositoryProject;
+		}
 	}
 	
 	@Override 
@@ -128,8 +147,13 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	}
 	
 	@Override
-	public String getRepositoryBranch() throws ExceptionZZZ {
-		return this.sRepositoryBranch;
+	public String getRepositoryBranch() throws ExceptionZZZ {		
+		if(StringZZZ.isEmpty(this.sRepositoryBranch)) {
+			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+			return objConfig.readRepositoryBranch();
+		}else {
+			return this.sRepositoryBranch;
+		}
 	}
 	
 	@Override 
@@ -139,7 +163,12 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	@Override
 	public String getRepositoryLocalBase() throws ExceptionZZZ {
-		return this.sRepositoryLocalBase;
+		if(StringZZZ.isEmpty(this.sRepositoryLocalBase)) {
+			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+			return objConfig.readRepositoryLocalBaseDirectory();
+		}else {
+			return this.sRepositoryLocalBase;
+		}
 	}
 	
 	@Override
@@ -149,7 +178,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	@Override
 	public String getRepositoryLocalTotal() throws ExceptionZZZ {
-		return this.sRepositoryLocalTotal;
+		//wird bei der lokalen Konfiguration ausgerechnet und nicht per Konfiguration übergeben
+		return this.sRepositoryLocalTotal;	  	
 	}
 	
 	@Override
@@ -157,7 +187,16 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		this.sRepositoryLocalTotal = sRepositoryLocalTotal;
 	}
 	
+	//### aus IConfigUserZZZ
+	@Override 
+	public IConfigZZZ getConfiguration() throws ExceptionZZZ{
+		return this.objConfig;
+	}
 	
+	@Override
+	public void setConfiguration(IConfigZZZ objConfig) throws ExceptionZZZ{
+		this.objConfig = objConfig;
+	}
 	
 	//##########################
 	//### GIT Konfiguration
@@ -166,6 +205,16 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		boolean bReturn = false;
 		main:{
 			
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean configureGitCustom() throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+			bReturn = this.configureGitCustom(objConfig);
 		}//end main:
 		return bReturn;
 	}
@@ -329,8 +378,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			this.setRepositoryTotalLocal(sDirectoryRepositoryTotalLocal);
 			
 			String sRepositoryRemoteUrlByAlias = null; String sRepositoryRemoteFetchByAlias = null;
-			if(!bRemoteAliasAvailable) {
-				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden '" + sRepositoryRemoteAlias + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+			if(!bRemoteAliasAvailable & StringZZZ.isEmpty(this.getRepositoryTotalRemote())) {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden und Pfad für RepositoryTotalRemote auch nicht gesetzt.", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}else {
 				//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
@@ -368,7 +417,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public boolean configureGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
-			try {			
+//			try {			
 				//### Soll das lokale Repository konfiguriert haben.			
 				//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
 				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal();
@@ -399,22 +448,27 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 					throw ez;				
 				}
 				
-				InitCommand gitCommandInit = Git.init();
-				gitCommandInit.setDirectory(objFileDirTotal);
+				this.configureGitCustom();
+				System.out.println("Lokale Gesamtkonfiguration fertig für: " + objFileDirTotal.getAbsolutePath());
 				
-				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-				this.setGitObject(git);
-				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
+				//wird jetzt als createGitObject() gemacht....
+//				InitCommand gitCommandInit = Git.init();
+//				gitCommandInit.setDirectory(objFileDirTotal);
+//				this.configureGitCustom(gitCommandInit);
+//				
+//				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+//				this.setGitObject(git);
+//				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
 				//##############################################
 				//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
 				//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
 
 				bReturn = true;
 				//######################################
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
+//			}catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			}
 		}//end main:
 		return bReturn;
 	}
@@ -436,7 +490,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			
 			bReturn = this.configureGitCustom(objConfig);
 			
-			bReturn = this.createGitObject();
+			//bReturn = this.createGit();
 
 			///##############################################
 			//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
@@ -446,8 +500,34 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		return bReturn;
 	}
 
+	//#################################################################################
+	@Override 
+	public Git createGitObject(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ {
+		Git objReturn = null;
+		main:{
+			boolean bReturn = this.configureGit(objConfig);			
+			bReturn = this.configureGitCustom(objConfig);
+			
+			bReturn = this.createGit();
+			objReturn = this.getGitObject();
+		}//end main:
+		return objReturn;
+	}
+	
+	@Override 
+	public Git createGitObject() throws ExceptionZZZ {
+		Git objReturn = null;
+		main:{			
+			boolean bReturn = this.configureGit(); 
+			
+			bReturn = this.createGit();
+			objReturn = this.getGitObject();
+		}//end main:
+		return objReturn;
+	}
+	
 	@Override
-	public boolean createGitObject() throws ExceptionZZZ{
+	public boolean createGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			try {
@@ -480,7 +560,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);	
 				
-				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());				
+				System.out.println("Lokales Git Objekt erstellt für das Repository: " + objFileDirTotal.getAbsolutePath());				
 			} catch (GitAPIException e) {
 				ExceptionZZZ ez = new ExceptionZZZ(e);
 				throw ez;

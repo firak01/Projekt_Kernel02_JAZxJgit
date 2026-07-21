@@ -47,9 +47,15 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	private List<String> listasRepositoryPathsFailed=null; //Liste von Strings, die Dateipfaden im Repository entsprechen.	
 	
 	//### Konstruktor
-	public JgitResolverLocalGIT() {	
+	public JgitResolverLocalGIT() throws ExceptionZZZ {	
 		super();			
 	}
+	
+	public JgitResolverLocalGIT(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ {	
+		super();	
+		this.setConfiguration(objConfig);
+	}
+	
 	
 	//#########################################################################
 	//### aus IJgitResolver

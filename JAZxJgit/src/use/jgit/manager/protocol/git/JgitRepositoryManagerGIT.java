@@ -2,6 +2,7 @@ package use.jgit.manager.protocol.git;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.AbstractJgitRepositoryManagerZZZ;
+import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.starter.protocol.git.JgitStarterGIT;
 import use.jgit.util.JgitUtilGIT;
@@ -11,6 +12,11 @@ public class JgitRepositoryManagerGIT extends AbstractJgitRepositoryManagerZZZ{
 	
 	public JgitRepositoryManagerGIT() {
 		super();
+	}
+	
+	public JgitRepositoryManagerGIT(IConfigRepositoryManagerJGIT objConfig) throws ExceptionZZZ {
+		super();
+		this.setConfiguration(objConfig);
 	}
 	
 	//### aus IJgitStarterAuthentificated

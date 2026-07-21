@@ -48,8 +48,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	public static final String sPROTOCOL="https";
 	
 	//### Konstruktor
-	public JgitStarterHTTPS() {	
+	public JgitStarterHTTPS() throws ExceptionZZZ{	
 		super();			
+	}
+	
+	public JgitStarterHTTPS(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+		super();
+		this.setConfiguration(objConfig);
 	}
 
 	@Override

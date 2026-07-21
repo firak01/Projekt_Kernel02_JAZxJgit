@@ -302,7 +302,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			
 			bReturn = this.configureGitCustom(objConfig);
 			
-			bReturn = this.createGitObject();
+			bReturn = this.createGit();
 			
 			
 			//###################

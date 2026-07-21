@@ -67,10 +67,7 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 		main:{				
 			bReturn = super.configureGit(objConfig);
 			
-			bReturn = this.configureGitCustom(objConfig);
-			
-			bReturn = this.createGitObject();
-			
+			bReturn = this.configureGitCustom(objConfig);			
 		}//end main:
 		return bReturn;
 	}
@@ -81,16 +78,17 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 		boolean bReturn = false;
 		main:{
 			try {
-				Git git = this.getGitObject();
+				//Man braucht das Git - Objekt hier nicht. Git git = this.getGitObject();
 
 				String sUriRemote = this.getRepositoryTotalRemote();
 				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
-		
-				CloneCommand cloneCommand = git.cloneRepository();
 				
+				CloneCommand cloneCommand = Git.cloneRepository();
+				
+				if(credentialsProvider!=null) { cloneCommand.setCredentialsProvider(credentialsProvider); }
 				cloneCommand.setURI(sUriRemote)
 				.setDirectory(objFileDirectory)
-				   .call();
+				.call();
 			} catch (InvalidRemoteException e) {
 				ExceptionZZZ ez = new ExceptionZZZ(e);
 				throw ez;

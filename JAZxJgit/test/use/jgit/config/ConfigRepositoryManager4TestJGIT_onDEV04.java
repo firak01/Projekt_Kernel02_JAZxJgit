@@ -50,7 +50,7 @@ public class ConfigRepositoryManager4TestJGIT_onDEV04  extends AbstractConfigRep
 	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
 		return "C:\\1fgl\\repo\\EclipseOxygen_V02";
 	}		
-
+	
 	@Override
 	public String readRepositoryProjectName() throws ExceptionZZZ {
 		return "1fgl_Test_repo_JAZxJgit";

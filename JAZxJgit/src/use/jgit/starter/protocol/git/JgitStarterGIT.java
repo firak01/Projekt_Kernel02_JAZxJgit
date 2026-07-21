@@ -52,8 +52,13 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	public static final String sPROTOCOL="git";
 	
 	//### Konstruktor
-	public JgitStarterGIT() {	
+	public JgitStarterGIT() throws ExceptionZZZ {	
 		super();			
+	}
+	
+	public JgitStarterGIT(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ {
+		super();
+		this.setConfiguration(objConfig);
 	}
 	
 	@Override
