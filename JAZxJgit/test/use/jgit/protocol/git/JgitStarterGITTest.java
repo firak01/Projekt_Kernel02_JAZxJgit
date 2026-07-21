@@ -122,8 +122,8 @@ public class JgitStarterGITTest extends TestCase{
 	public void testManager_cloneRepositoryTo() {
 		try {
 
-				ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
-				//ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
+				//ConfigRepositoryManager4TestJGIT objConfigRepoManager = new ConfigRepositoryManager4TestJGIT();
+				ConfigRepositoryManager4TestJGIT_onTUBAF objConfigRepoManager = new ConfigRepositoryManager4TestJGIT_onTUBAF();
 							
 				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
 				objRepositoryManager.configureGit(objConfigRepoManager);
