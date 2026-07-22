@@ -17,4 +17,5 @@ public interface IJgitRepositoryManagerZZZ {
 	
 	//METHODEN
 	public boolean cloneRepositoryTo(File obFileDirectory) throws ExceptionZZZ;
+	public boolean cloneRepositoryTo(IConfigRepositoryManagerJGIT objConfig, File obFileDirectory) throws ExceptionZZZ;
 }

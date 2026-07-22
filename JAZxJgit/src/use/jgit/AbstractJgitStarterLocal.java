@@ -282,7 +282,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		boolean bReturn = false;
 		main:{
 			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente, ggfs aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
@@ -447,7 +447,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;				
 				}
-				
+								
 				this.configureGitCustom();
 				System.out.println("Lokale Gesamtkonfiguration fertig für: " + objFileDirTotal.getAbsolutePath());
 				
@@ -463,12 +463,14 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
 				//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
 
-				bReturn = true;
+				
 				//######################################
 //			}catch(GitAPIException gae) {
 //				ExceptionZZZ ez = new ExceptionZZZ(gae);
 //				throw ez;
 //			}
+				
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -489,13 +491,15 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			}
 			
 			bReturn = this.configureGitCustom(objConfig);
-			
+			this.setConfiguration(objConfig);
 			//bReturn = this.createGit();
 
 			///##############################################
 			//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
 			//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-			//######################################			
+			//######################################	
+			
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}

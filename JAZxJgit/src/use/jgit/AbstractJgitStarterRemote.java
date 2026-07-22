@@ -181,6 +181,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 			
 			
 			//######################################
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}

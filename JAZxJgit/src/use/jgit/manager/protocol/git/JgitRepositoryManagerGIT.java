@@ -10,7 +10,7 @@ import use.jgit.util.JgitUtilGIT;
 public class JgitRepositoryManagerGIT extends AbstractJgitRepositoryManagerZZZ{
 	public static final String sPROTOCOL="git";
 	
-	public JgitRepositoryManagerGIT() {
+	public JgitRepositoryManagerGIT() throws ExceptionZZZ{
 		super();
 	}
 	

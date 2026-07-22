@@ -189,24 +189,42 @@ public class JgitStarterGITTest extends TestCase{
 		
 	}
 	
+	//####################################################################
 	public void testManager_A_cloneRepositoryTo() {
 		try {
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
 			File objFileDirectoryANew = new File(sDirectoryRepoA);
 			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			boolean bSuccess = false;
 			
 			//###################################################
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
+			JgitRepositoryManagerGIT objRepositoryManager = null;
 			Syso.printSection("A) CloneRepositoryTo");
 			try {					
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);										
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);									
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);
+				objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
-								
+			
+			try {
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);	
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");			
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			try {
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryBNew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");		
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}					
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}
@@ -218,15 +236,35 @@ public class JgitStarterGITTest extends TestCase{
 			//       Darum jede "Variante" in einer eigenen test-Methode
 			File objFileDirectoryANew = new File(sDirectoryRepoA);
 			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			boolean bSuccess=false;
 			
 			//###################################################
 			//B) "Noch Längere" Variante: Konfiguration übergeben
 			Syso.printSection("B) CloneRepositoryTo");
+			JgitRepositoryManagerGIT objRepositoryManager = null;
 			try {
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
+				objRepositoryManager = new JgitRepositoryManagerGIT();
 				objRepositoryManager.configureGit(objConfigRepoManager); 
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);									
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);					
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			
+			try {	
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);				
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			
+			try{	
+				objRepositoryManager.cloneRepositoryTo(objFileDirectoryBNew);							
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryBNew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");							
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -242,18 +280,36 @@ public class JgitStarterGITTest extends TestCase{
 			//       Darum jede "Variante" in einer eigenen test-Methode
 			File objFileDirectoryANew = new File(sDirectoryRepoA);
 			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			boolean bSuccess = false;
 			
 			//###################################################
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) CloneRepositoryTo");
+			JgitRepositoryManagerGIT objRepositoryManager = null;
 			try {
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryANew);									
-				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryBNew);				
+				objRepositoryManager = new JgitRepositoryManagerGIT();				
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+				
+			try {
+				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryANew);
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");	
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}			
-					
+			
+			try {
+				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryBNew);	
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryBNew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");		
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}

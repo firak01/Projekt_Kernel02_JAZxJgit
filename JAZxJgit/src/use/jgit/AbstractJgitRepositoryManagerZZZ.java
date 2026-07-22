@@ -14,6 +14,7 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
@@ -66,11 +67,12 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 		boolean bReturn = false;
 		main:{				
 			bReturn = super.configureGit(objConfig);
-			
-			bReturn = this.configureGitCustom(objConfig);			
 		}//end main:
 		return bReturn;
 	}
+	
+	
+	//##########################################################
 	
 	//Methoden
 	@Override
@@ -78,9 +80,57 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 		boolean bReturn = false;
 		main:{
 			try {
+				IConfigRepositoryManagerJGIT objConfig = (IConfigRepositoryManagerJGIT) this.getConfiguration();
+				
+				boolean bSuccess = this.configureGit(objConfig);
+				if(!bSuccess) break main;
+				
 				//Man braucht das Git - Objekt hier nicht. Git git = this.getGitObject();
 
 				String sUriRemote = this.getRepositoryTotalRemote();
+				if(StringZZZ.isEmpty(sUriRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryTotalRemote", iERROR_PROPERTY_MISSING, AbstractJgitRepositoryManagerZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
+				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
+				
+				CloneCommand cloneCommand = Git.cloneRepository();
+				
+				if(credentialsProvider!=null) { cloneCommand.setCredentialsProvider(credentialsProvider); }
+				cloneCommand.setURI(sUriRemote)
+				.setDirectory(objFileDirectory)
+				.call();
+			} catch (InvalidRemoteException e) {
+				ExceptionZZZ ez = new ExceptionZZZ(e);
+				throw ez;
+			} catch (TransportException e) {
+				ExceptionZZZ ez = new ExceptionZZZ(e);
+				throw ez;
+			} catch (GitAPIException e) {
+				ExceptionZZZ ez = new ExceptionZZZ(e);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;		
+	}
+	
+	@Override
+	public boolean cloneRepositoryTo(IConfigRepositoryManagerJGIT objConfig, File objFileDirectory) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				boolean bSuccess = this.configureGit(objConfig);
+				if(!bSuccess) break main;
+				
+				//Man braucht das Git - Objekt hier nicht. Git git = this.getGitObject();
+
+				String sUriRemote = this.getRepositoryTotalRemote();
+				if(StringZZZ.isEmpty(sUriRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryTotalRemote", iERROR_PROPERTY_MISSING, AbstractJgitRepositoryManagerZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+				
 				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 				
 				CloneCommand cloneCommand = Git.cloneRepository();

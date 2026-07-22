@@ -301,8 +301,9 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			}
 			
 			bReturn = this.configureGitCustom(objConfig);
+			this.setConfiguration(objConfig);
 			
-			bReturn = this.createGit();
+			//wird separat gemacht... bReturn = this.createGit();
 			
 			
 			//###################
@@ -321,6 +322,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Alias nicht vorhanden für Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			this.setRepositoryRemoteAlias(sRepositoryRemoteAlias);
 			
 			//#######################################################
 			//### Remote Konfigurationen erstmalig in der Remote Konfiguration auslesen
@@ -358,6 +360,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 				ExceptionZZZ ez = new ExceptionZZZ("Remote Branch nicht vorhanden für lokales Verzeichnis '" + sDirectoryRepositoryTotalLocal + "'" , iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			this.setRepositoryBranch(sRepositoryRemoteBranch);
 			
 			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
 			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
@@ -444,7 +447,9 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			///##############################################
 			//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
 			//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-			//######################################			
+			//######################################	
+			
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}
