@@ -2,14 +2,14 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 
-public class ConfigRepositoryManager4TestJGIT_onDEV04  extends AbstractConfigRepositoryManagerJGIT{
+public class ConfigRepositoryManager4TestGIT_onDEV04  extends AbstractConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 662451230649662545L;
 
-	public ConfigRepositoryManager4TestJGIT_onDEV04() throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestGIT_onDEV04() throws ExceptionZZZ {
 		super();		
 	}
 	
-	public ConfigRepositoryManager4TestJGIT_onDEV04(String[] saArg) throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestGIT_onDEV04(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 	

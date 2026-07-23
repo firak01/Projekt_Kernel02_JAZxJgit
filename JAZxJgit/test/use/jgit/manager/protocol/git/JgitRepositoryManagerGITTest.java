@@ -1,4 +1,4 @@
-package use.jgit.protocol.git;
+package use.jgit.manager.protocol.git;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,18 +16,21 @@ import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestJGIT_onDEV04;
-import use.jgit.config.ConfigRepositoryManager4TestJGIT_onTUBAF;
+import use.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
+import use.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
 import use.jgit.config.ConfigStarterLocal4TestJGIT;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
+import use.jgit.config.ITestHelperConstant;
+import use.jgit.config.TestHelper;
+import use.jgit.config.TestHelperGIT;
 import use.jgit.manager.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.starter.protocol.git.JgitStarterGIT;
 
-public class JgitStarterGITTest extends TestCase{
-	private static String sDirectoryRepoA="c:\\temp\\RepoA";
-	private static String sDirectoryRepoB="c:\\temp\\RepoB";
+public class JgitRepositoryManagerGITTest extends TestCase{
+	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
+	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
@@ -46,72 +49,15 @@ public class JgitStarterGITTest extends TestCase{
 	 */
 	protected void setUp(){
 		try {
-				boolean bSuccess = false; boolean bRunning = false;
-				
-				//Merke: In meiner WinXP Umgebung muss zuvor der TGitCache - Prozess beendet werden.
-				WMIZZZ objWmi = new WMIZZZ();
-				bRunning = objWmi.isProcessRunning("TGitCache.exe");
-				if(bRunning) {
-					objWmi.killProcessAll("TGitCache.exe");
-				}
-				
-				//Lösche ggfs. in einem vorherigen Test erstellte Lokale Repositories.
-				//- Darin sind vielleicht Änderungen drin, die nicht mehr gewünscht sind.
-				//- Erst wenn die Verzeichnisse weg sind, können sie neu gecloned werden.
-				//
-				//Lösche also alle Inhalte und Unterverzeichnissse: true, true
-				File objFileDirectoryANew = new File(sDirectoryRepoA);
-				if(FileEasyZZZ.exists(objFileDirectoryANew)) {
-					bSuccess = FileEasyZZZ.removeDirectory(objFileDirectoryANew, true, true);
-					if(!bSuccess) {
-						fail("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoA + "'");
-					}
-				}
-				
-				//#########################################################################
-
-				//Merke: In meiner WinXP Umgebung muss zuvor der TGitCache - Prozess beendet werden.
-				bRunning = objWmi.isProcessRunning("TGitCache.exe");
-				if(bRunning) {
-					objWmi.killProcessAll("TGitCache.exe");
-				}
-				
-				//Lösche ggfs. in einem vorherigen Test erstellte Lokale Repositories.
-				//- Darin sind vielleicht Änderungen drin, die nicht mehr gewünscht sind.
-				//- Erst wenn die Verzeichnisse weg sind, können sie neu gecloned werden.
-				//
-				//Lösche also alle Inhalte und Unterverzeichnissse: true, true
-				File objFileDirectoryBNew = new File(sDirectoryRepoB);
-				if(FileEasyZZZ.exists(objFileDirectoryBNew)) {
-					bSuccess = FileEasyZZZ.removeDirectory(objFileDirectoryBNew, true, true);
-					if(!bSuccess) {
-						fail("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoB + "'");
-					}
-				}	
-				
-				//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
-				//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
-				List<IConfigRepositoryManagerJGIT> listConfig = new ArrayList<IConfigRepositoryManagerJGIT>();
-				listConfig.add(new ConfigRepositoryManager4TestJGIT_onDEV04());
-				listConfig.add(new ConfigRepositoryManager4TestJGIT_onTUBAF());
-				
-				for(IConfigRepositoryManagerJGIT objConfigRepoManagerTemp : listConfig) {
-					String sRepoLocalBase = objConfigRepoManagerTemp.readRepositoryLocalBaseDirectory();
-					Syso.println("Suche in dieser Entwicklungsumgebung das Basis Repository: '" + sRepoLocalBase + "'");
-					if(FileEasyZZZ.exists(sRepoLocalBase)){
-						Syso.println("Verwende in dieser Entwicklungsumgebung das Basis Repository: '" + sRepoLocalBase + "'");
-						objConfigRepoManager=objConfigRepoManagerTemp;
-						break;
-					}
-				}
-				
-				if(objConfigRepoManager==null) {
-					fail("Konnte kein existierendes Basis Repository für eine Entwicklungsumgebung finden.");
-				}
-											
-	}catch(ExceptionZZZ ez){
-		fail("Method throws an exception." + ez.getMessageLast());
-	}
+			//1. Repositories aus vorherigen Tests entfernen
+			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
+			
+			//2. RepositoryManger für die Erstellung von TestRepositories holen
+			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
+												
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}
 	
 	}//END setup
 	
@@ -313,44 +259,5 @@ public class JgitStarterGITTest extends TestCase{
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}
-	}
-	
-	
-	
-	public void testResolverLocal_ConfigureGit() {
-		
-		try{
-			
-			//+++++++++++++++++
-			ConfigStarterLocal4TestJGIT objConfigLocal = new ConfigStarterLocal4TestJGIT();
-			
-			JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
-			objResolver.configureGit(objConfigLocal);
-			Git gitByResolver = objResolver.getGitObject();
-			
-		}catch(ExceptionZZZ ez){
-			fail("Method throws an exception." + ez.getMessageLast());
-		}
-		
-		//++++++++++++++++++++++++++++++++++
-		
-	}
-	
-public void testStarterRemote_ConfigureGit() {
-		
-		try {
-			//+++++++++++++++++
-			ConfigStarterRemote4TestJGIT objConfigRemote = new ConfigStarterRemote4TestJGIT();
-			
-			JgitStarterGIT objStarter = new JgitStarterGIT();
-			objStarter.configureGit(objConfigRemote);
-			Git gitByStarter = objStarter.getGitObject();
-		}catch(ExceptionZZZ ez){
-			fail("Method throws an exception." + ez.getMessageLast());
-		}	
-				
-		//++++++++++++++++++++++++++++++++++
-		
-	}
-	
+	}	
 }

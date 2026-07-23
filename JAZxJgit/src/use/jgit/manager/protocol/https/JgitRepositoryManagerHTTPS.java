@@ -1,20 +1,22 @@
-package use.jgit.manager.protocol.git;
+package use.jgit.manager.protocol.https;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.AbstractJgitRepositoryManagerZZZ;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.starter.protocol.git.JgitStarterGIT;
+import use.jgit.starter.protocol.https.JgitStarterHTTPS;
 import use.jgit.util.JgitUtilGIT;
+import use.jgit.util.JgitUtilHTTPS;
 
-public class JgitRepositoryManagerGIT extends AbstractJgitRepositoryManagerZZZ{
-	public static final String sPROTOCOL="git";
+public class JgitRepositoryManagerHTTPS extends AbstractJgitRepositoryManagerZZZ{
+	public static final String sPROTOCOL="https";
 	
-	public JgitRepositoryManagerGIT() throws ExceptionZZZ{
+	public JgitRepositoryManagerHTTPS() throws ExceptionZZZ{
 		super();
 	}
 	
-	public JgitRepositoryManagerGIT(IConfigRepositoryManagerJGIT objConfig) throws ExceptionZZZ {
+	public JgitRepositoryManagerHTTPS(IConfigRepositoryManagerJGIT objConfig) throws ExceptionZZZ {
 		super();
 		this.setConfiguration(objConfig);
 	}
@@ -28,6 +30,6 @@ public class JgitRepositoryManagerGIT extends AbstractJgitRepositoryManagerZZZ{
 	
 	@Override
 	public String computeRepositoryBaseRemote(String sHost, String sAccount) throws ExceptionZZZ{
-		return JgitUtilGIT.computeRepositoryUrlBaseGIT(sHost, sAccount);
+		return JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);
 	}
 }

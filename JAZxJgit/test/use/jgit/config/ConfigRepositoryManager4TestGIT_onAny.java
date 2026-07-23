@@ -1,15 +1,23 @@
 package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
+import use.jgit.manager.protocol.git.JgitRepositoryManagerGIT;
+import use.jgit.manager.protocol.https.JgitRepositoryManagerHTTPS;
 
-public class ConfigRepositoryManager4TestJGIT_onTUBAF  extends AbstractConfigRepositoryManagerJGIT{
+/** Hole die Informationen aus den Umgebungsvariablen beim Eclipse Start.
+ *  Dies ist u.a. wichtig, weil sPAT (Personal Access Token) hier nicht hart coded stehen darf,
+ *  dies wird beim Hochladen nach GitHub verboten und führt zu Probleme.
+ * @author Fritz Lindhauer
+ *
+ */
+public class ConfigRepositoryManager4TestGIT_onAny  extends AbstractConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 662451230649662545L;
 
-	public ConfigRepositoryManager4TestJGIT_onTUBAF() throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestGIT_onAny() throws ExceptionZZZ {
 		super();		
 	}
 	
-	public ConfigRepositoryManager4TestJGIT_onTUBAF(String[] saArg) throws ExceptionZZZ {
+	public ConfigRepositoryManager4TestGIT_onAny(String[] saArg) throws ExceptionZZZ {
 		super(saArg); 
 	} 
 	
@@ -49,8 +57,8 @@ public class ConfigRepositoryManager4TestJGIT_onTUBAF  extends AbstractConfigRep
 	
 	//### aus IConfigStarterLocalJGIT	
 	@Override
-	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
-		return "C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen";
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {		
+		return System.getenv("sRLZZZ");
 	}		
 
 	@Override
@@ -76,17 +84,17 @@ public class ConfigRepositoryManager4TestJGIT_onTUBAF  extends AbstractConfigRep
 	//### aus IConfigWithAuthentificationJGIT
 	@Override
 	public String readConnectionType() throws ExceptionZZZ {
-		return "git";
+		return JgitRepositoryManagerGIT.sPROTOCOL;
 	}
 	
 	@Override
 	public String readRepositoryRemoteHost() throws ExceptionZZZ {
-		return "github.com";
+		return System.getenv("sRRHZZZ");
 	}
 	
 	@Override
 	public String readRepositoryRemoteAccount() throws ExceptionZZZ {
-		return "firak01";
+		return System.getenv("sRRACZZZ");
 	}
 	
 	//### aus IConfigRepositoryManagerJGIT

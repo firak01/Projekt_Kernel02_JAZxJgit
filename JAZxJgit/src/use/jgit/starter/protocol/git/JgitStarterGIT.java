@@ -26,6 +26,7 @@ import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.manager.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverLocalUI;
@@ -49,7 +50,7 @@ import use.jgit.util.JgitUtilZZZ;
  */
 public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterGIT{
 	private static final long serialVersionUID = 521157607363069534L;
-	public static final String sPROTOCOL="git";
+	public static final String sPROTOCOL=JgitRepositoryManagerGIT.sPROTOCOL;
 	
 	//### Konstruktor
 	public JgitStarterGIT() throws ExceptionZZZ {	

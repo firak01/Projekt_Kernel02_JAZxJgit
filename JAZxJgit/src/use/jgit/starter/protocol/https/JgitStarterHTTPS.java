@@ -23,6 +23,8 @@ import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
 import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.manager.protocol.git.JgitRepositoryManagerGIT;
+import use.jgit.manager.protocol.https.JgitRepositoryManagerHTTPS;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
@@ -45,7 +47,7 @@ import use.jgit.util.JgitUtilZZZ;
  */
 public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements IJgitStarterHTTPS{
 	private static final long serialVersionUID = -3594348507412511385L;
-	public static final String sPROTOCOL="https";
+	public static final String sPROTOCOL=JgitRepositoryManagerHTTPS.sPROTOCOL;
 	
 	//### Konstruktor
 	public JgitStarterHTTPS() throws ExceptionZZZ{	

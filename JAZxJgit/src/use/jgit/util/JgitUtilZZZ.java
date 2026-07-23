@@ -340,6 +340,51 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;
 	}
 	
+	public static String computeRepositoryUrlTotalFor(String sProtocolType, String sRepositoryRemoteHostIn, String sRepositoryRemoteAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			if(StringZZZ.isEmpty(sProtocolType)){
+				ExceptionZZZ ez = new ExceptionZZZ("ProtocolType", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Host", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Account", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Projekname des Remote Repository", iERROR_PARAMETER_MISSING, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			
+			String sRepositoryProject = sRepositoryProjectIn;
+			
+			String sUrlBase;			
+			if(sProtocolType.equalsIgnoreCase("https")) {
+				sUrlBase = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sRepositoryRemoteHostIn, sRepositoryRemoteAccountIn);
+				sReturn = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sUrlBase, sRepositoryProject);
+			}else if(sProtocolType.equalsIgnoreCase("ssh")) {
+				sUrlBase = JgitUtilSSH.computeRepositoryUrlBaseSSH(sRepositoryRemoteHostIn, sRepositoryRemoteAccountIn);
+				sReturn = JgitUtilSSH.computeRepositoryUrlTotalSSH(sUrlBase, sRepositoryProject);
+			}else if(sProtocolType.equalsIgnoreCase("git")) {
+				sUrlBase = JgitUtilGIT.computeRepositoryUrlBaseGIT(sRepositoryRemoteHostIn, sRepositoryRemoteAccountIn);
+				sReturn = JgitUtilGIT.computeRepositoryUrlTotalGIT(sUrlBase, sRepositoryProject);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository URL. Unbekanntes Protokol: '" + sProtocolType + "'", iERROR_PARAMETER_VALUE, JgitUtilZZZ.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	
 	
 	

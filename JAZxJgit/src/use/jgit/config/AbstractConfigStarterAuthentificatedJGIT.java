@@ -168,6 +168,7 @@ public abstract class AbstractConfigStarterAuthentificatedJGIT extends AbstractC
 		public String getPersonalAccessTokenDefault() {
 			return ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
 		}
+
 		@Override
 		public String readPersonalAccessToken() throws ExceptionZZZ{
 			String sReturn = null;

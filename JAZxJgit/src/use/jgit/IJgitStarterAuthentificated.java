@@ -46,6 +46,7 @@ public interface IJgitStarterAuthentificated  extends IJgitStarterLocal{
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ;
 	public String computeRepositoryRemoteUrl(String sRepositoryBaseRemote, String sRepositoryProject) throws ExceptionZZZ;
 	public String computeRepositoryRemoteUrl(String sRepositoryRemoteHost, String sRepositoryRemoteAccount, String sRepositoryProject) throws ExceptionZZZ;
+	public String computeRepositoryRemoteUrl(String sProtocol, String sRepositoryRemoteHost, String sRepositoryRemoteAccount, String sRepositoryProject) throws ExceptionZZZ;
 	
 	
 	//+++ Konfiguration mit Konfigurationsobjekt

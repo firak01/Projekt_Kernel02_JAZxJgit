@@ -12,6 +12,7 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
+import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
@@ -19,6 +20,7 @@ import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.starter.protocol.ssh.JGitSshConfigZZZ;
 import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.util.JgitUtilGIT;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
@@ -57,8 +59,13 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 	}
 
 	@Override
-	public String getPersonalAccessToken() throws ExceptionZZZ {
-		return this.sPAT;
+	public String getPersonalAccessToken() throws ExceptionZZZ {		
+		if(StringZZZ.isEmpty(this.sPAT)) {
+			IConfigWithAuthentificationJGIT objConfig = (IConfigWithAuthentificationJGIT) this.getConfiguration();			
+			return objConfig.readPersonalAccessToken();
+		}else {
+			return this.sPAT;
+		}
 	}
 	
 	//############# METHODEN
@@ -77,10 +84,14 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 		this.sRepositoryRemoteAccount = sRepositoryRemoteAccount;
 	}
 	
-	
 	@Override
 	public String getConnectionType() throws ExceptionZZZ {
-		return this.sConnectionType;
+		if(StringZZZ.isEmpty(this.sConnectionType)) {
+			IConfigWithAuthentificationJGIT objConfig = (IConfigWithAuthentificationJGIT) this.getConfiguration();			
+			return objConfig.readConnectionType();			
+		}else {
+			return this.sConnectionType;
+		}
 	}
 
 	@Override
@@ -143,9 +154,15 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 	
 	@Override
 	public String computeRepositoryRemoteUrl() throws ExceptionZZZ {
-		String sRepositoryBaseRemoteIn = this.computeRepositoryBaseRemote();
+//		String sRepositoryBaseRemoteIn = this.computeRepositoryBaseRemote();
+//		String sRepositoryProjectIn = this.getRepositoryProject();
+//		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
+		
+		String sProtocolIn = this.getConnectionType();
+		String sRepositoryRemoteHostIn = this.getRepositoryRemoteHost();
+		String sRepositoryRemoteAccountIn = this.getRepositoryRemoteAccount();
 		String sRepositoryProjectIn = this.getRepositoryProject();
-		return this.computeRepositoryRemoteUrl(sRepositoryBaseRemoteIn, sRepositoryProjectIn);
+		return this.computeRepositoryRemoteUrl(sProtocolIn, sRepositoryRemoteHostIn, sRepositoryRemoteAccountIn, sRepositoryProjectIn);
 	}
 	
 	@Override
@@ -182,6 +199,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 		return sReturn;
 	}
 	
+
 	@Override
 	public String computeRepositoryRemoteUrl(String sRepositoryRemoteHostIn, String sRepositoryRemoteAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
 		String sReturn = null;
@@ -224,8 +242,75 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			//Die jeweilige Klasse kennt ihr Protokoll, das dann vorangestellt wird.
 			String sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sRepositoryRemoteHost, sRepositoryRemoteAccount);
 			String sProtocol = JgitUtilZZZ.getProtocol(sRepositoryBaseRemote);
-			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);			
+			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryRemoteHost, sRepositoryRemoteAccount, sRepositoryProject);			
 			
+		}//end main:
+		return sReturn;
+	}
+	
+	@Override
+	public String computeRepositoryRemoteUrl(String sProtocolIn, String sRepositoryRemoteHostIn, String sRepositoryRemoteAccountIn, String sRepositoryProjectIn) throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			String sProtocol;
+			if(StringZZZ.isEmpty(sProtocolIn)) {
+				sProtocol = this.getConnectionType();
+				if(StringZZZ.isEmpty(sProtocol)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Protocol / ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sProtocol = sProtocolIn;
+			}
+			
+			String sRepositoryRemoteHost; 
+			if(StringZZZ.isEmpty(sRepositoryRemoteHostIn)) {
+				sRepositoryRemoteHost = this.getRepositoryRemoteHost();
+				if(StringZZZ.isEmpty(sRepositoryRemoteHost)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteHost", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sRepositoryRemoteHost = sRepositoryRemoteHostIn;
+			}
+			
+			String sRepositoryRemoteAccount;
+			if(StringZZZ.isEmpty(sRepositoryRemoteAccountIn)) {
+				sRepositoryRemoteAccount = this.getRepositoryRemoteAccount();
+				if(StringZZZ.isEmpty(sRepositoryRemoteAccount)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryRemoteAccount", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sRepositoryRemoteAccount = sRepositoryRemoteAccountIn;
+			}
+			
+			
+			String sRepositoryProject;
+			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
+				sRepositoryProject = this.getRepositoryProject();
+				if(StringZZZ.isEmpty(sRepositoryProject)) {
+					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;	
+				}
+			}else {
+				sRepositoryProject = sRepositoryProjectIn;				
+			}
+			//############################################################################
+			
+			//Die jeweilige Klasse kennt ihr Protokoll, das dann vorangestellt wird.
+			//String sRepositoryBaseRemote = this.computeRepositoryBaseRemote(sRepositoryRemoteHost, sRepositoryRemoteAccount);
+			String sRepositoryBaseRemote = null;
+			if(sProtocol.equalsIgnoreCase("git")) {
+				sRepositoryBaseRemote = JgitUtilGIT.computeRepositoryUrlBaseGIT(sRepositoryRemoteHost, sRepositoryRemoteAccount);
+			}else if(sProtocol.equalsIgnoreCase("https")) {
+				sRepositoryBaseRemote = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sRepositoryRemoteHost, sRepositoryRemoteAccount);
+			}else {
+				ExceptionZZZ ez = new ExceptionZZZ("computeRepositoryUrlBase. Noch nicht behandeltes Protokol: '" + sProtocol + "'", iERROR_PARAMETER_VALUE, AbstractJgitStarterAuthentificated.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+						
+			sReturn = JgitUtilZZZ.computeRepositoryUrlTotalFor(sProtocol, sRepositoryBaseRemote, sRepositoryProject);						
 		}//end main:
 		return sReturn;
 	}
@@ -406,7 +491,6 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 				ExceptionZZZ ez = new ExceptionZZZ("ConnectionType", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
-			String sConnectionType = sConnectionTypeIn.toLowerCase();
 			
 			String sRepositoryRemoteIn = this.computeRepositoryBaseRemote();
 			if(StringZZZ.isEmpty(sRepositoryRemoteIn)){
@@ -432,6 +516,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
 			//Das müsste eigentlich für HTTPS nicht gemacht werden.
+			String sConnectionType = sConnectionTypeIn.toLowerCase();			
 			if(sConnectionType.equalsIgnoreCase("https")) {
 				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
 				
