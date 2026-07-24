@@ -192,11 +192,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			
 			//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
 			//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
-			boolean bSuccess = this.configureGit(objConfig);
+			boolean bSuccess = this.createGit(objConfig);
 			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 							
@@ -339,11 +339,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			
 			//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
 			//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
-			boolean bSuccess = this.configureGit(objConfig);
+			boolean bSuccess = this.createGit(objConfig);
 			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 							
@@ -493,11 +493,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
 				//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				
@@ -637,11 +637,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//Für das Auflösen, ob in dem Remote-Repository Dateien gelöscht wurden,
 				//brauchen wir das git - Objekt, darum reicht reines lokales Repository nicht.										
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				Git git = this.getGitObject();
@@ -1090,11 +1090,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			
 			//+++++++++++++++++++++++++++++++
 			//Konfiguriere JGit lokal							
-			boolean bSuccess = this.configureGit(objConfig);
+			boolean bSuccess = this.createGit(objConfig);
 			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 			
@@ -1300,11 +1300,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 							
@@ -1380,11 +1380,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 							
@@ -1467,11 +1467,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 							
@@ -1575,11 +1575,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit lokal							
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				
@@ -1647,11 +1647,11 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				
 				//+++++++++++++++++++++++++++++++
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				

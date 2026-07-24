@@ -60,7 +60,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 	}
 
 	@Override
-	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {		
+	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {		
 		return false;
 	}
 	
@@ -216,11 +216,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				
 				//################################################
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+				boolean bSuccessConfigureGit = this.createGit(objConfig);
 				if(bSuccessConfigureGit) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				
@@ -484,11 +484,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 
 			//+++++++++++++++++++++++++++++++
 			//Konfiguriere JGit für HTTPS
-			boolean bSuccess = this.configureGit(objConfig);
+			boolean bSuccess = this.createGit(objConfig);
 			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 			
@@ -693,11 +693,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				
 				//################################################
 				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 					
@@ -850,11 +850,11 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 						
 			//######################################################
 			//Konfiguriere JGit für HTTPS
-			boolean bSuccessConfigureGit = this.configureGit(objConfig);
+			boolean bSuccessConfigureGit = this.createGit(objConfig);
 			if(bSuccessConfigureGit) {
-				System.out.println("Basis Git erfolgreich konfiguriert");
+				System.out.println("Basis Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Basis Git NICHT erfolgreich konfiguriert");
+				System.out.println("Basis Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 			

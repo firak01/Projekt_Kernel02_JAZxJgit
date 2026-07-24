@@ -80,7 +80,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	//############ GETTER  / SETTER	
 	@Override 
 	public Git getGitObject() throws ExceptionZZZ{
-		return this.gitObject;
+		return this.gitObject; //Hier nicht, wg. Endlosschleifengefahr this.createGitObject();
 	}
 	
 	@Override
@@ -200,14 +200,6 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	//##########################
 	//### GIT Konfiguration
-	@Override
-	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ{
-		boolean bReturn = false;
-		main:{
-			
-		}//end main:
-		return bReturn;
-	}
 	
 	@Override
 	public boolean configureGitCustom() throws ExceptionZZZ {
@@ -531,6 +523,18 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	}
 	
 	@Override
+	public boolean createGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{			
+			bReturn = this.configureGit(objConfig);			
+			bReturn = this.configureGitCustom(objConfig);
+				
+			bReturn = this.createGit();			
+		}//end main:
+		return bReturn;		
+	}
+	
+	@Override
 	public boolean createGit() throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
@@ -559,7 +563,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				gitCommandInit.setDirectory(objFileDirTotal);
 				
 				//Ergänze custom-Eigenschaften
-				this.configureGitCustom(gitCommandInit);
+				this.createGitCustom(gitCommandInit);
 				
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);	
@@ -573,6 +577,15 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			bReturn = true;
 		}//end main:
 		return bReturn;		
+	}
+	
+	@Override
+	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			
+		}//end main:
+		return bReturn;
 	}
 	
 	
@@ -661,11 +674,11 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				//Konfiguriere JGit
 				//braucht man das hier, man ruft doch nur den Status ab???
 				//Ja, zum initialisieren des Git-Objects				
-				boolean bSuccess = this.configureGit(objConfig);
+				boolean bSuccess = this.createGit(objConfig);
 				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 			
@@ -706,11 +719,11 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		main:{
 		
 			//Konfiguriere JGit
-			boolean bSuccess = this.configureGit(objConfig);
+			boolean bSuccess = this.createGit(objConfig);
 			if(bSuccess) {
-				System.out.println("Git erfolgreich konfiguriert");
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
 			}else {
-				System.out.println("Git NICHT erfolgreich konfiguriert");
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 				break main;
 			}
 			

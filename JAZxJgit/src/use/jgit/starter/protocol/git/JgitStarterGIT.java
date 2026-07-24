@@ -63,7 +63,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
-	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {
+	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {
 		return false;
 	}
 	
@@ -185,11 +185,11 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 						
 				//######################################################
 				//Konfiguriere JGit für GIT				
-				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+				boolean bSuccessConfigureGit = this.createGit(objConfig);
 				if(bSuccessConfigureGit) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				
@@ -630,11 +630,11 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 							
 				//######################################################
 				//Konfiguriere JGit für GIT
-				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+				boolean bSuccessConfigureGit = this.createGit(objConfig);
 				if(bSuccessConfigureGit) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				

@@ -39,7 +39,7 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 	}
 	
 	@Override
-	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ{
+	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ{
 		boolean bReturn = false;
 		main:{
 			if(this.isRepositoryBare()) {

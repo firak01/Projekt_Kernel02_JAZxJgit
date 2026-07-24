@@ -39,9 +39,12 @@ public interface IJgitStarterLocal{
 	
 	//+++ Arbeit mit dem GitObject, etc.
 	public boolean createGit() throws ExceptionZZZ;
+	public boolean createGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	public Git createGitObject() throws ExceptionZZZ;
 	public Git createGitObject(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	
+	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ;
+		
 	public Git getGitObject() throws ExceptionZZZ;
 	public void setGitObject(Git git) throws ExceptionZZZ;
 		
@@ -59,9 +62,7 @@ public interface IJgitStarterLocal{
 	//    Diese wird pro Klasse überschreibbar gemacht.
 	public boolean configureGitCustom() throws ExceptionZZZ;
 	public boolean configureGitCustom(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
-	public boolean configureGitCustom(InitCommand objInitCommand) throws ExceptionZZZ;
 	
-
 	//Alternative 1: Verwendet unvollständiges status.getUncommittedChanges()
 	public void addFileTrackedChanged() throws ExceptionZZZ;
 	public void addFileTrackedChanged(Git git) throws ExceptionZZZ;
