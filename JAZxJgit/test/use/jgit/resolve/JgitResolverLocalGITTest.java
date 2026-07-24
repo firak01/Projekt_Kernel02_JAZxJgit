@@ -1,30 +1,15 @@
 package use.jgit.resolve;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.system.Syso;
-import basic.zKernel.AbstractKernelLogZZZ;
-import basic.zKernel.KernelZZZ;
-import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
 import use.jgit.config.ConfigStarterRemote4TestGIT_onAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.TestHelper;
 import use.jgit.config.TestHelperGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
-import use.jgit.resolve.JgitResolverLocalGIT;
-import use.jgit.start.protocol.git.JgitStarterGIT;
 
 public class JgitResolverLocalGITTest extends TestCase{
 	private static String sDirectoryRepoA="c:\\temp\\RepoA";

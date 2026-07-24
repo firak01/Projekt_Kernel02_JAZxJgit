@@ -64,17 +64,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 		return false;
 	}
 	
-	//### aus IJgitStarterHTTPS
-	@Override
-	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
-		this.sPAT = sPat;
-	}
-
-	@Override
-	public String getPersonalAccessToken() throws ExceptionZZZ {
-		return this.sPAT;
-	}
-	
+	//### aus IJgitStarterHTTPS	
 	@Override 
 	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ{
 		if(this.credentialsProviderObject==null) {
@@ -135,8 +125,8 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
 				//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
 				//a) Remote Basis Url
-				String sDirectoryRepositoryRemote = this.getRepositoryBaseRemote();
-				if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
+				String sRepositoryBaseRemote_previous = this.getRepositoryBaseRemote();
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote_previous)) {
 					//ExceptionZZZ ez = new ExceptionZZZ("Remote Repository Basis URL, Angabe fehlt: '" + sDirectoryRepositoryRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					//throw ez;
 					
@@ -147,13 +137,13 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 						throw ez;
 					}
 					String sUrlSSHorHTTPS = this.searchRepositoryRemote(sRepositoryRemoteAlias);
-					sDirectoryRepositoryRemote = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSHorHTTPS);
+					sRepositoryBaseRemote_previous = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSHorHTTPS);
 				}
-				if(StringZZZ.isEmpty(sDirectoryRepositoryRemote)) {
+				if(StringZZZ.isEmpty(sRepositoryBaseRemote_previous)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Weder Basis Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-				this.setRepositoryBaseRemote(sDirectoryRepositoryRemote);
+				this.setRepositoryBaseRemote(sRepositoryBaseRemote_previous);
 				
 				//b) Remote Repository-Verzeichnis des Projekts
 				String sRepositoryProjectRemote = this.getRepositoryProject(); //momentan identisch mit lokal)
@@ -165,18 +155,18 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				//Das ist umso wichtiger, weil mit HTTPS Url wird ein Credentials Provider erwartet.
 				//Den gibt es für SSH aber nicht... 
 				//Darum muss die URL zum verwendeten Protokol stimmen.
-				String sRepositoryBaseRemote = null;
-				if(JgitUtilZZZ.isUrlSSH(sDirectoryRepositoryRemote)) {
-					String sAccount = JgitUtilSSH.getAccountFromUrl(sDirectoryRepositoryRemote);
-					String sHost = JgitUtilSSH.getHostFromUrl(sDirectoryRepositoryRemote);	
-					sRepositoryBaseRemote = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);				
+				String sRepositoryBaseRemote_computed = null;
+				if(JgitUtilZZZ.isUrlSSH(sRepositoryBaseRemote_previous)) {
+					String sAccount = JgitUtilSSH.getAccountFromUrl(sRepositoryBaseRemote_previous);
+					String sHost = JgitUtilSSH.getHostFromUrl(sRepositoryBaseRemote_previous);	
+					sRepositoryBaseRemote_computed = JgitUtilHTTPS.computeRepositoryUrlBaseHTTPS(sHost, sAccount);				
 				}else {
-					sRepositoryBaseRemote = sDirectoryRepositoryRemote;
+					sRepositoryBaseRemote_computed = sRepositoryBaseRemote_previous;
 				}
-				this.setRepositoryBaseRemote(sRepositoryBaseRemote);
+				this.setRepositoryBaseRemote(sRepositoryBaseRemote_computed);
 				
 				
-				String sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sRepositoryBaseRemote, sRepositoryProjectRemote);
+				String sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sRepositoryBaseRemote_computed, sRepositoryProjectRemote);
 				this.setRepositoryTotalRemote(sRepositoryTotalRemote);
 				
 				//+++++++++++++++++++++++++++++++
@@ -187,7 +177,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				System.out.println("Git Credentials Provider created done.");
 				this.setCredentialsProviderObject(credentialsProvider);
 				
-				//Git git = this.getGitObject();
+				
 				
 			
 				

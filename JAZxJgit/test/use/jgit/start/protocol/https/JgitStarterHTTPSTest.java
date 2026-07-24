@@ -1,4 +1,4 @@
-package use.jgit.start.protocol.git;
+package use.jgit.start.protocol.https;
 
 import java.io.File;
 
@@ -8,23 +8,24 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
+import use.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
+import use.jgit.config.ConfigRepositoryManager4TestHTTPS_onAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
-import use.jgit.config.TestHelperGIT;
 import use.jgit.config.TestHelperHTTPS;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
-public class JgitStarterGITTest extends TestCase{
+public class JgitStarterHTTPSTest extends TestCase{
 	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
 	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;
+	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;	
 	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
-	
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 * 
@@ -43,10 +44,10 @@ public class JgitStarterGITTest extends TestCase{
 			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
 			
 			//2. RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
+			objConfigRepoManager = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
 			
-			//3. RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigStarterRemote = TestHelperGIT.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
+			//3. StarterManager für die Aktivitäten mit dem Lokalen/Remote Repository holen
+			objConfigStarterRemote = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
 												
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
@@ -90,7 +91,7 @@ public class JgitStarterGITTest extends TestCase{
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
 			Syso.printSection("A) Create Git-Object");
 			try {					
-				JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
+				JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
 				
@@ -102,7 +103,7 @@ public class JgitStarterGITTest extends TestCase{
 			//B) "Noch Längere" Variante: Konfiguration übergeben
 			Syso.printSection("B) Create Git-Object");
 			try {
-				JgitStarterGIT objStarter= new JgitStarterGIT();
+				JgitStarterHTTPS objStarter= new JgitStarterHTTPS();
 				objStarter.configureGit(objConfigStarterRemote); 
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
@@ -114,7 +115,7 @@ public class JgitStarterGITTest extends TestCase{
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) Create Git-Object");
 			try {
-				JgitStarterGIT objStarter = new JgitStarterGIT();
+				JgitStarterHTTPS objStarter = new JgitStarterHTTPS();
 				Git gitByStarter = objStarter.createGitObject(objConfigStarterRemote);
 				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
@@ -149,10 +150,10 @@ public class JgitStarterGITTest extends TestCase{
 			
 			//###################################################
 			//1. A) "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;
+			JgitRepositoryManagerHTTPS objRepositoryManager = null;
 			Syso.printSection("A) CloneRepositoryTo");
 			try {					
-				objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);					
+				objRepositoryManager = new JgitRepositoryManagerHTTPS(objConfigRepoManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -167,7 +168,7 @@ public class JgitStarterGITTest extends TestCase{
 			}
 			
 			//2. Ändere im neuen lokalen Repository eine Datei
-			//TODOGOON20260723
+			TODOGOON20260723
 			
 			
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.

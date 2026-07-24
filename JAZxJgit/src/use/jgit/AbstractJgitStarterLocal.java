@@ -1,47 +1,30 @@
 package use.jgit;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.IObjectWithExpressionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.config.IConfigUserZZZ;
 import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.abstractArray.ArrayUtilZZZ;
-import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.machine.EnvironmentZZZ;
-import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
-import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigWithAuthentificationJGIT;
-import use.jgit.start.protocol.ssh.IJgitStarterSSHEnabled;
-import use.jgit.start.protocol.ssh.JgitStarterSSH;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 import use.jgit.tool.status.GitAutoStageService;
-import use.jgit.util.JgitUtilHTTPS;
-import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
 /** Abstrakte Klasse, die alles enthält um in einem lokalen Repository einen commit zu machen.
@@ -443,7 +426,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				}
 								
 				this.configureGitCustom();
-				System.out.println("Lokale Gesamtkonfiguration fertig für: " + objFileDirTotal.getAbsolutePath());
+				System.out.println("Lokale Gesamtkonfiguration fertig für: '" + objFileDirTotal.getAbsolutePath() + "'");
 				
 				//wird jetzt als createGitObject() gemacht....
 //				InitCommand gitCommandInit = Git.init();
@@ -570,7 +553,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);	
 				
-				System.out.println("Lokales Git Objekt erstellt für das Repository: '" + objFileDirTotal.getAbsolutePath() + "'");				
+				System.out.println("Git Objekt erstellt für das lokale Repository: '" + objFileDirTotal.getAbsolutePath() + "'");				
 			} catch (GitAPIException e) {
 				ExceptionZZZ ez = new ExceptionZZZ(e);
 				throw ez;
