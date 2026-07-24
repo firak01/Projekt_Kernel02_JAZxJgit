@@ -41,4 +41,32 @@ public class TestHelperGIT extends TestHelper {
 		}//end main:
 		return objConfigRepoManager;
 	}
+	
+	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForEnvironmentCurrent() throws ExceptionZZZ{
+		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
+		main:{
+		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
+		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
+		List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
+		listConfig.add(new ConfigStarterRemote4TestGIT_onAny());
+		//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
+		//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
+		
+		for(IConfigStarterRemoteJGIT objConfigRepoManagerTemp : listConfig) {
+			String sRepoLocalBase = objConfigRepoManagerTemp.readRepositoryLocalBaseDirectory();
+			Syso.println("Suche in dieser Entwicklungsumgebung das Basis Repository: '" + sRepoLocalBase + "'");
+			if(FileEasyZZZ.exists(sRepoLocalBase)){
+				Syso.println("Verwende in dieser Entwicklungsumgebung das Basis Repository: '" + sRepoLocalBase + "'");
+				objConfigStarterRemote=objConfigRepoManagerTemp;
+				break;
+			}
+		}
+		
+		if(objConfigStarterRemote==null) {
+			ExceptionZZZ ez = new ExceptionZZZ("Konnte kein existierendes Basis Repository für eine Entwicklungsumgebung finden.", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;
+		}
+		}//end main:
+		return objConfigStarterRemote;
+	}
 }

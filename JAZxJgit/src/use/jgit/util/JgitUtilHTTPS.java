@@ -37,7 +37,7 @@ import use.jgit.common.MergeResultResolvedZZZ;
 import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;

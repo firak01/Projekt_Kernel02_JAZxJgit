@@ -36,7 +36,7 @@ import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.resolve.JgitResolverLocalUI;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.git.JgitStarterGIT;
 import use.jgit.tool.fetch.GitPostFetchAnalyse;
 import use.jgit.tool.merge.GitPreMergeCheck;
 import use.jgit.tool.merge.ResultPreMergeCheck;

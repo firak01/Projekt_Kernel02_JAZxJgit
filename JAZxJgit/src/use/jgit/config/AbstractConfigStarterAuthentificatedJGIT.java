@@ -9,9 +9,9 @@ import basic.zBasic.util.abstractList.ListUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 
 /**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.

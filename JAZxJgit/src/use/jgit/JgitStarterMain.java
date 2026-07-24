@@ -23,9 +23,9 @@ import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.config.ConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 /**Klasse, mit der man mit einem GitHub Repository arbeiten kann.
  * Gesteuert wird dies über Übergabeparameter, z.B. aus einer Batch heraus.

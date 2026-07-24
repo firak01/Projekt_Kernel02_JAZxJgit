@@ -2,9 +2,9 @@ package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zKernel.IKernelConfigZZZ;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 public interface IConfigStarterRemoteJGIT extends IConfigWithAuthentificationJGIT{
 

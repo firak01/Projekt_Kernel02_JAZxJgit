@@ -1,7 +1,7 @@
 package use.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.manager.protocol.https.JgitRepositoryManagerHTTPS;
+import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
 /** Hole die Informationen aus den Umgebungsvariablen beim Eclipse Start.
  *  Dies ist u.a. wichtig, weil sPAT (Personal Access Token) hier nicht hart coded stehen darf,
@@ -40,9 +40,7 @@ public class ConfigRepositoryManager4TestHTTPS_onAny  extends AbstractConfigRepo
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
-	
-	
-	
+
 	//### IConfigProjectZZZ
 //	@Override
 //	public String getProjectName() throws ExceptionZZZ {

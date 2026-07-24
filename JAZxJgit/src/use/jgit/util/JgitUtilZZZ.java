@@ -46,9 +46,9 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.web.cgi.UrlLogicZZZ;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 public class JgitUtilZZZ implements IConstantZZZ {
 	

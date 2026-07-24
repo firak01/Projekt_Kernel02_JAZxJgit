@@ -18,8 +18,8 @@ import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
-import use.jgit.starter.protocol.ssh.JGitSshConfigZZZ;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.ssh.JGitSshConfigZZZ;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilZZZ;
 

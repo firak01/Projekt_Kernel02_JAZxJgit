@@ -35,8 +35,8 @@ import basic.zBasic.util.machine.EnvironmentZZZ;
 import use.jgit.IJgitStarterEnabledZZZ.FLAGZLOCAL;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
-import use.jgit.starter.protocol.ssh.IJgitStarterSSHEnabled;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.ssh.IJgitStarterSSHEnabled;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.tool.status.GitAutoStageService;
@@ -92,10 +92,9 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public String getProjectName() throws ExceptionZZZ {
 		if(this.sProjectName==null) {
 			IConfigZZZ objConfig = this.getConfiguration();			
-			return objConfig.getProjectName();
-		}else {
-			return this.sProjectName;
+			this.sProjectName = objConfig.getProjectName();
 		}
+		return this.sProjectName;		
 	}
 	
 	@Override
@@ -118,10 +117,9 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public String getRepositoryRemoteAlias() throws ExceptionZZZ {
 		if(StringZZZ.isEmpty(this.sRepositoryRemoteAlias)) {
 			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
-			return objConfig.readRepositoryRemoteAlias();
-		}else {
-			return this.sRepositoryRemoteAlias;
-		}		
+			this.sRepositoryRemoteAlias = objConfig.readRepositoryRemoteAlias();
+		}
+		return this.sRepositoryRemoteAlias;		
 	}
 
 	@Override
@@ -135,10 +133,10 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public String getRepositoryProject() throws ExceptionZZZ {		
 		if(StringZZZ.isEmpty(this.sRepositoryProject)) {
 			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
-			return objConfig.readRepositoryProjectName();
-		}else {
-			return this.sRepositoryProject;
+			this.sRepositoryProject = objConfig.readRepositoryProjectName();
 		}
+		return this.sRepositoryProject;
+		
 	}
 	
 	@Override 
@@ -150,10 +148,9 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public String getRepositoryBranch() throws ExceptionZZZ {		
 		if(StringZZZ.isEmpty(this.sRepositoryBranch)) {
 			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
-			return objConfig.readRepositoryBranch();
-		}else {
-			return this.sRepositoryBranch;
+			this.sRepositoryBranch = objConfig.readRepositoryBranch();
 		}
+		return this.sRepositoryBranch;		
 	}
 	
 	@Override 
@@ -165,10 +162,9 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	public String getRepositoryLocalBase() throws ExceptionZZZ {
 		if(StringZZZ.isEmpty(this.sRepositoryLocalBase)) {
 			IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
-			return objConfig.readRepositoryLocalBaseDirectory();
-		}else {
-			return this.sRepositoryLocalBase;
+			this.sRepositoryLocalBase =  objConfig.readRepositoryLocalBaseDirectory();
 		}
+		return this.sRepositoryLocalBase;
 	}
 	
 	@Override
@@ -313,7 +309,13 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			//Merke: Branch darf leer sein
 			String sRepositoryBranch = objConfig.readRepositoryBranch();
 			this.setRepositoryBranch(sRepositoryBranch);
+		
+			//Hier gibt es keine RemoteURL, daher nicht
+			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
+			//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+			//JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, sRepositoryRemoteBranch, true);
 			
+			//Der Vollständigkeit halber: Eclipse Projektname
 			String sProjectNameLocal = objConfig.readProjectName();
 			if(StringZZZ.isEmpty(sProjectNameLocal)){
 				ExceptionZZZ ez = new ExceptionZZZ("Projektname des Eclipse Projekts", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
@@ -568,7 +570,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 				this.setGitObject(git);	
 				
-				System.out.println("Lokales Git Objekt erstellt für das Repository: " + objFileDirTotal.getAbsolutePath());				
+				System.out.println("Lokales Git Objekt erstellt für das Repository: '" + objFileDirTotal.getAbsolutePath() + "'");				
 			} catch (GitAPIException e) {
 				ExceptionZZZ ez = new ExceptionZZZ(e);
 				throw ez;
@@ -939,67 +941,6 @@ Renames sind Kombination aus beidem
 		GitAutoStageService objStageService = new GitAutoStageService();
 		objStageService.stage(git);
 	}
-
-	
-	
-	//#######################################
-//	@Override
-//	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
-//		boolean bReturn = false;
-//		main:{
-//			try {			
-//				//### Soll das lokale Repository konfiguriert haben.			
-//				//    Die benoetigten Parameter aus dem Argumenten des Aufrufs holen. Wiederverwendbare Methode nutzen.					
-//				boolean bLocalRepositoryConfigured = this.configureRepositoryLocal(objConfig);
-//				if(bLocalRepositoryConfigured) {
-//					System.out.println("Lokales Repository erfolgreich konfiguriert");
-//				}else {
-//					System.out.println("Lokales Repository NICHT einzeln erfolgreich konfiguriert");
-//					//Wenn das so nicht geklappt hat, dann wurden die Details ggfs. einzeln übergeben... wir werden sehen.
-//				}
-//					
-//				//++++++++++ Erst das lokale Git-Repository initialisieren
-//				//           Dann kann dort ggfs. auch etwas fehlendes nachgelesen werden.				
-//				String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();				
-//				if(StringZZZ.isEmpty(sDirectoryRepositoryLocalTotal)) {
-//					String sProject = this.getRepositoryProject();					
-//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis für das Projekt '" + sProject + "'nicht definiert.", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;				
-//				}else {
-//					System.out.println("Lokales Repository als Gesamtstring vorhanden: '" + sDirectoryRepositoryLocalTotal + "'");
-//				}
-//				
-//				//Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryLocalTotal, true);
-//				//hier könnte man noch den RefNamen auf Gültigkeit prüfen.	
-//				
-//				File objFileDirTotal = new File(sDirectoryRepositoryLocalTotal);
-//				if(!objFileDirTotal.exists()) {
-//					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Projekt Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocalTotal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;				
-//				}
-//				
-//				InitCommand gitCommandInit = Git.init();
-//				gitCommandInit.setDirectory(objFileDirTotal);
-//				
-//				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-//				this.setGitObject(git);
-//			
-//				System.out.println("Local Git-Repository init done: " + objFileDirTotal.getAbsolutePath());
-//				
-//				///##############################################
-//				//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
-//				//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-//
-//				bReturn = true;
-//				//######################################
-//			}catch(GitAPIException gae) {
-//				ExceptionZZZ ez = new ExceptionZZZ(gae);
-//				throw ez;
-//			}
-//		}//end main:
-//		return bReturn;
-//	}
-	
 	
 	//##################################################
 	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {

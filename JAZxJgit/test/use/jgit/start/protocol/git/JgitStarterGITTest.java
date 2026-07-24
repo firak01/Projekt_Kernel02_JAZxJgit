@@ -1,37 +1,21 @@
-package use.jgit.resolve;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+package use.jgit.start.protocol.git;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.system.Syso;
-import basic.zKernel.AbstractKernelLogZZZ;
-import basic.zKernel.KernelZZZ;
-import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
-import use.jgit.config.ConfigStarterRemote4TestGIT_onAny;
-import use.jgit.config.IConfigRepositoryManagerJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
+import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
 import use.jgit.config.TestHelperGIT;
-import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
-import use.jgit.resolve.JgitResolverLocalGIT;
-import use.jgit.start.protocol.git.JgitStarterGIT;
 
-public class JgitResolverLocalGITTest extends TestCase{
-	private static String sDirectoryRepoA="c:\\temp\\RepoA";
-	private static String sDirectoryRepoB="c:\\temp\\RepoB";
+public class JgitStarterGITTest extends TestCase{
+	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
+	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
+	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;
 	
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
@@ -51,8 +35,7 @@ public class JgitResolverLocalGITTest extends TestCase{
 			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
 			
 			//2. RepositoryManger für die Erstellung von TestRepositories holen
-			//TODOGOON: Eigentlich müsste das eine unabhängite localResolverConfiguration sein...
-			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
+			objConfigStarterRemote = TestHelperGIT.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
 												
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
@@ -89,16 +72,16 @@ public class JgitResolverLocalGITTest extends TestCase{
 //		}
 	}//END testConstructor
 	
-	public void testResolver_createGit() {
+	public void testStarter_createGit() {
 		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
 		try {
 			//###################################################
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
 			Syso.printSection("A) Create Git-Object");
 			try {					
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);
-				Git gitByManager = objRepositoryManager.createGitObject();
-				assertNotNull(gitByManager);
+				JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
+				Git gitByStarter = objStarter.createGitObject();
+				assertNotNull(gitByStarter);
 				
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
@@ -108,10 +91,10 @@ public class JgitResolverLocalGITTest extends TestCase{
 			//B) "Noch Längere" Variante: Konfiguration übergeben
 			Syso.printSection("B) Create Git-Object");
 			try {
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.configureGit(objConfigRepoManager); 
-				Git gitByManager = objRepositoryManager.createGitObject();
-				assertNotNull(gitByManager);
+				JgitStarterGIT objStarter= new JgitStarterGIT();
+				objStarter.configureGit(objConfigStarterRemote); 
+				Git gitByStarter = objStarter.createGitObject();
+				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -120,9 +103,9 @@ public class JgitResolverLocalGITTest extends TestCase{
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) Create Git-Object");
 			try {
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);
-				Git gitByManager = objRepositoryManager.createGitObject(objConfigRepoManager);
-				assertNotNull(gitByManager);
+				JgitStarterGIT objStarter = new JgitStarterGIT();
+				Git gitByStarter = objStarter.createGitObject(objConfigStarterRemote);
+				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -135,24 +118,21 @@ public class JgitResolverLocalGITTest extends TestCase{
 	
 	
 	
+//	public void testStarterRemote_ConfigureGit() {
+//		
+//		try {
+//			//+++++++++++++++++
+//			ConfigStarterRemote4TestJGIT objConfigRemote = new ConfigStarterRemote4TestJGIT();
+//			
+//			JgitStarterGIT objStarter = new JgitStarterGIT();
+//			objStarter.configureGit(objConfigRemote);
+//			Git gitByStarter = objStarter.getGitObject();
+//		}catch(ExceptionZZZ ez){
+//			fail("Method throws an exception." + ez.getMessageLast());
+//		}	
+//				
+//		//++++++++++++++++++++++++++++++++++
+//		
+//	}
 	
-	
-	public void testResolverLocal_ConfigureGit() {
-		
-		try{
-			
-			//+++++++++++++++++
-			ConfigStarterRemote4TestGIT_onAny objConfigLocal = new ConfigStarterRemote4TestGIT_onAny();
-			
-			JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
-			objResolver.configureGit(objConfigLocal);
-			Git gitByResolver = objResolver.getGitObject();
-			
-		}catch(ExceptionZZZ ez){
-			fail("Method throws an exception." + ez.getMessageLast());
-		}
-		
-		//++++++++++++++++++++++++++++++++++
-		
-	}
 }

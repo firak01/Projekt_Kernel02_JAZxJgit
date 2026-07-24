@@ -10,9 +10,9 @@ import basic.zKernel.config.help.IKernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.IKernelConfigHelpLineZZZ;
 import basic.zKernel.config.help.KernelConfigHeaderLineZZZ;
 import basic.zKernel.config.help.KernelConfigHelpLineZZZ;
-import use.jgit.starter.protocol.git.JgitStarterGIT;
-import use.jgit.starter.protocol.https.JgitStarterHTTPS;
-import use.jgit.starter.protocol.ssh.JgitStarterSSH;
+import use.jgit.start.protocol.git.JgitStarterGIT;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
+import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 public abstract class AbstractConfigStarterRemoteJGIT extends AbstractConfigStarterAuthentificatedJGIT implements IConfigStarterRemoteJGIT{
 	
