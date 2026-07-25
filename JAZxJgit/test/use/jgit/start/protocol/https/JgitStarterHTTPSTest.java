@@ -186,7 +186,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
-			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			objStarter.statusit();  TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
 			Syso.printSeparator('x');
 			
 			//4. Führe den COMMIT aus
