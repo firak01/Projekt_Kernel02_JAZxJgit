@@ -20,7 +20,6 @@ import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
-import use.jgit.config.ConfigStarterRemote4TestJGIT;
 import use.jgit.config.ConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;

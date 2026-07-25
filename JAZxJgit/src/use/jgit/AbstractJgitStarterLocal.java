@@ -624,21 +624,16 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	@Override
 	public boolean statusit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
-		main:{
-			try {
-				if (git == null) {
-		            throw new IllegalArgumentException("git must not be null");
-		        }
-				
-				//Finde geaenderte und neue Dateien fuer den Commit			
-				System.out.println("STATUS: ");		
-				this.printStatus(git);
-				
-				bReturn = true;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
+		main:{			
+			if (git == null) {
+	            throw new IllegalArgumentException("git must not be null");
+	        }
+			
+			//Finde geaenderte und neue Dateien fuer den Commit			
+			System.out.println("STATUS: ");		
+			this.printStatus(git);
+			
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -671,13 +666,11 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessStatus = this.statusit(git);
-				if(bSuccessStatus) {
+				bReturn = this.statusit(git);
+				if(bReturn) {
 					System.out.println("STATUS REQUEST: SUCCESSFUL");				
-					bReturn = true;
 				}else {
 					System.out.println("STATUS REQUEST: FAILED");				
-					bReturn = false;
 				}
 			
 			    git.close();
@@ -685,10 +678,18 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;		
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}
 	
+	@Override
+	public boolean statusit() throws ExceptionZZZ {
+		IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+		return this.statusit(objConfig);
+	}
+
+
 	//####################################################################
 	//###### COMMIT ######################################################
 	 
@@ -782,7 +783,19 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		return bReturn;
 	}
 	
+	@Override
+	public boolean commitit() throws ExceptionZZZ {
+		IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+		return this.commitit(objConfig);
+	}
 	
+	@Override
+	public boolean commitit(String sComment) throws ExceptionZZZ {
+		IConfigStarterLocalJGIT objConfig = (IConfigStarterLocalJGIT) this.getConfiguration();
+		return this.commitit(objConfig, sComment);
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	@Override
 	public void addFileTrackedChanged() throws ExceptionZZZ {		
 		Git git = this.getGitObject();
@@ -924,10 +937,12 @@ Renames sind Kombination aus beidem
 		GitAutoStageService objStageService = new GitAutoStageService();
 		objStageService.stage(git);
 	}
-	
+		
 	//##################################################
-	public void printStatus(Git git) throws NoWorkTreeException, GitAPIException {
+	@Override
+	public void printStatus(Git git) throws ExceptionZZZ {
 		main:{
+		try {
 			if (git == null) {
 	            throw new IllegalArgumentException("git must not be null");
 	        }
@@ -957,6 +972,18 @@ Renames sind Kombination aus beidem
 	        for (String untrack : untracked) {
 	            System.out.println("Untracked: " + untrack);
 	        }
+	        
+		}catch (NoWorkTreeException nwte) {
+			System.out.println(nwte.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(nwte);
+    		throw ez;
+		}catch( GitAPIException gae) {
+			System.out.println(gae.getMessage());
+    		
+    		ExceptionZZZ ez = new ExceptionZZZ(gae);
+    		throw ez;
+		}
 		}//end main:
 	}
 	

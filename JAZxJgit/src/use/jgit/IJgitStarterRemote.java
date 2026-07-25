@@ -18,15 +18,20 @@ public interface IJgitStarterRemote extends IJgitStarterAuthentificated {
 	
 	//+++ Arbeit mit dem GitObject, etc.	
 	//nur HTTPS+SSH Objekte
+	public boolean commitPushit() throws ExceptionZZZ;
+	public boolean commitPushit(String sComment) throws ExceptionZZZ;
 	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 	public boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
 	
+	public boolean fetchit() throws ExceptionZZZ;
 	public boolean fetchit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;	
 	public boolean fetchit(Git git) throws ExceptionZZZ;
 	
-	public boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
+	public boolean pushit() throws ExceptionZZZ, TransportException, CheckoutConflictException;
+	public boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 	public boolean pushit(Git git) throws ExceptionZZZ;
 	
+	public boolean pullit() throws Exception, TransportException, CheckoutConflictException;
 	public boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 	public boolean pullit(Git git) throws ExceptionZZZ, TransportException, CheckoutConflictException;	
 }

@@ -255,8 +255,8 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
 				Git git = this.getGitObject();
-		        boolean bSuccessPull = this.pullit(git);
-		        if(bSuccessPull) {
+				bReturn = this.pullit(git);
+		        if(bReturn) {
 					System.out.println("pullit erfolgreich");
 					
 					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
@@ -267,20 +267,18 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 					
 					String sTitle = "";
 					JgitResolverLocalUI.printIgnoreStrategyHint(sTitle, objEnumStrategyMergeConflict);
-					
-					
 				}else {
 					System.out.println("pullit NICHT erfolgreich");
-					break main;
 				}
 		        git.close();
-		        bReturn = true;
+		        
 		        //#######################################################	  
 			
-			}catch(IllegalStateException ie) {
-				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;			
-			}
+				}catch(IllegalStateException ie) {
+					ExceptionZZZ ez = new ExceptionZZZ(ie);
+					throw ez;			
+				}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -602,22 +600,17 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        String sRepositoryRemote = this.getRepositoryTotalRemote();
 		        
 		        String sBranch = this.getRepositoryBranch();
-		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
+		        bReturn = JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
-			    bReturn = true;
-	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
-			}catch(IllegalStateException ie) {
-				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
+	
+		        //###############################################################	  			
+				}catch(IllegalStateException ie) {
+					ExceptionZZZ ez = new ExceptionZZZ(ie);
+					throw ez;
+				}
+		    //bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -658,15 +651,14 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        
 		        //b) Mache den push	
 				Git git = this.getGitObject();				
-		        boolean bSuccessPush = this.pushit(git);
-		        if(bSuccessPush) {
+		        bReturn = this.pushit(git);
+		        if(bReturn) {
 					System.out.println("pushit erfolgreich");
 				}else {
 					System.out.println("pushit NICHT erfolgreich");
 					break main;
 				}
-		        bReturn = true;
-		        
+		       
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
 		        	this.printStatus(git);
@@ -692,17 +684,12 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			    System.out.println(("FETCH DONE"));
 			  	
 			    git.close();
-	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+	        //###############################################################	  			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -827,30 +814,23 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessFetch = this.fetchit(git);
-		        if(bSuccessFetch) {
+				bReturn = this.fetchit(git);
+		        if(bReturn) {
 		        	System.out.println("STATUS AFTER FETCH: SUCCESSFULL");
 		        	this.printStatus(git);
-		        	bReturn = true;
 		        }else {
 		        	System.out.println("STATUS AFTER FETCH: FAILED");
 		        	this.printStatus(git);
-		        	bReturn = false;
 		        }
 
 			    git.close();
 			    
-	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+	        //###############################################################	  			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}

@@ -4,8 +4,13 @@ import java.io.File;
 
 import org.eclipse.jgit.api.Git;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_COLOR_BURNPeer;
+
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.file.FileTextWriterZZZ;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
@@ -128,20 +133,20 @@ public class JgitStarterHTTPSTest extends TestCase{
 		
 	}
 	
+	/**Idee: Erstelle erst ein lokales Test-Repository. Auch mit HTTPS!!!
+			    Ändere darin eine Datei
+			    Führe den STATUS aus... sichere ihn, zum Vergleich.
+			
+			    Führe den COMMIT aus
+			
+				Führe den STATUS erneut aus... vergleiche 
+	 */
 	public void testStarter_status_commit() {
 		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
 		try {
+			Syso.printSection("status_commit");
+			
 			//###################################################
-			//Idee: Erstelle erst ein lokales Test-Repository. Auch mit HTTPS!!!
-			//      Ändere darin eine Datei
-			//      Führe den STATUS aus... sichere ihn, zum Vergleich.
-			
-			
-			//      Führe den COMMIT aus
-			
-			//		Führe den STATUS erneut aus... vergleiche
-			
-			
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
@@ -168,14 +173,29 @@ public class JgitStarterHTTPSTest extends TestCase{
 			}
 			
 			//2. Ändere im neuen lokalen Repository eine Datei
-			TODOGOON20260723
+			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
+			String sMachine = EnvironmentZZZ.getHostName();
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest generiert.";
 			
+			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sDirectoryRepoA, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
+			FileEasyZZZ.createDirectory(sFilePathDirectory); //ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
+			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			objWriter.writeLine(sLine);
+						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
+			JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
+			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			Syso.printSeparator('x');
 			
 			//4. Führe den COMMIT aus
-			
+			bSuccess = objStarter.commitit("commit by JUInitTest");
+			assertTrue("Commit nicht erfolgreich", bSuccess);
+			System.out.println("commit erfolgreich");
+			Syso.printSeparator('x');
 			//5. Führe den STATUS erneut aus... vergleiche
+			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
 			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());

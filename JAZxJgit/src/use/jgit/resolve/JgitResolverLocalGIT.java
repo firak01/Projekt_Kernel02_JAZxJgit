@@ -1272,10 +1272,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 		
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
 		}//end main:
 		return bReturn;
@@ -1287,51 +1284,44 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	public boolean searchConflictFilesit(IConfigResolverJGIT objConfig, String sConflictType) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {
-				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				if(StringZZZ.isEmptyTrimmed(sConflictType)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				//+++++++++++++++++++++++++++++++
-				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.createGit(objConfig);
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert und erstellt.");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
-					break main;
-				}
-							
-				//+++++++++++++++++++++++++++++++
-				//Finde Dateien mit Konfliktmarker
-				String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
-				Git git = this.getGitObject();
-				boolean bSuccessSearch = this.searchConflictFilesit(git, sProjectName, sConflictType);
-				if(bSuccessSearch) {
-					List<File>listaFile=this.getFiles(); //liste der Dateien, gefünden über die Suche im Dateisystem (MARKED)
-					List<String>listasPathInRepository=this.getRepositoryPathStrings(); //liste der Dateien, entsprechend notiert im GIT.
-									
-					JgitResolverLocalUI.printResolveResultListAny("\nDateien mit Konfliktmarker, vom Typ: " + sConflictType, listaFile, listasPathInRepository);
-					
-					//Auch wenn nichts gefunden wurde, ist die Suche doch erfolgreich
-					bReturn = true;
-				}else {
-					System.out.println("\nSuche nach Dateien mit Konfliktmarker: Fehlgeschlagen");
-					this.printStatus(git);	
-					bReturn = false;
-				}
-			
-			    git.close();
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			if(StringZZZ.isEmptyTrimmed(sConflictType)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.createGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
+				break main;
+			}
+						
+			//+++++++++++++++++++++++++++++++
+			//Finde Dateien mit Konfliktmarker
+			String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
+			Git git = this.getGitObject();
+			bReturn = this.searchConflictFilesit(git, sProjectName, sConflictType);
+			if(bReturn) {
+				//Auch wenn nichts gefunden wurde, ist die Suche doch erfolgreich				
+				List<File>listaFile=this.getFiles(); //liste der Dateien, gefünden über die Suche im Dateisystem (MARKED)
+				List<String>listasPathInRepository=this.getRepositoryPathStrings(); //liste der Dateien, entsprechend notiert im GIT.
+								
+				JgitResolverLocalUI.printResolveResultListAny("\nDateien mit Konfliktmarker, vom Typ: " + sConflictType, listaFile, listasPathInRepository);
+			}else {
+				System.out.println("\nSuche nach Dateien mit Konfliktmarker: Fehlgeschlagen");
+				this.printStatus(git);	
+			}
+		
+		    git.close();
+		    //bReturn = true;
 		}//end main:
 	return bReturn;
 	}
@@ -1372,44 +1362,37 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	public boolean searchConflictFilesMarkedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {
-				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				//+++++++++++++++++++++++++++++++
-				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.createGit(objConfig);
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert und erstellt.");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
-					break main;
-				}
-							
-				//+++++++++++++++++++++++++++++++
-				//Finde Dateien mit Konfliktmarker
-				String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
-				Git git = this.getGitObject();
-				boolean bSuccessSearch = this.searchConflictFilesMarkedit(git, sProjectName);
-				if(bSuccessSearch) {
-					List<File>listaFile=this.getFiles();
-					JgitResolverLocalUI.printResolveResultListFile("\nDateien mit Konfliktmarker:", listaFile);											
-										
-					//Auch wenn nichts gefunden wurde ist die Suche doch erfolgreich.
-					bReturn = true;
-				}else {
-					System.out.println("\nSuche nach Dateien mit Konfliktmarker: FAILED");
-					this.printStatus(git);	
-					bReturn = false;
-				}
-			
-			    git.close();
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.createGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
+				break main;
+			}
+						
+			//+++++++++++++++++++++++++++++++
+			//Finde Dateien mit Konfliktmarker
+			String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
+			Git git = this.getGitObject();
+			bReturn = this.searchConflictFilesMarkedit(git, sProjectName);
+			if(bReturn) {
+				//Auch wenn nichts gefunden wurde ist die Suche doch erfolgreich.				
+				List<File>listaFile=this.getFiles();
+				JgitResolverLocalUI.printResolveResultListFile("\nDateien mit Konfliktmarker:", listaFile);											
+			}else {
+				System.out.println("\nSuche nach Dateien mit Konfliktmarker: FAILED");
+				this.printStatus(git);	
+			}
+		
+		    git.close();
+		    //bReturn = true;
 		}//end main:
 	return bReturn;
 	}
@@ -1453,50 +1436,43 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	public boolean searchConflictFilesByScanit(IConfigResolverJGIT objConfig, String sConflictTypeIn) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {
-				if(objConfig==null) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				
-				if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
-					ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-					throw ez;
-				}
-				String sConflictType = sConflictTypeIn.trim().toUpperCase();
-				
-				//+++++++++++++++++++++++++++++++
-				//Konfiguriere JGit für HTTPS
-				boolean bSuccess = this.createGit(objConfig);
-				if(bSuccess) {
-					System.out.println("Git erfolgreich konfiguriert und erstellt.");
-				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
-					break main;
-				}
-							
-				//+++++++++++++++++++++++++++++++
-				//Finde Dateien mit Konfliktmarker
-				String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
-				Git git = this.getGitObject();
-				boolean bSuccessSearch = this.searchConflictFilesByScanit(git, sProjectName, sConflictType);
-				if(bSuccessSearch) {
-					List<String>listasPathInRepository=this.getRepositoryPathStrings();					
-					JgitResolverLocalUI.printResolveResultListString("\nDateien mit Konfliktmarker vom Typ: " + sConflictType, listasPathInRepository);											
-					
-					//Auch wenn nichts gefunden wurde, ist die Suche doch erfolgreich
-					bReturn = true;
-				}else {
-					System.out.println("\nSuche nach Dateien mit Konfliktmarker: FAILED");
-					this.printStatus(git);	
-					bReturn = false;
-				}
-			
-			    git.close();
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			if(StringZZZ.isEmptyTrimmed(sConflictTypeIn)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Name des Konflikt-Typs für den Scanner, Argument aus der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			String sConflictType = sConflictTypeIn.trim().toUpperCase();
+			
+			//+++++++++++++++++++++++++++++++
+			//Konfiguriere JGit für HTTPS
+			boolean bSuccess = this.createGit(objConfig);
+			if(bSuccess) {
+				System.out.println("Git erfolgreich konfiguriert und erstellt.");
+			}else {
+				System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
+				break main;
+			}
+						
+			//+++++++++++++++++++++++++++++++
+			//Finde Dateien mit Konfliktmarker
+			String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben 				
+			Git git = this.getGitObject();
+			bReturn = this.searchConflictFilesByScanit(git, sProjectName, sConflictType);
+			if(bReturn) {
+				//Auch wenn nichts gefunden wurde, ist die Suche doch erfolgreich
+				List<String>listasPathInRepository=this.getRepositoryPathStrings();					
+				JgitResolverLocalUI.printResolveResultListString("\nDateien mit Konfliktmarker vom Typ: " + sConflictType, listasPathInRepository);											
+			}else {
+				System.out.println("\nSuche nach Dateien mit Konfliktmarker: FAILED");
+				this.printStatus(git);	
+			}
+		
+		    git.close();
+		    //bReturn = true;
 		}//end main:
 	return bReturn;
 	}
@@ -1567,7 +1543,6 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	public boolean searchConflictFilesDeletedit(IConfigResolverJGIT objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			try {
 				if(objConfig==null) {
 					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
@@ -1590,23 +1565,17 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 		        }
 				
 				String sProjectName = objConfig.readRepositoryProjectName(); //vielleicht noch einen weiteren Kommentar per Batch-Argument übergeben
-				boolean bSuccessSearch = this.searchConflictFilesDeletedit(git, sProjectName);	
-				if(bSuccessSearch) {
-					List<String>listaPathInRepository=this.getRepositoryPathStrings();
-					JgitResolverLocalUI.printResolveResultListString("\nDateien mit Deleted Konfliktmarker:", listaPathInRepository);											
-					
+				bReturn = this.searchConflictFilesDeletedit(git, sProjectName);	
+				if(bReturn) {
 					//Auch wenn nichts gefunden wurde, ist die Suche doch erfolgreich
-					bReturn = true;
+					List<String>listaPathInRepository=this.getRepositoryPathStrings();
+					JgitResolverLocalUI.printResolveResultListString("\nDateien mit Deleted Konfliktmarker:", listaPathInRepository);																										
 				}else {
 					System.out.println("\nSuche nach Dateien mit Deleted Konfliktmarker: Fehlgeschlagen");
-					this.printStatus(git);	
-					bReturn = false;
+					this.printStatus(git);						
 				}
 				git.close();					
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
+			//bReturn = true;
 		}//end main:
 	return bReturn;
 	}
@@ -1661,25 +1630,21 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessCommit = this.commitit(git);
-				if(bSuccessCommit) {
+				bReturn = this.commitit(git);
+				if(bReturn) {
 					System.out.println("\nSTATUS AFTER COMMIT: SUCCESSFUL");
 					this.printStatus(git);
-					  bReturn = true;
 				}else {
 					System.out.println("\nSTATUS AFTER COMMIT: FAILED");
 					this.printStatus(git);	
-					bReturn = false;
 				}
 			
 			    git.close();
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}	

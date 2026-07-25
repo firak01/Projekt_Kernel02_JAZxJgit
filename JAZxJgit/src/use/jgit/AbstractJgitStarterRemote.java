@@ -186,11 +186,10 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 		return bReturn;
 	}
 	
-	//### aus IJgitStarter	
-
 	
+	//######################################
+	//### aus IJgitStarterRemote			
 	
-	//######################################	
 	@Override
 	public boolean fetchit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -231,10 +230,7 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 		        System.out.println("STATUS AFTER FETCH");
 		        this.printStatus(git);
 		        
-		        bReturn = true;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+		        bReturn = true;			
 			} catch (IOException ioe) {
 				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
@@ -244,17 +240,54 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 	}
 	
 	@Override
-	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
-
-	@Override
-	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
-
+	public abstract boolean fetchit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
 	
+	@Override
+	public boolean fetchit() throws ExceptionZZZ {
+		IConfigStarterRemoteJGIT objConfig = (IConfigStarterRemoteJGIT) this.getConfiguration();
+		return this.fetchit(objConfig);
+	}
+	
+	//+++++++++++++++++++++++++++++++
 	@Override
 	public abstract boolean pullit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
 
+	@Override
+	public boolean pullit() throws Exception, TransportException, CheckoutConflictException {
+		IConfigStarterRemoteJGIT objConfig = (IConfigStarterRemoteJGIT) this.getConfiguration();
+		return this.pullit(objConfig);
+	}
+	
+	//++++++++++++++++++++++++++++++++
+	@Override
+	public abstract boolean pushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ, TransportException, CheckoutConflictException;
+
+	@Override
+	public boolean pushit() throws ExceptionZZZ, TransportException, CheckoutConflictException {
+		IConfigStarterRemoteJGIT objConfig = (IConfigStarterRemoteJGIT) this.getConfiguration();
+		return this.pushit(objConfig);
+	}
 	
 	
+	//+++++++++++++++++++++++
+	@Override
+	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig) throws ExceptionZZZ;
+	
+	@Override
+	public abstract boolean commitPushit(IConfigStarterRemoteJGIT objConfig, String sComment) throws ExceptionZZZ;
+	
+	@Override
+	public boolean commitPushit() throws ExceptionZZZ {
+		IConfigStarterRemoteJGIT objConfig = (IConfigStarterRemoteJGIT) this.getConfiguration();
+		return this.commitPushit(objConfig);
+	}
+		
+	@Override
+	public boolean commitPushit(String sComment) throws ExceptionZZZ {
+		IConfigStarterRemoteJGIT objConfig = (IConfigStarterRemoteJGIT) this.getConfiguration();
+		return this.commitPushit(objConfig, sComment);
+	}
+
 	
 	//############# STATIC METHODEN
 

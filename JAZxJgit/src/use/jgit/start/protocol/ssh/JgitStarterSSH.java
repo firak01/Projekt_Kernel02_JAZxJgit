@@ -240,14 +240,14 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 				//Mache den pull	
 				Git git = this.getGitObject();
-		        boolean bSuccessPull = this.pullit(git);		        
-				if(bSuccessPull) {
+		        bReturn = this.pullit(git);		        
+				if(bReturn) {
 					System.out.println("pullit erfolgreich");
 				}else {
 					System.out.println("pullit NICHT erfolgreich");
 					break main;
 				}			
-				bReturn = true;
+				
 				
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PULL: SUCCESSFULL");
@@ -267,6 +267,7 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;	
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -569,19 +570,13 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);
 			    System.out.println(("FETCH DONE"));
 			  	
-			    git.close();
-			    bReturn = true;
+			    git.close();			   
 	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
+			// bReturn = true;
 		}//end main:
 		return bReturn;
 	}
@@ -665,22 +660,20 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 		        
 		        //b) Mache den push	
 				Git git = this.getGitObject();				
-		        boolean bSuccessPush = this.pushit(git);
-		        if(bSuccessPush) {
+		        bReturn = this.pushit(git);
+		        if(bReturn) {
 					System.out.println("pushit erfolgreich");
 				}else {
-					System.out.println("pushit NICHT erfolgreich");
-					break main;
+					System.out.println("pushit NICHT erfolgreich");					
 				}			
-				bReturn = true;
-		        
-		        
+			
 		        if(bReturn) {
 		        	System.out.println("STATUS AFTER PUSH: SUCCESSFULL");
 		        	this.printStatus(git);
 		        }else {
 		        	System.out.println("STATUS AFTER PUSH: FAILED");
 		        	this.printStatus(git);
+		        	break main;
 		        }
 		       
 		        
@@ -702,16 +695,12 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			  	
 			    git.close();
 	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
 			}
+			//bReturn = true;	        
 		}//end main:
 		return bReturn;
 	}
@@ -836,30 +825,23 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 				//+++++++++++++++++++++++++++++++
 				//Finde geaenderte und neue Dateien fuer den commit
 				Git git = this.getGitObject();
-				boolean bSuccessFetch = this.fetchit(git);
-		        if(bSuccessFetch) {
+				bReturn = this.fetchit(git);
+		        if(bReturn) {
 		        	System.out.println("STATUS AFTER FETCH: SUCCESSFULL");
 		        	this.printStatus(git);
-		        	bReturn = true;
 		        }else {
 		        	System.out.println("STATUS AFTER FETCH: FAILED");
 		        	this.printStatus(git);
-		        	bReturn = false;
 		        }
 
 			    git.close();
 			    
-	        //###############################################################	  
-			}catch(TransportException tex) {
-				ExceptionZZZ ez = new ExceptionZZZ(tex);
-				throw ez;	
+	        //###############################################################	  			
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
+				throw ez;			
 			}
+			//bReturn = true;
 		}//end main:
 		return bReturn;
 	}

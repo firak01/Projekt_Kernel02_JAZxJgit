@@ -78,13 +78,20 @@ public interface IJgitStarterLocal{
 	//jetzt in IJgitRepository im dem entsprechenden Interface public boolean configureRepositoryLocal(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	
     //+++ Arbeiten mit dem GIT-Objekt
+	public boolean statusit() throws ExceptionZZZ;
 	public boolean statusit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;
 	public boolean statusit(Git git) throws ExceptionZZZ;
 	
+	public boolean commitit() throws ExceptionZZZ;
+	public boolean commitit(String sComment) throws ExceptionZZZ;
 	public boolean commitit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ;	
 	public boolean commitit(IConfigStarterLocalJGIT objConfig, String sComment) throws ExceptionZZZ;
 	public boolean commitit(Git git) throws ExceptionZZZ;
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
+	
+	//+++ Für Status
+	public void printStatus(Git git) throws ExceptionZZZ;
+	
 	
 	//+++ Für Commit: Defaultkommentar, wenn keiner übergeben wurde. Ggfs. mit Besonderheit, z.B. beim Auflösen von Konflikten
 	public String getCommentCommit() throws ExceptionZZZ;
