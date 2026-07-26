@@ -25,8 +25,8 @@ import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
 public class JgitStarterHTTPSTest extends TestCase{
-	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
-	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;	
@@ -150,8 +150,8 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoA);			
-			boolean bSuccess = false;
+			
+			
 			
 			//###################################################
 			//1. A) "Längere" Variante: Konfiguration im Konstruktor übergeben
@@ -162,6 +162,14 @@ public class JgitStarterHTTPSTest extends TestCase{
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
+			
+			//TODOGOON20260726; //Das ist noch das falsche Directory, es fehlt noch 1fgl_test_repo_JAZxJgit
+            //das kriegt man woher? aus dem RepositoryManager Objekt, RepositoryProjektName,
+            //ergo muss der neue Pfad nach dessen Inititialisierung erfolgen. 
+			//String sDirectoryBaseTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoA, "1fgl_test_repo_JAZxJgit"); 
+			String sRepositoryProject = objRepositoryManager.getRepositoryProject();
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA, sRepositoryProject);			
+			boolean bSuccess = false;
 			
 			try {
 				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);	
@@ -177,7 +185,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			String sMachine = EnvironmentZZZ.getHostName();
 			String sLine = sDate + " " + sMachine + " " + "per JunitTest generiert.";
 			
-			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sDirectoryRepoA, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
+			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(objFileDirectoryANew, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
 			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
@@ -186,16 +194,26 @@ public class JgitStarterHTTPSTest extends TestCase{
 						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
-			objStarter.statusit();  TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPreCommit);
 			Syso.printSeparator('x');
 			
 			//4. Führe den COMMIT aus
 			bSuccess = objStarter.commitit("commit by JUInitTest");
 			assertTrue("Commit nicht erfolgreich", bSuccess);
-			System.out.println("commit erfolgreich");
+			System.out.println("commit erfolgreich");			
 			Syso.printSeparator('x');
+			
 			//5. Führe den STATUS erneut aus... vergleiche
-			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....			
+			
+			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPostCommit);
+			boolean bValue = sStatusXmlPostCommit.equals(sStatusXmlPreCommit);
+			assertFalse("Status wert hat sich trotz commit nicht verändert", bValue);
+			
+			
 			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());

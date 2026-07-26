@@ -26,6 +26,7 @@ import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.start.protocol.ssh.JgitStarterSSH;
 import use.jgit.tool.status.GitAutoStageService;
 import use.jgit.util.JgitUtilZZZ;
+import use.jgit.util.JgitUtilXmlZZZ;
 
 /** Abstrakte Klasse, die alles enthält um in einem lokalen Repository einen commit zu machen.
  *  Merke: Das Remote Repository kennt sie nicht
@@ -39,7 +40,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 
 	protected volatile Git gitObject = null;
 	protected volatile IConfigZZZ objConfig = null;
-	
+
 	protected volatile String sProjectName=null;
 
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
@@ -52,6 +53,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	protected volatile String sRepositoryTotalRemote=null; //Gesamt URL	
 	protected volatile String sRepositoryRemoteAlias=null;//die Section in der ini z.B. [origin]
 	
+	//Für den STATUS:
+	protected volatile String sStatusXml=null;
 	
     //Für COMMIT:
 	//Merke: Das sind ergänzende Kommentare. Der Rechnername, etc. wird immer übergeben.
@@ -61,6 +64,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	
 	//############ GETTER  / SETTER	
+	//### aus IJgitStarterLocal		
+	
 	@Override 
 	public Git getGitObject() throws ExceptionZZZ{
 		return this.gitObject; //Hier nicht, wg. Endlosschleifengefahr this.createGitObject();
@@ -166,6 +171,50 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		this.sRepositoryLocalTotal = sRepositoryLocalTotal;
 	}
 	
+	@Override 
+	public String getCommentCommitDefault() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sCommentCommitDefault)) {
+			return sCOMMENT_COMMIT_DEFAULT;
+		}else {
+			return this.sCommentCommitDefault;
+		}
+	}
+	
+	@Override 
+	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ {
+		this.sCommentCommitDefault = sCommentCommitDefault;
+	}
+	
+	@Override 
+	public String getCommentCommit() throws ExceptionZZZ {
+		if(StringZZZ.isEmpty(this.sCommentCommit)) {
+			return this.getCommentCommitDefault();
+		}else {
+			String sCommentCommitDefault=this.getCommentCommitDefault();
+			if(!StringZZZ.isEmptyTrimmed(sCommentCommitDefault)) {
+				return this.sCommentCommit + " " + this.getCommentCommitDefault();
+			}else {
+				return this.sCommentCommit;
+			}
+		}
+	}
+	
+	@Override 
+	public void setCommentCommit(String sCommentCommit) throws ExceptionZZZ {
+		this.sCommentCommit = sCommentCommit;
+	}
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getStatusStringXml() throws ExceptionZZZ{
+		if(StringZZZ.isEmpty(this.sStatusXml)){
+			this.sStatusXml = this.createStatusXml();			
+		}
+		return this.sStatusXml;
+	}
+	
+	
+	//#######################################################################
 	//### aus IConfigUserZZZ
 	@Override 
 	public IConfigZZZ getConfiguration() throws ExceptionZZZ{
@@ -179,7 +228,7 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	//##########################
 	//### GIT Konfiguration
-	
+	//### aus IJgitStarterLocal
 	@Override
 	public boolean configureGitCustom() throws ExceptionZZZ {
 		boolean bReturn = false;
@@ -469,12 +518,6 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 			
 			bReturn = this.configureGitCustom(objConfig);
 			this.setConfiguration(objConfig);
-			//bReturn = this.createGit();
-
-			///##############################################
-			//Weil das was mit dem Wunsch-Protocol zu tun hat, hier nicht machen
-			//... JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryRemoteUrl, true);
-			//######################################	
 			
 			bReturn = true;
 		}//end main:
@@ -574,39 +617,6 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	}
 	
 	
-	//### aus IJgitStarterCommit	
-	@Override 
-	public String getCommentCommitDefault() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sCommentCommitDefault)) {
-			return sCOMMENT_COMMIT_DEFAULT;
-		}else {
-			return this.sCommentCommitDefault;
-		}
-	}
-	
-	@Override 
-	public void setCommentCommitDefault(String sCommentCommitDefault) throws ExceptionZZZ {
-		this.sCommentCommitDefault = sCommentCommitDefault;
-	}
-	
-	@Override 
-	public String getCommentCommit() throws ExceptionZZZ {
-		if(StringZZZ.isEmpty(this.sCommentCommit)) {
-			return this.getCommentCommitDefault();
-		}else {
-			String sCommentCommitDefault=this.getCommentCommitDefault();
-			if(!StringZZZ.isEmptyTrimmed(sCommentCommitDefault)) {
-				return this.sCommentCommit + " " + this.getCommentCommitDefault();
-			}else {
-				return this.sCommentCommit;
-			}
-		}
-	}
-	
-	@Override 
-	public void setCommentCommit(String sCommentCommit) throws ExceptionZZZ {
-		this.sCommentCommit = sCommentCommit;
-	}
 	
 	
 
@@ -614,7 +624,6 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	
 	//##############################################################################
 	
-	//### aus IJgitStarterCommit
 	
 	
 	//####################################################################
@@ -629,6 +638,10 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	            throw new IllegalArgumentException("git must not be null");
 	        }
 			
+			//Sichere den Status in einem XML strukturierten Sting. Die Angaben gehen über die Daten der späteren Konsolenausgabe hinaus.
+			String sStatusXml = this.createStatusXml(git);
+			this.sStatusXml = sStatusXml;
+						
 			//Finde geaenderte und neue Dateien fuer den Commit			
 			System.out.println("STATUS: ");		
 			this.printStatus(git);
@@ -940,6 +953,12 @@ Renames sind Kombination aus beidem
 		
 	//##################################################
 	@Override
+	public void printStatus() throws ExceptionZZZ {
+		Git git = this.getGitObject();
+		this.printStatus(git);
+	}
+	
+	@Override
 	public void printStatus(Git git) throws ExceptionZZZ {
 		main:{
 		try {
@@ -985,6 +1004,60 @@ Renames sind Kombination aus beidem
     		throw ez;
 		}
 		}//end main:
+	}
+	
+	@Override
+	public String createStatusXml() throws ExceptionZZZ {
+		Git git = this.getGitObject();
+		return this.createStatusXml(git);
+	}
+	
+	@Override
+	public String createStatusXml(Git git) throws ExceptionZZZ {
+	    StringBuilder sb = new StringBuilder();
+
+	    main:{
+	        try {
+	            if (git == null) {
+	                throw new IllegalArgumentException("git must not be null");
+	            }
+
+	            StatusCommand statusCommand = git.status();
+	            if (statusCommand == null) {
+	                sb.append("<gitStatus/>");
+	                break main;
+	            }
+
+	            Status status = statusCommand.call();
+	            if (status == null) {
+	                sb.append("<gitStatus/>");
+	                break main;
+	            }
+
+	            sb.append("<gitStatus>\n");
+
+	            JgitUtilXmlZZZ.appendSet(sb, "added", status.getAdded());
+	            JgitUtilXmlZZZ.appendSet(sb, "changed", status.getChanged());
+	            JgitUtilXmlZZZ.appendSet(sb, "conflicting", status.getConflicting());
+	            JgitUtilXmlZZZ.appendSet(sb, "ignoredNotInIndex", status.getIgnoredNotInIndex());
+	            JgitUtilXmlZZZ.appendSet(sb, "missing", status.getMissing());
+	            JgitUtilXmlZZZ.appendSet(sb, "modified", status.getModified());
+	            JgitUtilXmlZZZ.appendSet(sb, "removed", status.getRemoved());
+	            JgitUtilXmlZZZ.appendSet(sb, "uncommitted", status.getUncommittedChanges());
+	            JgitUtilXmlZZZ.appendSet(sb, "untracked", status.getUntracked());
+	            JgitUtilXmlZZZ.appendSet(sb, "untrackedFolders", status.getUntrackedFolders());
+
+	            sb.append("</gitStatus>");
+
+	        } catch (NoWorkTreeException nwte) {
+	            throw new ExceptionZZZ(nwte);
+
+	        } catch (GitAPIException gae) {
+	            throw new ExceptionZZZ(gae);
+	        }
+	    }//end main
+
+	    return sb.toString();
 	}
 	
 	

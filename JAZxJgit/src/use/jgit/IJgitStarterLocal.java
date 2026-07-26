@@ -90,7 +90,15 @@ public interface IJgitStarterLocal{
 	public boolean commitit(Git git, String sComment) throws ExceptionZZZ;
 	
 	//+++ Für Status
+	public void printStatus() throws ExceptionZZZ;
 	public void printStatus(Git git) throws ExceptionZZZ;
+	
+	public String createStatusXml() throws ExceptionZZZ;
+	public String createStatusXml(Git git) throws ExceptionZZZ;
+	public String getStatusStringXml() throws ExceptionZZZ;
+	//kein Setter, damit der Status immer erst richtig "created" wird.
+	//abstract void setStatusStringXml(String sStatusXml) throws.... 
+	
 	
 	
 	//+++ Für Commit: Defaultkommentar, wenn keiner übergeben wurde. Ggfs. mit Besonderheit, z.B. beim Auflösen von Konflikten

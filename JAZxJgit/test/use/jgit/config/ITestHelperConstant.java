@@ -1,7 +1,7 @@
 package use.jgit.config;
 
 public interface ITestHelperConstant {
-	public static String sDirectoryRepoA="c:\\temp\\RepoA";
-	public static String sDirectoryRepoB="c:\\temp\\RepoB";
+	public static String sDirectoryRepoBaseA="c:\\temp\\RepoA";
+	public static String sDirectoryRepoBaseB="c:\\temp\\RepoB";
 	
 }

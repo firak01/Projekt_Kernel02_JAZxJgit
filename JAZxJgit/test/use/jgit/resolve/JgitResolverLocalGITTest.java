@@ -7,13 +7,14 @@ import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigStarterRemote4TestGIT_onAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
+import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
 import use.jgit.config.TestHelperGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 
 public class JgitResolverLocalGITTest extends TestCase{
-	private static String sDirectoryRepoA="c:\\temp\\RepoA";
-	private static String sDirectoryRepoB="c:\\temp\\RepoB";
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;

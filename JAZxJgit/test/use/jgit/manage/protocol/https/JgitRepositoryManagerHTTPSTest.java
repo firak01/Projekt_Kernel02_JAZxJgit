@@ -29,8 +29,8 @@ import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 
 public class JgitRepositoryManagerHTTPSTest extends TestCase{
-	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
-	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
@@ -140,8 +140,8 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 		try {
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoA);
-			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);
+			File objFileDirectoryBNew = new File(sDirectoryRepoBaseB);
 			boolean bSuccess = false;
 			
 			//###################################################
@@ -180,8 +180,8 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 		try {
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoA);
-			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);
+			File objFileDirectoryBNew = new File(sDirectoryRepoBaseB);
 			boolean bSuccess=false;
 			
 			//###################################################
@@ -224,8 +224,8 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 		try {
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoA);
-			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);
+			File objFileDirectoryBNew = new File(sDirectoryRepoBaseB);
 			boolean bSuccess = false;
 			
 			//###################################################

@@ -48,7 +48,12 @@ public class TestHelperHTTPS extends TestHelper {
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
 		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
 		List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
-		listConfig.add(new ConfigStarterRemote4TestHTTPS_onAny());
+		objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_AonAny();
+		
+		/* 
+		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
+		 *          Also hier darauf verlassen, das im Test das Repository korrekt erzeugt wird.
+		listConfig.add(objConfigStarterRemote);
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
 		
@@ -62,10 +67,12 @@ public class TestHelperHTTPS extends TestHelper {
 			}
 		}
 		
+		
 		if(objConfigStarterRemote==null) {
 			ExceptionZZZ ez = new ExceptionZZZ("Konnte kein existierendes Basis Repository für eine Entwicklungsumgebung finden.", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 			throw ez;
 		}
+		*/
 		}//end main:
 		return objConfigStarterRemote;
 	}

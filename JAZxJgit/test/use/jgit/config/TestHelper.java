@@ -30,11 +30,11 @@ public class TestHelper implements IConstantZZZ, ITestHelperConstant {
 			//- Erst wenn die Verzeichnisse weg sind, können sie neu gecloned werden.
 			//
 			//Lösche also alle Inhalte und Unterverzeichnissse: true, true
-			File objFileDirectoryANew = new File(sDirectoryRepoA);
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);
 			if(FileEasyZZZ.exists(objFileDirectoryANew)) {
 				bSuccess = FileEasyZZZ.removeDirectory(objFileDirectoryANew, true, true);
 				if(!bSuccess) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoA + "'", iERROR_RUNTIME, TestHelper.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoBaseA + "'", iERROR_RUNTIME, TestHelper.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 					
 				}
@@ -53,11 +53,11 @@ public class TestHelper implements IConstantZZZ, ITestHelperConstant {
 			//- Erst wenn die Verzeichnisse weg sind, können sie neu gecloned werden.
 			//
 			//Lösche also alle Inhalte und Unterverzeichnissse: true, true
-			File objFileDirectoryBNew = new File(sDirectoryRepoB);
+			File objFileDirectoryBNew = new File(sDirectoryRepoBaseB);
 			if(FileEasyZZZ.exists(objFileDirectoryBNew)) {
 				bSuccess = FileEasyZZZ.removeDirectory(objFileDirectoryBNew, true, true);
 				if(!bSuccess) {
-					ExceptionZZZ ez = new ExceptionZZZ("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoB + "'", iERROR_RUNTIME, TestHelper.class, ReflectCodeZZZ.getMethodCurrentName());
+					ExceptionZZZ ez = new ExceptionZZZ("Konnte Verzeichnis nicht löschen: '" + sDirectoryRepoBaseB + "'", iERROR_RUNTIME, TestHelper.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
 			}	

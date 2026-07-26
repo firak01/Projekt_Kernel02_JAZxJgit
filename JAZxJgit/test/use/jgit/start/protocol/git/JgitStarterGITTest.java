@@ -18,8 +18,8 @@ import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
 public class JgitStarterGITTest extends TestCase{
-	private static String sDirectoryRepoA=ITestHelperConstant.sDirectoryRepoA;
-	private static String sDirectoryRepoB=ITestHelperConstant.sDirectoryRepoB;
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;
@@ -144,7 +144,7 @@ public class JgitStarterGITTest extends TestCase{
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoA);			
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);			
 			boolean bSuccess = false;
 			
 			//###################################################
