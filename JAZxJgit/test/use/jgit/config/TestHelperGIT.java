@@ -46,9 +46,14 @@ public class TestHelperGIT extends TestHelper {
 		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
 		main:{
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
-		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
+		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.		
+		objConfigStarterRemote = new ConfigStarterRemote4TestGIT_AonAny();
+		
+		/* 
+		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
+		 *          Also hier darauf verlassen, das im Test das Repository korrekt erzeugt wird.
 		List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
-		listConfig.add(new ConfigStarterRemote4TestGIT_onAny());
+		listConfig.add(objConfigStarterRemote);
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
 		
@@ -62,10 +67,12 @@ public class TestHelperGIT extends TestHelper {
 			}
 		}
 		
+		
 		if(objConfigStarterRemote==null) {
 			ExceptionZZZ ez = new ExceptionZZZ("Konnte kein existierendes Basis Repository für eine Entwicklungsumgebung finden.", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 			throw ez;
 		}
+		*/
 		}//end main:
 		return objConfigStarterRemote;
 	}

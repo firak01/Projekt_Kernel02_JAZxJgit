@@ -5,7 +5,10 @@ import java.io.File;
 import org.eclipse.jgit.api.Git;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.file.FileTextWriterZZZ;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
@@ -16,6 +19,7 @@ import use.jgit.config.TestHelperGIT;
 import use.jgit.config.TestHelperHTTPS;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
+import use.jgit.start.protocol.https.JgitStarterHTTPS;
 
 public class JgitStarterGITTest extends TestCase{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
@@ -127,25 +131,18 @@ public class JgitStarterGITTest extends TestCase{
 		
 	}
 	
+	/**Idee: Erstelle erst ein lokales Test-Repository. Auch mit GIT!!!
+    Ändere darin eine Datei
+    Führe den STATUS aus... sichere ihn, zum Vergleich.
+
+    Führe den COMMIT aus
+
+	Führe den STATUS erneut aus... vergleiche 
+*/
 	public void testStarter_status_commit() {
 		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
 		try {
-			//###################################################
-			//Idee: Erstelle erst ein lokales Test-Repository. Auch mit HTTPS!!!
-			//      Ändere darin eine Datei
-			//      Führe den STATUS aus... sichere ihn, zum Vergleich.
-			
-			
-			//      Führe den COMMIT aus
-			
-			//		Führe den STATUS erneut aus... vergleiche
-			
-			
-			//1. Erstelle mit dem RepositoryManager ein neues Repo
-			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
-			//       Darum jede "Variante" in einer eigenen test-Methode
-			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);			
-			boolean bSuccess = false;
+			Syso.printSection("status_commit");			
 			
 			//###################################################
 			//1. A) "Längere" Variante: Konfiguration im Konstruktor übergeben
@@ -156,6 +153,10 @@ public class JgitStarterGITTest extends TestCase{
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
+		
+			String sRepositoryProject = objRepositoryManager.getRepositoryProject();
+			File objFileDirectoryANew = new File(sDirectoryRepoBaseA, sRepositoryProject);			
+			boolean bSuccess = false;
 			
 			try {
 				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);	
@@ -167,14 +168,38 @@ public class JgitStarterGITTest extends TestCase{
 			}
 			
 			//2. Ändere im neuen lokalen Repository eine Datei
-			//TODOGOON20260723
+			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
+			String sMachine = EnvironmentZZZ.getHostName();
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest (GIT) generiert.";
 			
+			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(objFileDirectoryANew, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
+			FileEasyZZZ.createDirectory(sFilePathDirectory); //ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
+			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			objWriter.writeLine(sLine);
+						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
+			JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
+			objStarter.statusit();
+			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPreCommit);
+			Syso.printSeparator('x');
 			
 			//4. Führe den COMMIT aus
+			bSuccess = objStarter.commitit("commit by JUInitTest");
+			assertTrue("Commit nicht erfolgreich", bSuccess);
+			System.out.println("commit erfolgreich");			
+			Syso.printSeparator('x');
 			
 			//5. Führe den STATUS erneut aus... vergleiche
+			objStarter.statusit();			
+			
+			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPostCommit);
+			boolean bValue = sStatusXmlPostCommit.equals(sStatusXmlPreCommit);
+			assertFalse("Status wert hat sich trotz commit nicht verändert", bValue);
+			
 			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());

@@ -163,10 +163,6 @@ public class JgitStarterHTTPSTest extends TestCase{
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
 			
-			//TODOGOON20260726; //Das ist noch das falsche Directory, es fehlt noch 1fgl_test_repo_JAZxJgit
-            //das kriegt man woher? aus dem RepositoryManager Objekt, RepositoryProjektName,
-            //ergo muss der neue Pfad nach dessen Inititialisierung erfolgen. 
-			//String sDirectoryBaseTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoA, "1fgl_test_repo_JAZxJgit"); 
 			String sRepositoryProject = objRepositoryManager.getRepositoryProject();
 			File objFileDirectoryANew = new File(sDirectoryRepoBaseA, sRepositoryProject);			
 			boolean bSuccess = false;
@@ -183,7 +179,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//2. Ändere im neuen lokalen Repository eine Datei
 			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
 			String sMachine = EnvironmentZZZ.getHostName();
-			String sLine = sDate + " " + sMachine + " " + "per JunitTest generiert.";
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest (HTTPS) generiert.";
 			
 			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(objFileDirectoryANew, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //ohne das Verzeichnis kann der Stream nicht erstellt werden.
@@ -194,7 +190,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
-			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....
+			objStarter.statusit();  
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
 			Syso.println(sStatusXmlPreCommit);
 			Syso.printSeparator('x');
@@ -206,7 +202,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			Syso.printSeparator('x');
 			
 			//5. Führe den STATUS erneut aus... vergleiche
-			objStarter.statusit();  //TODOGOON20260725;//hier den Status noch in einer Property wegsichern, die man dann abrufen kann....			
+			objStarter.statusit(); 			
 			
 			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
 			Syso.println(sStatusXmlPostCommit);

@@ -6,9 +6,9 @@ import basic.zKernel.GetOptZZZ;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
-public class ConfigStarterRemote4TestGIT_onAny  extends AbstractConfigStarterRemoteJGIT{
+public class ConfigStarterRemote4TestJGIT_onAny  extends AbstractConfigStarterRemoteJGIT{
 	
-	public ConfigStarterRemote4TestGIT_onAny() throws ExceptionZZZ {
+	public ConfigStarterRemote4TestJGIT_onAny() throws ExceptionZZZ {
 		super();		
 	}
 	

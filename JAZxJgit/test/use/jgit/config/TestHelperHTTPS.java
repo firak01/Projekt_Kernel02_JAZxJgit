@@ -46,13 +46,13 @@ public class TestHelperHTTPS extends TestHelper {
 		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
 		main:{
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
-		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
-		List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
+		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.		
 		objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_AonAny();
 		
 		/* 
 		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
 		 *          Also hier darauf verlassen, das im Test das Repository korrekt erzeugt wird.
+		List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();          
 		listConfig.add(objConfigStarterRemote);
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 		//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
