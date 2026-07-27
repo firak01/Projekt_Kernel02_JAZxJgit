@@ -49,7 +49,7 @@ public class TestHelperGIT extends TestHelper {
 		main:{
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
 		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.		
-		objConfigStarterRemote = new ConfigStarterRemote4TestGIT_AonAny();
+		objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyA();
 		
 		/* 
 		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
@@ -100,10 +100,10 @@ public class TestHelperGIT extends TestHelper {
 			//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
 			//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
 			List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
-			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_AonAny();			
+			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyA();			
 			listConfig.add(objConfigStarterRemote);
 			
-			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_BonAny();			
+			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyB();			
 			listConfig.add(objConfigStarterRemote);
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());

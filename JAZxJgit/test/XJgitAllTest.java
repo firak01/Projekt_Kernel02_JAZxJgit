@@ -2,7 +2,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGITTest;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPSTest;
-import use.jgit.resolve.JgitResolverLocalGITTest;
+import use.jgit.resolve.JgitResolverLocalGITTest_TODO_ResolverObjekte;
 import use.jgit.start.protocol.git.JgitStarterGITTest;
 
 public class XJgitAllTest {
@@ -13,7 +13,7 @@ public class XJgitAllTest {
 			
 			objReturn.addTestSuite(JgitRepositoryManagerGITTest.class);
 			objReturn.addTestSuite(JgitRepositoryManagerHTTPSTest.class);
-			objReturn.addTestSuite(JgitResolverLocalGITTest.class);
+			objReturn.addTestSuite(JgitResolverLocalGITTest_TODO_ResolverObjekte.class);
 			objReturn.addTestSuite(JgitStarterGITTest.class);			
 			return objReturn;
 		}

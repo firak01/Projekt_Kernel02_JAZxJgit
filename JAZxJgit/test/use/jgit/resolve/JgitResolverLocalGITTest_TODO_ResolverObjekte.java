@@ -5,14 +5,14 @@ import org.eclipse.jgit.api.Git;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigStarterRemote4TestJGIT_XonAny;
+import use.jgit.config.ConfigStarterRemote4TestGIT_onAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
 import use.jgit.config.TestHelperGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 
-public class JgitResolverLocalGITTest extends TestCase{
+public class JgitResolverLocalGITTest_TODO_ResolverObjekte extends TestCase{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
 	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
@@ -128,7 +128,7 @@ public class JgitResolverLocalGITTest extends TestCase{
 		try{
 			
 			//+++++++++++++++++
-			ConfigStarterRemote4TestJGIT_XonAny objConfigLocal = new ConfigStarterRemote4TestJGIT_XonAny();
+			ConfigStarterRemote4TestGIT_onAny objConfigLocal = new ConfigStarterRemote4TestGIT_onAny();
 			
 			JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
 			objResolver.configureGit(objConfigLocal);

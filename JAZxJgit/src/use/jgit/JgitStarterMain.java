@@ -322,7 +322,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterGIT objStarterGIT = new JgitStarterGIT();
-					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+					objStarterGIT.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();
@@ -392,7 +392,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterSSH objStarterSSH = new JgitStarterSSH();
-					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+					objStarterSSH.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();
@@ -462,7 +462,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
-					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+					objStarterHTTPS.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();

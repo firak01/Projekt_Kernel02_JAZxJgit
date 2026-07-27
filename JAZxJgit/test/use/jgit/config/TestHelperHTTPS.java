@@ -47,7 +47,7 @@ public class TestHelperHTTPS extends TestHelper {
 		main:{
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
 		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.		
-		objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_AonAny();
+		objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_onAnyA();
 		
 		/* 
 		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da

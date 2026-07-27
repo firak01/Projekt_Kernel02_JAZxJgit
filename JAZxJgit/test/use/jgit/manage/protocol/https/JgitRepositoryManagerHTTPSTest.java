@@ -18,7 +18,6 @@ import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
 import use.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
-import use.jgit.config.ConfigStarterRemote4TestJGIT_XonAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
@@ -91,7 +90,7 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 //		}
 	}//END testConstructor
 	
-	public void testManager_createGit() {
+	public void testManager_createGit_onOriginal() {
 		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
 		try {
 			//###################################################

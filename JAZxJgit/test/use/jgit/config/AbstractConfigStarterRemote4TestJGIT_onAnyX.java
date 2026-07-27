@@ -6,9 +6,9 @@ import basic.zKernel.GetOptZZZ;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
-public class ConfigStarterRemote4TestJGIT_XonAny  extends AbstractConfigStarterRemoteJGIT{
+public abstract class AbstractConfigStarterRemote4TestJGIT_onAnyX  extends AbstractConfigStarterRemoteJGIT{
 	
-	public ConfigStarterRemote4TestJGIT_XonAny() throws ExceptionZZZ {
+	public AbstractConfigStarterRemote4TestJGIT_onAnyX() throws ExceptionZZZ {
 		super();		
 	}
 	
@@ -90,6 +90,11 @@ public class ConfigStarterRemote4TestJGIT_XonAny  extends AbstractConfigStarterR
 		return System.getenv("sRRACZZZ");
 	}
 
+	@Override
+	public String readPersonalAccessToken() throws ExceptionZZZ{
+		return System.getenv("sPATZZZ");
+	}
+	
 	//++++++++++++++++++++++++++++++++++++++++++				
 
 	@Override

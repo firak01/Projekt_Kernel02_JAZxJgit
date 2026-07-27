@@ -55,7 +55,9 @@ public class ConfigRepositoryManager4TestGIT_onAny  extends AbstractConfigReposi
 		return "Test_repo_JAZxJgit";
 	}
 	
-	//### aus IConfigStarterLocalJGIT	
+	//### aus IConfigStarterLocalJGIT
+	//!!! Achtung: Damit arbeitet man mit dem remote "Hauptrepository", das über einen Umgebungsvariable definiert wurde, 
+	//    Wenn man mit einem lokal extra erzeugten TEST Repository arbeiten will, ist das ein anderes.
 	@Override
 	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {		
 		return System.getenv("sRLZZZ");
