@@ -5,7 +5,7 @@ import org.eclipse.jgit.api.Git;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigStarterRemote4TestJGIT_onAny;
+import use.jgit.config.ConfigStarterRemote4TestJGIT_XonAny;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.ITestHelperConstant;
 import use.jgit.config.TestHelper;
@@ -128,7 +128,7 @@ public class JgitResolverLocalGITTest extends TestCase{
 		try{
 			
 			//+++++++++++++++++
-			ConfigStarterRemote4TestJGIT_onAny objConfigLocal = new ConfigStarterRemote4TestJGIT_onAny();
+			ConfigStarterRemote4TestJGIT_XonAny objConfigLocal = new ConfigStarterRemote4TestJGIT_XonAny();
 			
 			JgitResolverLocalGIT objResolver = new JgitResolverLocalGIT();
 			objResolver.configureGit(objConfigLocal);

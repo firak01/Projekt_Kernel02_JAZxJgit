@@ -37,4 +37,5 @@ public interface IConfigStarterLocalJGIT extends IConfigJGIT{
 	public String getCommentDefault() throws ExceptionZZZ;
 	public String readComment() throws ExceptionZZZ;
 		
+	
 }

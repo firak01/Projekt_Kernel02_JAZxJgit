@@ -6,9 +6,9 @@ import basic.zKernel.GetOptZZZ;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
-public class ConfigStarterRemote4TestJGIT_onAny  extends AbstractConfigStarterRemoteJGIT{
+public class ConfigStarterRemote4TestJGIT_XonAny  extends AbstractConfigStarterRemoteJGIT{
 	
-	public ConfigStarterRemote4TestJGIT_onAny() throws ExceptionZZZ {
+	public ConfigStarterRemote4TestJGIT_XonAny() throws ExceptionZZZ {
 		super();		
 	}
 	
@@ -46,10 +46,14 @@ public class ConfigStarterRemote4TestJGIT_onAny  extends AbstractConfigStarterRe
 	}
 	
 	//### aus IConfigStarterLocalJGIT	
+	
+	//!!! Wichtig, hier nicht mit dem "Hauptrepository" arbeiten, das über einen Umgebungsvariable definiert wurde, 
+	//    sondern mit dem extra erzeugten TEST Repository
 	@Override
 	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
-		return System.getenv("sRLZZZ");
-	}		
+		//return System.getenv("sRLZZZ");
+		return ITestHelperConstant.sDirectoryRepoBaseA;
+	}
 
 	//++++++++++++++++++++++++++++++++++++++
 	@Override
@@ -96,6 +100,7 @@ public class ConfigStarterRemote4TestJGIT_onAny  extends AbstractConfigStarterRe
 	//##########################################
 	//### aus IConfigStarterLocalJGIT	
 	
+
 	//+++++++++++++++++++++++++++++++++++++
 	@Override
 	public String readActionStatus() throws ExceptionZZZ {

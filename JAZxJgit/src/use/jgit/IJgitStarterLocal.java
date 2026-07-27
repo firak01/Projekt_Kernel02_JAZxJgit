@@ -12,6 +12,12 @@ import use.jgit.config.IConfigStarterRemoteJGIT;
 
 public interface IJgitStarterLocal{
 	
+	//##################################################
+	//... das Projekt, aus dem gestartet wurde (nicht das Repository Projekt, sondern IConfig.getProjectName. Merke: readProjectName ist dann auch des Projekt im GIT Repository)
+	public String getProjectStartingName() throws ExceptionZZZ;
+	public void setProjectStartingName(String sProjectStartingName) throws ExceptionZZZ;
+	
+	//... Name des Projekts unterhalb des RepositoryProject. Wird aus der Umgebungsvariaben/Kommandozeile gelesen
 	public String getProjectName() throws ExceptionZZZ;
 	public void setProjectName(String sProjectName) throws ExceptionZZZ;
 	

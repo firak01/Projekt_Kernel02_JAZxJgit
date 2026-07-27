@@ -677,7 +677,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        String sDirectoryRepositoryLocalTotal = this.getRepositoryLocalTotal();
 		        File objFileDir = new File(sDirectoryRepositoryLocalTotal);
 		        
-		        String sRepositoryRemote = this.getRepositoryTotalRemote();
+    		        String sRepositoryRemote = this.getRepositoryTotalRemote();
 		        
 		        String sBranch = this.getRepositoryBranch();
 		        JgitUtilZZZ.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote, sBranch);

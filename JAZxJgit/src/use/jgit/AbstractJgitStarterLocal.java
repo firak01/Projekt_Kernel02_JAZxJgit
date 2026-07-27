@@ -42,7 +42,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 	protected volatile IConfigZZZ objConfig = null;
 
 	protected volatile String sProjectName=null;
-
+	protected volatile String sProjectStartingName = null; //der Name für das Projekt, das den Code ausführt (also nicht ein Projekt unterhalb des Repo-Projekts)M
+	
 	protected volatile String sRepositoryProject=null;//Der Name des Projekt, wie er hinter die Basis Verzeichnis/Url kommt.
 	protected volatile String sRepositoryBranch=null; //Der Name des Branch, wenn man es nicht auf alle Branches beziehen will.
 	
@@ -76,6 +77,18 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		this.gitObject = objGit;
 	}
 	
+	//Name des Projekts, das den Starter nutzt, nicht etwa das Repo-Projekt, etc.
+	@Override
+	public String getProjectStartingName() throws ExceptionZZZ {
+		return this.sProjectStartingName;
+	}
+	
+	@Override
+	public void setProjectStartingName(String sProjectStartingName) throws ExceptionZZZ{
+		this.sProjectStartingName = sProjectStartingName;
+	}
+	
+	//Projekt aus der Konfiguration und damit ggfs. unterhalb des Repo-Projekts liegend
 	@Override
 	public String getProjectName() throws ExceptionZZZ {
 		if(this.sProjectName==null) {
@@ -776,7 +789,8 @@ public abstract class AbstractJgitStarterLocal<T> extends AbstractObjectWithFlag
 		        //Mache einen commit (mit aktuellem Datum/Uhrzeit) & Namen der Maschine
 		        String sCommentByProperty = this.getCommentCommit();
 		        String sComment = StringZZZ.coalesce(sCommentIn, sCommentByProperty);
-		        sComment = JgitUtilZZZ.createCommentCommit(sComment);
+		        String sProjectStartingName = this.getProjectStartingName();
+		        sComment = JgitUtilZZZ.createCommentCommit(sComment, sProjectStartingName);
 		        		        
 				CommitCommand gitCommandCommit = git.commit();
 				

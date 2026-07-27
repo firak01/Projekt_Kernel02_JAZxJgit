@@ -21,6 +21,7 @@ import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigStarterRemoteJGIT;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 import use.jgit.start.protocol.https.JgitStarterHTTPS;
@@ -321,6 +322,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterGIT objStarterGIT = new JgitStarterGIT();
+					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();
@@ -390,6 +392,7 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterSSH objStarterSSH = new JgitStarterSSH();
+					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();
@@ -459,7 +462,8 @@ public class JgitStarterMain implements IConstantZZZ{
 					//##############################################################
 					//Starte die passende Klasse mit der passenden Methode
 					JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
-		
+					objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+					
 					//Ggfs. uebergebene Flags setzen
 					hmFlag = objConfig.getHashMapFlagPassed();
 					if(hmFlag!=null) {

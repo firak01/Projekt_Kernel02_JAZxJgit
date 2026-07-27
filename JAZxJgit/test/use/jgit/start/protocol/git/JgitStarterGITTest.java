@@ -3,6 +3,8 @@ package use.jgit.start.protocol.git;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
@@ -11,6 +13,7 @@ import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.config.ITestHelperConstant;
@@ -27,7 +30,7 @@ public class JgitStarterGITTest extends TestCase{
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
 	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;
-	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
+	private IConfigRepositoryManagerJGIT objConfigRepoManagerRemote=null;
 	
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
@@ -46,8 +49,8 @@ public class JgitStarterGITTest extends TestCase{
 			//1. Repositories aus vorherigen Tests entfernen
 			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
 			
-			//2. RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
+			//2. Remote RepositoryManger für die Erstellung von TestRepositories holen
+			objConfigRepoManagerRemote = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
 			
 			//3. RepositoryManger für die Erstellung von TestRepositories holen
 			objConfigStarterRemote = TestHelperGIT.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
@@ -146,20 +149,20 @@ public class JgitStarterGITTest extends TestCase{
 			
 			//###################################################
 			//1. A) "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;
+			JgitRepositoryManagerGIT objRepositoryManagerRemote = null;
 			Syso.printSection("A) CloneRepositoryTo");
 			try {					
-				objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);					
+				objRepositoryManagerRemote = new JgitRepositoryManagerGIT(objConfigRepoManagerRemote);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
 		
-			String sRepositoryProject = objRepositoryManager.getRepositoryProject();
+			String sRepositoryProject = objRepositoryManagerRemote.getRepositoryProject();
 			File objFileDirectoryANew = new File(sDirectoryRepoBaseA, sRepositoryProject);			
 			boolean bSuccess = false;
 			
 			try {
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);	
+				objRepositoryManagerRemote.cloneRepositoryTo(objFileDirectoryANew);	
 				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
 				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");			
@@ -198,8 +201,113 @@ public class JgitStarterGITTest extends TestCase{
 			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
 			Syso.println(sStatusXmlPostCommit);
 			boolean bValue = sStatusXmlPostCommit.equals(sStatusXmlPreCommit);
-			assertFalse("Status wert hat sich trotz commit nicht verändert", bValue);
+			assertFalse("Status wert hat sich unerwartet trotz commit nicht verändert", bValue);
 			
+			
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}	
+	}
+	
+	
+	/**Idee: Erstelle erst ein lokales Test-Repository. Auch mit GIT!!!
+    Ändere darin eine Datei
+    Führe den STATUS aus... sichere ihn, zum Vergleich.
+
+    Führe den COMMIT aus
+
+	Führe den STATUS erneut aus... vergleiche 
+*/
+	public void testStarter_status_commit_push() {
+		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
+		try {
+			Syso.printSection("status_commit_push");			
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//1. Lokales Repository als Clone bereitstellen
+			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
+			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
+			JgitRepositoryManagerGIT objRepositoryManager = null;
+			Syso.printSection("A) CloneRepositoryTo");			
+			try {					
+				objRepositoryManager =  new JgitRepositoryManagerGIT(objConfigRepoManagerRemote);								
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+							
+			boolean bSuccess = false;
+			String sRepositoryProject = objRepositoryManager.getRepositoryProject();
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseB, sRepositoryProject); //B !!!			
+			try {							
+				objRepositoryManager.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
+				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			//+++++++++++++++++++++++++++++++++++++++++++
+			//2. Ändere im neuen lokalen Repository eine Datei
+			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
+			String sMachine = EnvironmentZZZ.getHostName();
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest (GIT) generiert.";
+			
+			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(objFileRepoBaseLocalNew, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
+			FileEasyZZZ.createDirectory(sFilePathDirectory); //ohne das Verzeichnis kann der Stream nicht erstellt werden.
+			
+			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test02.txt");
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			objWriter.writeLine(sLine);
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
+			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
+			//Hole erst einmal die für das neu erstellte lokale Repo die passende RemoteStarter Konfiguration
+			IConfigStarterRemoteJGIT objConfigStarterLocalUsed = (IConfigStarterRemoteJGIT) TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);			
+			IJgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterLocalUsed);
+			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+			objStarter.statusit();
+			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPreCommit);
+			Syso.printSeparator('x');
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
+			//4. Führe den COMMIT aus
+			Syso.printSection("commit");
+			
+			bSuccess = objStarter.commitit("commit (GIT) by JUInitTest");
+			assertTrue("Commit nicht erfolgreich", bSuccess);
+			System.out.println("commit erfolgreich");			
+			Syso.printSeparator('x');
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//5. Führe den STATUS erneut aus... vergleiche
+			objStarter.statusit();			
+			
+			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPostCommit);
+			boolean bValue = sStatusXmlPostCommit.equals(sStatusXmlPreCommit);
+			assertFalse("Status wert hat sich unerwartet trotz commit nicht verändert", bValue);
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//6. Pushe den commit zum Remote Repository
+			Syso.printSeparator('x');
+			try {
+				Syso.printSection("push");
+				bSuccess = objStarter.pushit();
+				assertTrue("Push nicht erfolgreich", bSuccess);
+				
+				String sStatusXmlPostPush = objStarter.getStatusStringXml();
+				Syso.println(sStatusXmlPostPush);
+				bValue = sStatusXmlPostPush.equals(sStatusXmlPostCommit);
+				assertTrue("Status wert hat sich unerwartet wg. push verändert", bValue);
+			} catch (TransportException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CheckoutConflictException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());

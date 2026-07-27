@@ -104,11 +104,46 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;
 	}
 	
+	public static String createCommentCommit(String sCommentIn, String sProjectExecutingIn) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			String sComment = "";
+			if(!StringZZZ.isEmpty(sCommentIn)) {
+				sComment = sCommentIn;
+			}
+			
+			String sCommentMetadata = "";
+			String sProjectExecuting = "";
+			if(!StringZZZ.isEmpty(sProjectExecutingIn)) {
+				sProjectExecuting = sProjectExecutingIn;
+				sCommentMetadata = JgitUtilZZZ.createCommentCommitTemplate(sProjectExecuting);					
+			}else {
+				sCommentMetadata = JgitUtilZZZ.createCommentCommitTemplate();								
+			}
+			
+			if(!StringZZZ.isEmpty(sCommentMetadata)) {
+				sReturn = String.format(sCommentMetadata, sComment);
+			}
+			
+			
+		}//end main:
+		return sReturn;
+	}
+	
 	public static String createCommentCommitTemplate() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
+			String sMetadata01 = JgitUtilZZZ.createCommentCommitMetadata01();			
+			sReturn = sMetadata01 + " %s ";
+		}//end main:
+		return sReturn;	
+	}
+	
+	public static String createCommentCommitTemplate(String sProjectExecuting) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
 			String sMetadata01 = JgitUtilZZZ.createCommentCommitMetadata01();
-			String sMetadata02 = JgitUtilZZZ.createCommentCommitMetadata02();
+			String sMetadata02 = JgitUtilZZZ.createCommentCommitMetadata02(sProjectExecuting);
 			sReturn = sMetadata01 + " %s " + sMetadata02;
 		}//end main:
 		return sReturn;	
@@ -129,10 +164,10 @@ public class JgitUtilZZZ implements IConstantZZZ {
 		return sReturn;	
 	}
 	
-	public static String createCommentCommitMetadata02() throws ExceptionZZZ {
+	public static String createCommentCommitMetadata02(String sProjectExecuting) throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
-			sReturn =  "(by 'Projekt_Tool_DevEditor')";
+			sReturn =  "(by project '" + sProjectExecuting + "')";
 		}//end main:
 		return sReturn;
 	}
