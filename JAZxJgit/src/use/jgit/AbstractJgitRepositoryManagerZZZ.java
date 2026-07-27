@@ -16,6 +16,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.config.IConfigZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.file.FileEasyZZZ;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.start.protocol.ssh.JGitSshConfigZZZ;
@@ -76,7 +77,7 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 	
 	//Methoden
 	@Override
-	public boolean cloneRepositoryTo(File objFileDirectory) throws ExceptionZZZ {
+	public boolean cloneRepositoryTo(File objFileBaseDirectory) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 			try {
@@ -93,13 +94,18 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 					throw ez;				
 				}
 				
+				String sRepositoryProject = objConfig.readRepositoryProjectName();
+				String sFileDirctoryRepositoryProject = FileEasyZZZ.joinFilePathName(objFileBaseDirectory, sRepositoryProject);
+				File objFileDirectoryRepositoryProject = new File(sFileDirctoryRepositoryProject);
+				
+				
 				CredentialsProvider credentialsProvider = this.getCredentialsProviderObject();
 				
 				CloneCommand cloneCommand = Git.cloneRepository();
 				
 				if(credentialsProvider!=null) { cloneCommand.setCredentialsProvider(credentialsProvider); }
 				cloneCommand.setURI(sUriRemote)
-				.setDirectory(objFileDirectory)
+				.setDirectory(objFileDirectoryRepositoryProject)
 				.call();
 			} catch (InvalidRemoteException e) {
 				ExceptionZZZ ez = new ExceptionZZZ(e);
@@ -111,6 +117,7 @@ public abstract class AbstractJgitRepositoryManagerZZZ<T> extends AbstractJgitSt
 				ExceptionZZZ ez = new ExceptionZZZ(e);
 				throw ez;
 			}
+			bReturn = true;
 		}//end main:
 		return bReturn;		
 	}

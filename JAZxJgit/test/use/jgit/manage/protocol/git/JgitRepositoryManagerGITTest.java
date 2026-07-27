@@ -52,7 +52,8 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			
 			//2. RepositoryManger für die Erstellung von TestRepositories holen
 			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
-												
+			
+			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}

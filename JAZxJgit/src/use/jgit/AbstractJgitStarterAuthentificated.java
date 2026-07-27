@@ -164,7 +164,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 		String sProtocolIn = this.getConnectionType();
 		String sRepositoryRemoteHostIn = this.getRepositoryRemoteHost();
 		String sRepositoryRemoteAccountIn = this.getRepositoryRemoteAccount();
-		String sRepositoryProjectIn = this.getRepositoryProject();
+		String sRepositoryProjectIn = this.getRepositoryProjectName();
 		return this.computeRepositoryRemoteUrl(sProtocolIn, sRepositoryRemoteHostIn, sRepositoryRemoteAccountIn, sRepositoryProjectIn);
 	}
 	
@@ -186,7 +186,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			
 			String sRepositoryProject;
 			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-				sRepositoryProject = this.getRepositoryProject();
+				sRepositoryProject = this.getRepositoryProjectName();
 				if(StringZZZ.isEmpty(sRepositoryProject)) {
 					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;	
@@ -232,7 +232,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			
 			String sRepositoryProject;
 			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-				sRepositoryProject = this.getRepositoryProject();
+				sRepositoryProject = this.getRepositoryProjectName();
 				if(StringZZZ.isEmpty(sRepositoryProject)) {
 					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;	
@@ -291,7 +291,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 			
 			String sRepositoryProject;
 			if(StringZZZ.isEmpty(sRepositoryProjectIn)) {
-				sRepositoryProject = this.getRepositoryProject();
+				sRepositoryProject = this.getRepositoryProjectName();
 				if(StringZZZ.isEmpty(sRepositoryProject)) {
 					ExceptionZZZ ez = new ExceptionZZZ("RepositoryProject", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;	

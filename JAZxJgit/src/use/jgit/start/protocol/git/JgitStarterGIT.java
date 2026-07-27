@@ -85,7 +85,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		if( this.sRepositoryTotalRemote==null) {
 			String sHost = this.getRepositoryRemoteHost();
 			String sAccount = this.getRepositoryRemoteAccount();						
-			String sRepositoryProjectRemote = this.getRepositoryProject();	
+			String sRepositoryProjectRemote = this.getRepositoryProjectName();	
 			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
 			this.sRepositoryTotalRemote = JgitUtilGIT.computeRepositoryUrlTotalGIT(sHost, sAccount, sRepositoryProjectRemote);			
 		}
@@ -117,6 +117,10 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			
 			//B) Konfiguriere das lokale Repository
 			bReturn = super.configureGit();
+			if(!bReturn){
+				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository nicht erfolgreich konfiguriert.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
 			
 			//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
 			//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
@@ -142,7 +146,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			this.setRepositoryBaseRemote(sDirectoryRepositoryRemote);	
 			
 			//b) Remote Repository-Verzeichnis des Projekts
-			String sRepositoryProjectRemote = this.getRepositoryProject(); //momentan identisch mit lokal)
+			String sRepositoryProjectRemote = this.getRepositoryProjectName(); //momentan identisch mit lokal)
 			if(StringZZZ.isEmpty(sRepositoryProjectRemote)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Projektname der remote Repositories, Angabe fehlt: '" + sRepositoryProjectRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
@@ -170,7 +174,9 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			String sDirectoryRepositoryTotalLocal = this.getRepositoryLocalTotal();
 			String sRepositoryRemoteBranch = this.getRepositoryBranch();
 			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
-			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);									
+			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);
+			
+			bReturn = true;
 		}//end main:
 		return bReturn;
 	}

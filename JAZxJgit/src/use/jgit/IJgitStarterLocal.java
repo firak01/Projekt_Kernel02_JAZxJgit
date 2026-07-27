@@ -22,7 +22,7 @@ public interface IJgitStarterLocal{
 	public void setProjectName(String sProjectName) throws ExceptionZZZ;
 	
 	//+++ Argumente, ggfs. aus einer Kommandozeilenübergabe
-	public String getRepositoryProject() throws ExceptionZZZ;
+	public String getRepositoryProjectName() throws ExceptionZZZ;
 	public void setRepositoryProjectName(String sRepositoryProject) throws ExceptionZZZ;
 	
 	public String getRepositoryBranch() throws ExceptionZZZ;

@@ -93,7 +93,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 		if( this.sRepositoryTotalRemote==null) {
 			String sHost = this.getRepositoryRemoteHost();
 			String sAccount = this.getRepositoryRemoteAccount();
-			String sRepositoryProjectRemote = this.getRepositoryProject();
+			String sRepositoryProjectRemote = this.getRepositoryProjectName();
 			if(StringZZZ.isEmpty(sHost) || StringZZZ.isEmpty(sAccount) || StringZZZ.isEmpty(sRepositoryProjectRemote)) return null;
 			this.sRepositoryTotalRemote = JgitUtilHTTPS.computeRepositoryUrlTotalHTTPS(sHost, sAccount, sRepositoryProjectRemote);			
 		}
@@ -146,7 +146,7 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				this.setRepositoryBaseRemote(sRepositoryBaseRemote_previous);
 				
 				//b) Remote Repository-Verzeichnis des Projekts
-				String sRepositoryProjectRemote = this.getRepositoryProject(); //momentan identisch mit lokal)
+				String sRepositoryProjectRemote = this.getRepositoryProjectName(); //momentan identisch mit lokal)
 				if(StringZZZ.isEmpty(sRepositoryProjectRemote)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Projektname der remote Repositories, Angabe fehlt: '" + sRepositoryProjectRemote + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;

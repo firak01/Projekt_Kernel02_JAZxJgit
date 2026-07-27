@@ -49,7 +49,7 @@ public class TestHelperGIT extends TestHelper {
 		main:{
 		//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
 		//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.		
-		objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyA();
+		objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAny();
 		
 		/* 
 		 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
@@ -87,13 +87,13 @@ public class TestHelperGIT extends TestHelper {
 			 *          Also hier darauf verlassen, das im Test das Repository korrekt erzeugt wird.
 			 */         
 			if(objFileBaseLocalProject==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokale Repo-Projekt Verzeichnis nicht übergeben.", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokale Repo-Projekt Verzeichnis nicht übergeben.", iERROR_PARAMETER_MISSING, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 			
-			String sRepoBaseLocalProjectUsed = objFileBaseLocalProject.getAbsolutePath();
+			String sRepoBaseLocalUsed = objFileBaseLocalProject.getAbsolutePath();			
 			if(!FileEasyZZZ.exists(objFileBaseLocalProject)) {
-				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokale Repo. Verzeichnis existiert nicht: '" + sRepoBaseLocalProjectUsed + "'", iERROR_PARAMETER_MISSING, JgitStarterSSH.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokales Repo. Basis Verzeichnis existiert nicht: '" + sRepoBaseLocalUsed + "'", iERROR_PARAMETER_MISSING, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
 						
@@ -108,10 +108,12 @@ public class TestHelperGIT extends TestHelper {
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
 		
-			Syso.println("Suche in dieser Entwicklungsumgebung das passende Konfigurationsobjekt für das das Basis Repository: '" + sRepoBaseLocalProjectUsed + "'");
+			Syso.println("Suche in dieser Entwicklungsumgebung das passende Konfigurationsobjekt für das das Basis Repository: '" + sRepoBaseLocalUsed + "'");
 			for(IConfigStarterRemoteJGIT objConfigRepoManagerTemp : listConfig) {
 				String sRepoBaseLocalTemp = objConfigRepoManagerTemp.readRepositoryLocalBaseDirectory();
-				String sRepoBaseLocalProjectTemp = FileEasyZZZ.joinFilePathNameForJar(sRepoBaseLocalTemp, objConfigRepoManagerTemp.readRepositoryProjectName());
+				String sRepoBaseLocalProjectTemp = FileEasyZZZ.joinFilePathName(sRepoBaseLocalTemp, objConfigRepoManagerTemp.readRepositoryProjectName());
+				
+				String sRepoBaseLocalProjectUsed = FileEasyZZZ.joinFilePathName(sRepoBaseLocalUsed, objConfigRepoManagerTemp.readRepositoryProjectName());
 				if(sRepoBaseLocalProjectUsed.equals(sRepoBaseLocalProjectTemp)) {
 					Syso.println("Passendes Konfigurationsobject gefunden für das Basis Repository Projekt: '" + sRepoBaseLocalProjectUsed + "'");
 					objConfigStarterRemote=objConfigRepoManagerTemp;
@@ -120,7 +122,7 @@ public class TestHelperGIT extends TestHelper {
 			}
 		
 			if(objConfigStarterRemote==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konnte kein passendes Konfigurationsobjekt finden für das in dieser Entwicklungsumgebung existierende Basis Repository '" + sRepoBaseLocalProjectUsed + "'", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				ExceptionZZZ ez = new ExceptionZZZ("Konnte kein passendes Konfigurationsobjekt finden für das in dieser Entwicklungsumgebung existierende Basis Repository '" + sRepoBaseLocalUsed + "'", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}	
 		}//end main:
