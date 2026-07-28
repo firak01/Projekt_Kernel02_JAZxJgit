@@ -241,9 +241,12 @@ public class JgitStarterGITTest extends TestCase{
 			//objPrepender.prependAndSave(sLine); 
 
 			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
-			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			objWriter.writeLine(sLine);
-						
+			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			//objWriter.writeLine(sLine);
+				
+			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
+			objReplacer.replaceAndSave(0, sLine);
+			
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
 			objStarter.statusit();
