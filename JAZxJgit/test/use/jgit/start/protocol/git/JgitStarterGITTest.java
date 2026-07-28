@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.errors.TransportException;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.file.FileTextAppenderZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
@@ -224,8 +225,11 @@ public class JgitStarterGITTest extends TestCase{
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
 			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			objWriter.writeLine(sLine);
+			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			//objWriter.writeLine(sLine);
+			
+			FileTextAppenderZZZ objAppender = new FileTextAppenderZZZ(sFilePathTotal);
+			objAppender.appendAndSave(sLine);
 						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
@@ -304,8 +308,11 @@ public class JgitStarterGITTest extends TestCase{
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
 			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			objWriter.writeLine(sLine);
+			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			//objWriter.writeLine(sLine);
+			
+			FileTextAppenderZZZ objAppender = new FileTextAppenderZZZ(sFilePathTotal);
+			objAppender.appendAndSave(sLine);
 			
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
