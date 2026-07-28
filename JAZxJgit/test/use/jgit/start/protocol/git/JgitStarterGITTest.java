@@ -10,6 +10,8 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.FileTextAppenderZZZ;
+import basic.zBasic.util.file.FileTextInserterZZZ;
+import basic.zBasic.util.file.FileTextPrependerZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
@@ -225,11 +227,21 @@ public class JgitStarterGITTest extends TestCase{
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
 			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			//objWriter.writeLine(sLine);
 			
-			FileTextAppenderZZZ objAppender = new FileTextAppenderZZZ(sFilePathTotal);
-			objAppender.appendAndSave(sLine);
+			//Nette Gelegenheit diese FileText Bearbeiter zu testen und weiterzuentwickeln...
+			//FileTextAppenderZZZ objApender = new FileTextAppenderZZZ(sFilePathTotal);
+			//objApender.appendAndSave(sLine);
+			
+			//FileTextInserterZZZ objInserter = new FileTextInserterZZZ(sFilePathTotal);
+			//a) objInserter.insertBeforeAndSave(0, sLine);
+			//b) objInserter.insertBehindAndSave(0, sLine);
+			
+			//FileTextPrependerZZZ objPrepender = new FileTextPrependerZZZ(sFilePathTotal);
+			//objPrepender.prependAndSave(sLine); 
+
+			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			objWriter.writeLine(sLine);
 						
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			JgitStarterGIT objStarter = new JgitStarterGIT(objConfigStarterRemote);
@@ -308,11 +320,22 @@ public class JgitStarterGITTest extends TestCase{
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
 			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			//objWriter.writeLine(sLine);
 			
-			FileTextAppenderZZZ objAppender = new FileTextAppenderZZZ(sFilePathTotal);
-			objAppender.appendAndSave(sLine);
+			//Nette Gelegenheit diese FileText Bearbeiter zu testen und weiterzuentwickeln...
+			//FileTextAppenderZZZ objApender = new FileTextAppenderZZZ(sFilePathTotal);
+			//objApender.appendAndSave(sLine);
+			
+			//FileTextInserterZZZ objInserter = new FileTextInserterZZZ(sFilePathTotal);
+			//a) objInserter.insertBeforeAndSave(0, sLine);
+			//b) objInserter.insertBehindAndSave(0, sLine);
+			
+			//FileTextPrependerZZZ objPrepender = new FileTextPrependerZZZ(sFilePathTotal);
+			//objPrepender.prependAndSave(sLine); 
+
+			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
+			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			objWriter.writeLine(sLine);
+			
 			
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
