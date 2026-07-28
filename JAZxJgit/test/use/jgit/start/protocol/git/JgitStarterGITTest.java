@@ -12,6 +12,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.FileTextAppenderZZZ;
 import basic.zBasic.util.file.FileTextInserterZZZ;
 import basic.zBasic.util.file.FileTextPrependerZZZ;
+import basic.zBasic.util.file.FileTextReplacerZZZ;
 import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
@@ -333,8 +334,11 @@ public class JgitStarterGITTest extends TestCase{
 			//objPrepender.prependAndSave(sLine); 
 
 			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
-			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			objWriter.writeLine(sLine);
+			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			//objWriter.writeLine(sLine);
+			
+			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
+			objReplacer.replaceAndSave(0, sLine);
 			
 			
 			//+++++++++++++++++++++++++++++++++++++++++++++++
