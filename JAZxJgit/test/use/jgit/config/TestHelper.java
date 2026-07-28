@@ -19,6 +19,7 @@ public class TestHelper implements IConstantZZZ, ITestHelperConstant {
 			boolean bSuccess = false; boolean bRunning = false;
 			
 			//Merke: In meiner WinXP Umgebung muss zuvor der TGitCache - Prozess beendet werden.
+			//Dauerhafter wäre: https://stackoverflow.com/questions/16773257/how-can-i-stop-and-start-tgitcache-exe-gracefully
 			WMIZZZ objWmi = new WMIZZZ();
 			bRunning = objWmi.isProcessRunning("TGitCache.exe");
 			if(bRunning) {
