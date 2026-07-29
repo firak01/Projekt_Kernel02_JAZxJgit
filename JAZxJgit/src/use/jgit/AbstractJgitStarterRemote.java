@@ -174,9 +174,9 @@ public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAu
 			//Das müsste eigentlich für HTTPS nicht gemacht werden.
 			if(sConnectionType.equalsIgnoreCase("https")) {
 				System.out.println("Bei HTTPS wird keine SSH Session Factory benötigt");
-			}else {
+			}else {				
 				JGitSshConfigZZZ.configure();
-				System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+				System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
 			}
 			
 			

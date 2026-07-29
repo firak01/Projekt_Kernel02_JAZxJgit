@@ -17,6 +17,7 @@ public class JschConfigSessionFactoryZZZ extends JschConfigSessionFactory {
 
 	  @Override
       protected void configure(OpenSshConfig.Host host, Session session) {
+  
           // identisch zum normalen Git Verhalten
           //session.setConfig("StrictHostKeyChecking", "yes");
 		  
@@ -26,6 +27,7 @@ public class JschConfigSessionFactoryZZZ extends JschConfigSessionFactory {
 		//Für diese stehen für github die aktuellen Keys hier:
 		//https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
 		session.setConfig("StrictHostKeyChecking", "no");
+		
 		   
       }
 

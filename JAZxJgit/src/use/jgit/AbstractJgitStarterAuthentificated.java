@@ -527,9 +527,9 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 				CredentialsProvider credentialsProvider = JgitUtilHTTPS.createCredentialsProviderByToken(this.getPersonalAccessToken());
 				System.out.println("Git Credentials Provider created done.");
 				this.setCredentialsProviderObject(credentialsProvider);
-			}else {
+			}else {				
 				JGitSshConfigZZZ.configure();
-				System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+				System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
 			}			
 			bReturn = true;
 		}//end main:

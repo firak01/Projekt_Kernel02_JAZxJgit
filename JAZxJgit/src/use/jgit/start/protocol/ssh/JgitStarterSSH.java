@@ -93,9 +93,9 @@ public class JgitStarterSSH<T> extends AbstractJgitStarterRemote<T> implements I
 			//Konfiguriere JGit für SSH
 			
 			//+++ Zugriff sicherstellen
-			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.					
 			JGitSshConfigZZZ.configure();
-			System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
 			
 			//B) Konfiguriere das lokale Repository und init Git-Object (nach demm Remote Repository, da die Daten des Remote Repository ggfs. in das Lokale Repository uebernommen werden)

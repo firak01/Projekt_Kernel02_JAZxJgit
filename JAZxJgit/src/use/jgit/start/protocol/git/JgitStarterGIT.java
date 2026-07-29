@@ -64,6 +64,21 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 	}
 	
 	@Override
+	public boolean createGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{	
+			//Wichtig: Konfiguration der sshFactory
+			
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.					
+			JGitGitConfigZZZ.configure();
+			System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			
+			bReturn = super.createGit(objConfig);								
+		}//end main:
+		return bReturn;		
+	}
+	
+	@Override
 	public boolean createGitCustom(InitCommand objInitCommand) throws ExceptionZZZ {
 		return false;
 	}
@@ -112,7 +127,7 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			
 			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.			
 			JGitGitConfigZZZ.configure();
-			System.out.println("Verwendete Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
 			
 			//B) Konfiguriere das lokale Repository
@@ -121,6 +136,14 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository nicht erfolgreich konfiguriert.", iERROR_RUNTIME, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;
 			}
+			
+			//Hier gibt es die RemoteURL, daher...
+			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
+//			String sDirectoryRepositoryTotalLocal = this.getRepositoryLocalTotal();
+//			String sRepositoryRemoteBranch = this.getRepositoryBranch();
+//			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+//			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);
+			
 			
 			//Die Remote Repository Einstellungen in der Jeweiligen Klasse des Protokolls machen
 			//A) Remote (zuerst, weil die Einstellungen in die Konfiguration des Lokalen Repositories uebenommen werden.
@@ -177,6 +200,39 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);
 			
 			bReturn = true;
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{				
+			
+			//Konfiguriere JGit für GIT
+			
+			//+++ Zugriff sicherstellen			
+			//+++ HIER: GIT Zugriff sicherstellen
+			//Merke: Es gibt keinen Credentials Provider für GIT.
+			//Bei GIT muss man sich auf die korrekte ssh URL verlassen
+			//Übergibt man eine HTTPS URL kommt die Fehlermeldung:
+			//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.TransportException: https://github.com/firak01/Projekt_Kernel02_JAZDummy.git: Authentication is required but no CredentialsProvider has been registered
+			
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.			
+			JGitGitConfigZZZ.configure();
+			System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			
+			
+			bReturn = super.configureGit(objConfig);
+			
+			//Hier gibt es die RemoteURL, daher...
+			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
+			String sDirectoryRepositoryTotalLocal = this.getRepositoryLocalTotal();
+			String sRepositoryRemoteBranch = this.getRepositoryBranch();
+			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+			
+			String sRepositoryTotalRemote = this.getRepositoryTotalRemote();
+			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);			
 		}//end main:
 		return bReturn;
 	}
@@ -502,11 +558,20 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 							
 				//######################################################
 				//Konfiguriere JGit für GIT
-				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+//				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+//				if(bSuccessConfigureGit) {
+//					System.out.println("Git erfolgreich konfiguriert");
+//				}else {
+//					System.out.println("Git NICHT erfolgreich konfiguriert");
+//					break main;
+//				}
+				
+				//Konfiguriere JGit für GIT				
+				boolean bSuccessConfigureGit = this.createGit(objConfig);
 				if(bSuccessConfigureGit) {
-					System.out.println("Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 					
@@ -761,11 +826,20 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 						
 				//######################################################
 				//Konfiguriere JGit für GIT
-				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+//				boolean bSuccessConfigureGit = this.configureGit(objConfig);
+//				if(bSuccessConfigureGit) {
+//					System.out.println("Basis Git erfolgreich konfiguriert");
+//				}else {
+//					System.out.println("Basis Git NICHT erfolgreich konfiguriert");
+//					break main;
+//				}
+				
+				//Konfiguriere JGit für GIT				
+				boolean bSuccessConfigureGit = this.createGit(objConfig);
 				if(bSuccessConfigureGit) {
-					System.out.println("Basis Git erfolgreich konfiguriert");
+					System.out.println("Git erfolgreich konfiguriert und erstellt.");
 				}else {
-					System.out.println("Basis Git NICHT erfolgreich konfiguriert");
+					System.out.println("Git NICHT erfolgreich konfiguriert und erstellt.");
 					break main;
 				}
 				

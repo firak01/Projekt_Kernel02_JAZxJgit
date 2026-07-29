@@ -11,7 +11,13 @@ import use.jgit.common.JschConfigSessionFactoryZZZ;
 public class JGitGitConfigZZZ {
 
     public static void configure() {
-
+    	//Das funktioniert aber nur in bestimmten Umgebungen
+    			String sVersion = org.eclipse.jgit.lib.Constants.class
+    			        .getPackage()
+    			        .getImplementationVersion();
+    			System.out.println("JschConfigSessionFactoryZZZ wird konfiguriert und trifft auf implementierte Version: '" + sVersion + "'");
+    			
+    	
     	JschConfigSessionFactoryZZZ myJschConfigSessionFactory = new JschConfigSessionFactoryZZZ();    	
         SshSessionFactory.setInstance(myJschConfigSessionFactory) ;
     }

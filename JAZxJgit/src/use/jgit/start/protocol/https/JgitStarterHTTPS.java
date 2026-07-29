@@ -11,8 +11,10 @@ import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
@@ -22,6 +24,7 @@ import use.jgit.AbstractJgitStarterRemote;
 import use.jgit.IJgitStarterEnabledZZZ;
 import use.jgit.JgitStarterMain;
 import use.jgit.common.IMergeResultResolvedZZZ;
+import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
@@ -29,6 +32,7 @@ import use.jgit.resolve.EnumSetMappedStrategyMergeConflictUtilZZZ;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.resolve.IJgitResolverEnabled.STRATEGYMERGECONFLICT;
 import use.jgit.start.protocol.git.IJgitStarterGITEnabled;
+import use.jgit.start.protocol.git.JGitGitConfigZZZ;
 import use.jgit.tool.merge.GitPostMergeAnalyse;
 import use.jgit.tool.merge.ResultPostMergeAnalysis;
 import use.jgit.tool.push.GitPostPushAnalyse;
@@ -177,9 +181,12 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				System.out.println("Git Credentials Provider created done.");
 				this.setCredentialsProviderObject(credentialsProvider);
 				
-				
-				
-			
+				//Hier gibt es die RemoteURL, daher...
+				//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
+				String sDirectoryRepositoryTotalLocal = this.getRepositoryLocalTotal();
+				String sRepositoryRemoteBranch = this.getRepositoryBranch();
+				Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+				JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);
 				
 				bReturn = true;
 			//###############################################################	  	
@@ -188,6 +195,39 @@ public class JgitStarterHTTPS<T> extends AbstractJgitStarterRemote<T> implements
 				throw ez;
 			}
 			
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean configureGit(IConfigStarterLocalJGIT objConfig) throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{				
+			
+			//Konfiguriere JGit für GIT
+			
+			//+++ Zugriff sicherstellen			
+			//+++ HIER: GIT Zugriff sicherstellen
+			//Merke: Es gibt keinen Credentials Provider für GIT.
+			//Bei GIT muss man sich auf die korrekte ssh URL verlassen
+			//Übergibt man eine HTTPS URL kommt die Fehlermeldung:
+			//basic.zBasic.ExceptionZZZ: org.eclipse.jgit.api.errors.TransportException: https://github.com/firak01/Projekt_Kernel02_JAZDummy.git: Authentication is required but no CredentialsProvider has been registered
+			
+			//0) SshSessionFactory ... mit den verwendeten Ids, Pfaden, etc.			
+			//JGitGitConfigZZZ.configure();
+			//System.out.println("Konfigurierte Ssh Session Factory: " + SshSessionFactory.getInstance().getClass());
+			
+			
+			bReturn = super.configureGit(objConfig);
+			
+			//Hier gibt es die RemoteURL, daher...
+			//In das lokale Repository soll nun unbedingt der passende Eintrag in die GIT-Konfigurationsdatei 'config' gemacht werden
+			String sDirectoryRepositoryTotalLocal = this.getRepositoryLocalTotal();
+			String sRepositoryRemoteBranch = this.getRepositoryBranch();
+			Repository repo = JgitUtilZZZ.getRepositoryObject(sDirectoryRepositoryTotalLocal, true);
+			
+			String sRepositoryTotalRemote = this.getRepositoryTotalRemote();
+			JgitUtilZZZ.ensureRemoteExists(repo, sRepositoryRemoteAlias, sRepositoryTotalRemote, sRepositoryRemoteBranch, true);			
 		}//end main:
 		return bReturn;
 	}
