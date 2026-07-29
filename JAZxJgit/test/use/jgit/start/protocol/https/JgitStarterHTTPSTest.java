@@ -3,6 +3,8 @@ package use.jgit.start.protocol.https;
 import java.io.File;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.TransportException;
 
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_COLOR_BURNPeer;
 
@@ -17,6 +19,7 @@ import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
 import use.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
 import use.jgit.config.ConfigRepositoryManager4TestHTTPS_onAny;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
@@ -26,6 +29,8 @@ import use.jgit.config.TestHelperGIT;
 import use.jgit.config.TestHelperHTTPS;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
+import use.jgit.start.protocol.git.IJgitStarterGIT;
+import use.jgit.start.protocol.git.JgitStarterGIT;
 
 public class JgitStarterHTTPSTest extends TestCase{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
@@ -53,12 +58,11 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//1. Repositories aus vorherigen Tests entfernen
 			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
 			
-			//2. RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigRepoManagerRemote = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
+			//2. Remote RepositoryManger für die Erstellung von TestRepositories holen
+			objConfigRepoManagerRemote = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
 			
-			//3. StarterManager für die Aktivitäten mit dem Lokalen/Remote Repository holen
-			objConfigStarterRemote = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
-												
+			//3. RepositoryStarter ausgehend vom OriginalRepository holen
+			objConfigStarterRemote = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();												
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}
@@ -97,17 +101,18 @@ public class JgitStarterHTTPSTest extends TestCase{
 	public void testStarter_createGit() {
 		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
 		try {
+			Syso.printSection("createGit");
+			
 			//###################################################
-			//0) erstelle das geclonte Repo
-			Syso.printSection("0) Create local repo");
-
-			//++++++++++++++++++++++++++++++++++++++++++++++
-			//0.1. Lokales Repository als Clone bereitstellen
-			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
-			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;				
+			//1. Erstelle mit dem RepositoryManager ein neues Repo
+			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
+			//       Darum jede "Variante" in einer eigenen test-Methode
+			
+			//###################################################
+			//0.1. "Längere" Variante: Konfiguration im Konstruktor übergeben
+			JgitRepositoryManagerHTTPS objRepositoryManager = null;				
 			try {					
-				objRepositoryManager =  new JgitRepositoryManagerGIT(objConfigRepoManagerRemote);								
+				objRepositoryManager =  new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);								
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -125,16 +130,16 @@ public class JgitStarterHTTPSTest extends TestCase{
 			
 			
 			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			objConfigStarterRemoteCloned = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
-			
-			
+			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
 			
 			
 			//###################################################
+			IJgitStarterHTTPS objStarter = null;
+			
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
 			Syso.printSection("A) Create Git-Object");
 			try {					
-				JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
+				objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
 				
@@ -146,7 +151,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//B) "Noch Längere" Variante: Konfiguration übergeben
 			Syso.printSection("B) Create Git-Object");
 			try {
-				JgitStarterHTTPS objStarter= new JgitStarterHTTPS();
+				objStarter= new JgitStarterHTTPS();
 				objStarter.configureGit(objConfigStarterRemote); 
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
@@ -158,7 +163,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) Create Git-Object");
 			try {
-				JgitStarterHTTPS objStarter = new JgitStarterHTTPS();
+				objStarter = new JgitStarterHTTPS();
 				Git gitByStarter = objStarter.createGitObject(objConfigStarterRemote);
 				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
@@ -188,39 +193,43 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-			
-			
-			
+
 			//###################################################
-			//1. A) "Längere" Variante: Konfiguration im Konstruktor übergeben
+			//0) erstelle das geclonte Repo
+			Syso.printSection("0) Create local repo");
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//0.1. Lokales Repository als Clone bereitstellen
+			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
+			//   "Längere" Variante: Konfiguration im Konstruktor übergeben			
 			JgitRepositoryManagerHTTPS objRepositoryManager = null;
-			Syso.printSection("A) CloneRepositoryTo");
 			try {					
 				objRepositoryManager = new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
 			
-			//String sRepositoryProject = objRepositoryManager.getRepositoryProject();
-			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);//in der clone-Methode wird das Projekt geholt.... , sRepositoryProject);			
-			boolean bSuccess = false;
-			
-			try {
-				objRepositoryManager.cloneRepositoryTo(objFileDirectoryANew);	
-				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
-				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
-				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");			
+			boolean bSuccess = false;						
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseA); //in der Clone-Methode wird das Projekt geholt... , sRepositoryProject);		
+			try {							
+				objRepositoryManager.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
+				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
+						
+			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
+			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
 			
-			//2. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
+			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
 			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
 			String sMachine = EnvironmentZZZ.getHostName();
-			String sLine = sDate + " " + sMachine + " " + "per JunitTest (GIT) generiert.";
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest (HTTPS) generiert.";
 			
 			String sProjectName = objRepositoryManager.getRepositoryProjectName();
-			String sFilePathRepositoryProject = FileEasyZZZ.joinFilePathName(objFileDirectoryANew, sProjectName);
+			String sFilePathRepositoryProject = FileEasyZZZ.joinFilePathName(objFileRepoBaseLocalNew, sProjectName);
 			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sFilePathRepositoryProject, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
 			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
 			
@@ -244,19 +253,27 @@ public class JgitStarterHTTPSTest extends TestCase{
 			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
 			objReplacer.replaceAndSave(0, sLine);
 			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
-			JgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
-			objStarter.statusit();  
+			//Hole erst einmal die für das neu erstellte lokale Repo die passende RemoteStarter Konfiguration						
+			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemoteCloned);
+			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+			objStarter.statusit();
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
 			Syso.println(sStatusXmlPreCommit);
 			Syso.printSeparator('x');
 			
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//4. Führe den COMMIT aus
-			bSuccess = objStarter.commitit("commit by JUInitTest");
+			Syso.printSection("commit");
+			
+			bSuccess = objStarter.commitit("commit (HTTPS) by JUInitTest");
 			assertTrue("Commit nicht erfolgreich", bSuccess);
 			System.out.println("commit erfolgreich");			
 			Syso.printSeparator('x');
 			
+			//++++++++++++++++++++++++++++++++++++++++++++++
 			//5. Führe den STATUS erneut aus... vergleiche
 			objStarter.statusit(); 			
 			
@@ -266,6 +283,137 @@ public class JgitStarterHTTPSTest extends TestCase{
 			assertFalse("Status wert hat sich trotz commit nicht verändert", bValue);
 			
 			
+			
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}	
+	}
+	
+	/**Idee: Erstelle erst ein lokales Test-Repository. Auch mit GIT!!!
+    Ändere darin eine Datei
+    Führe den STATUS aus... sichere ihn, zum Vergleich.
+
+    Führe den COMMIT aus
+
+	Führe den STATUS erneut aus... vergleiche 
+*/
+	public void testStarter_status_commit_push() {
+		//Merke: Verwendet wird die gültige, im setup gefundene Konfiguration.
+		try {
+			Syso.printSection("status_commit_push");			
+			
+			//###################################################
+			//1. Erstelle mit dem RepositoryManager ein neues Repo
+			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
+			//       Darum jede "Variante" in einer eigenen test-Methode
+			
+			//###################################################
+			//0) erstelle das geclonte Repo
+			Syso.printSection("0) Create local repo");
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//0.1. Lokales Repository als Clone bereitstellen
+			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
+			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
+			JgitRepositoryManagerHTTPS objRepositoryManagerRemote = null;
+			try {					
+				objRepositoryManagerRemote = new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);					
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+							
+			boolean bSuccess = false;			
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseB); //in der clone Methode wird das Projekt geholt... , sRepositoryProject); //B !!!			
+			try {							
+				objRepositoryManagerRemote.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
+				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
+			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+						
+			//+++++++++++++++++++++++++++++++++++++++++++
+			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
+			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
+			String sMachine = EnvironmentZZZ.getHostName();
+			String sLine = sDate + " " + sMachine + " " + "per JunitTest (HTTPS) generiert.";
+			
+			String sProjectName = objRepositoryManagerRemote.getRepositoryProjectName();
+			String sFilePathRepositoryProject = FileEasyZZZ.joinFilePathName(objFileRepoBaseLocalNew, sProjectName);
+			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sFilePathRepositoryProject, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
+			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
+			
+			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
+			
+			//Nette Gelegenheit diese FileText Bearbeiter zu testen und weiterzuentwickeln...
+			//FileTextAppenderZZZ objApender = new FileTextAppenderZZZ(sFilePathTotal);
+			//objApender.appendAndSave(sLine);
+			
+			//FileTextInserterZZZ objInserter = new FileTextInserterZZZ(sFilePathTotal);
+			//a) objInserter.insertBeforeAndSave(0, sLine);
+			//b) objInserter.insertBehindAndSave(0, sLine);
+			
+			//FileTextPrependerZZZ objPrepender = new FileTextPrependerZZZ(sFilePathTotal);
+			//objPrepender.prependAndSave(sLine); 
+
+			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
+			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
+			//objWriter.writeLine(sLine);
+			
+			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
+			objReplacer.replaceAndSave(0, sLine);
+			
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
+			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
+			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemoteCloned);
+			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+			objStarter.statusit();
+			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPreCommit);
+			Syso.printSeparator('x');
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++
+			//4. Führe den COMMIT aus
+			Syso.printSection("commit");
+			
+			bSuccess = objStarter.commitit("commit (HTTPS) by JUInitTest");
+			assertTrue("Commit nicht erfolgreich", bSuccess);
+			System.out.println("commit erfolgreich");			
+			Syso.printSeparator('x');
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//5. Führe den STATUS erneut aus... vergleiche
+			objStarter.statusit();			
+			
+			String sStatusXmlPostCommit = objStarter.getStatusStringXml();
+			Syso.println(sStatusXmlPostCommit);
+			boolean bValue = sStatusXmlPostCommit.equals(sStatusXmlPreCommit);
+			assertFalse("Status wert hat sich unerwartet trotz commit nicht verändert", bValue);
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//6. Pushe den commit zum Remote Repository
+			Syso.printSeparator('x');
+			try {
+				Syso.printSection("push");
+				bSuccess = objStarter.pushit();
+				assertTrue("Push nicht erfolgreich", bSuccess);
+				
+				String sStatusXmlPostPush = objStarter.getStatusStringXml();
+				Syso.println(sStatusXmlPostPush);
+				bValue = sStatusXmlPostPush.equals(sStatusXmlPostCommit);
+				assertTrue("Status wert hat sich unerwartet wg. push verändert", bValue);
+			} catch (TransportException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CheckoutConflictException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());

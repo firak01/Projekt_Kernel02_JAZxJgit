@@ -53,7 +53,9 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 			
 			//2. RepositoryManger für die Erstellung von TestRepositories holen
 			objConfigRepoManager = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
-												
+						
+			//3. RepositoryStarter ausgehend vom OriginalRepository holen
+			//... Starter sind hier nicht das Thema
 		}catch(ExceptionZZZ ez){
 			fail("Method throws an exception." + ez.getMessageLast());
 		}
@@ -145,10 +147,10 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 			
 			//###################################################
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;
+			JgitRepositoryManagerHTTPS objRepositoryManager = null;
 			Syso.printSection("A) CloneRepositoryTo");
 			try {					
-				objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);					
+				objRepositoryManager = new JgitRepositoryManagerHTTPS(objConfigRepoManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -186,9 +188,9 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 			//###################################################
 			//B) "Noch Längere" Variante: Konfiguration übergeben
 			Syso.printSection("B) CloneRepositoryTo");
-			JgitRepositoryManagerGIT objRepositoryManager = null;
+			JgitRepositoryManagerHTTPS objRepositoryManager = null;
 			try {
-				objRepositoryManager = new JgitRepositoryManagerGIT();
+				objRepositoryManager = new JgitRepositoryManagerHTTPS();
 				objRepositoryManager.configureGit(objConfigRepoManager); 
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
@@ -230,9 +232,9 @@ public class JgitRepositoryManagerHTTPSTest extends TestCase{
 			//###################################################
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) CloneRepositoryTo");
-			JgitRepositoryManagerGIT objRepositoryManager = null;
+			JgitRepositoryManagerHTTPS objRepositoryManager = null;
 			try {
-				objRepositoryManager = new JgitRepositoryManagerGIT();				
+				objRepositoryManager = new JgitRepositoryManagerHTTPS();				
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}

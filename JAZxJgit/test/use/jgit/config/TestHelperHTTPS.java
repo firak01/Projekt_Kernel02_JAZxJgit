@@ -76,4 +76,54 @@ public class TestHelperHTTPS extends TestHelper {
 		}//end main:
 		return objConfigStarterRemote;
 	}
+	
+	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(File objFileBaseLocalProject) throws ExceptionZZZ{
+		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
+		main:{		
+			/* 
+			 * PROBLEM: Im Setup wurde das lokale Test-Repository gerade gelöscht. Darum ist es nicht da
+			 *          Also hier darauf verlassen, das im Test das Repository korrekt erzeugt wird.
+			 */         
+			if(objFileBaseLocalProject==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokale Repo-Projekt Verzeichnis nicht übergeben.", iERROR_PARAMETER_MISSING, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			String sRepoBaseLocalUsed = objFileBaseLocalProject.getAbsolutePath();			
+			if(!FileEasyZZZ.exists(objFileBaseLocalProject)) {
+				ExceptionZZZ ez = new ExceptionZZZ("File Objekt für lokales Repo. Basis Verzeichnis existiert nicht: '" + sRepoBaseLocalUsed + "'", iERROR_PARAMETER_MISSING, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+						
+			//Für die unterschiedlichen Entwicklungsumgebungen die passende Konfiguration bereitstellen.
+			//IDEE: ArrayList der möglichen Konfigurationsobjekte erstellen und durchgehen.
+			List<IConfigStarterRemoteJGIT> listConfig = new ArrayList<IConfigStarterRemoteJGIT>();
+			objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_onAnyA();			
+			listConfig.add(objConfigStarterRemote);
+			
+			objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_onAnyB();			
+			listConfig.add(objConfigStarterRemote);
+			//listConfig.add(new ConfigRepositoryManager4TestHTTPS_onDEV04());
+			//listConfig.add(new ConfigRepositoryManager4TestHTTPS_onTUBAF());
+		
+			Syso.println("Suche in dieser Entwicklungsumgebung das passende Konfigurationsobjekt für das das Basis Repository: '" + sRepoBaseLocalUsed + "'");
+			for(IConfigStarterRemoteJGIT objConfigRepoManagerTemp : listConfig) {
+				String sRepoBaseLocalTemp = objConfigRepoManagerTemp.readRepositoryLocalBaseDirectory();
+				String sRepoBaseLocalProjectTemp = FileEasyZZZ.joinFilePathName(sRepoBaseLocalTemp, objConfigRepoManagerTemp.readRepositoryProjectName());
+				
+				String sRepoBaseLocalProjectUsed = FileEasyZZZ.joinFilePathName(sRepoBaseLocalUsed, objConfigRepoManagerTemp.readRepositoryProjectName());
+				if(sRepoBaseLocalProjectUsed.equals(sRepoBaseLocalProjectTemp)) {
+					Syso.println("Passendes Konfigurationsobject gefunden für das Basis Repository Projekt: '" + sRepoBaseLocalProjectUsed + "'");
+					objConfigStarterRemote=objConfigRepoManagerTemp;
+					break;
+				}
+			}
+		
+			if(objConfigStarterRemote==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konnte kein passendes Konfigurationsobjekt finden für das in dieser Entwicklungsumgebung existierende Basis Repository '" + sRepoBaseLocalUsed + "'", iERROR_RUNTIME, TestHelperGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}	
+		}//end main:
+		return objConfigStarterRemote;
+	}
 }
