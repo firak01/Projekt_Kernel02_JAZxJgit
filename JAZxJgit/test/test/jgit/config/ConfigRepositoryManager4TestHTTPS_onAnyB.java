@@ -1,4 +1,4 @@
-package use.jgit.config;
+package test.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;

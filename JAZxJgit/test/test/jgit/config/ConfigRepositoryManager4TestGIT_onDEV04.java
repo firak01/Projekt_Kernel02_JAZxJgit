@@ -1,6 +1,7 @@
-package use.jgit.config;
+package test.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
+import use.jgit.config.AbstractConfigRepositoryManagerJGIT;
 
 public class ConfigRepositoryManager4TestGIT_onDEV04  extends AbstractConfigRepositoryManagerJGIT{
 	private static final long serialVersionUID = 662451230649662545L;

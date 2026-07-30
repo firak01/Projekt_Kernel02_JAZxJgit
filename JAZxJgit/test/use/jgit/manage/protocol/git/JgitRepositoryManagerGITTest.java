@@ -16,54 +16,55 @@ import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
 import basic.zWin32.com.wmi.WMIZZZ;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
+import test.jgit.config.AbstractJgitGITTest;
+import test.jgit.config.ConfigRepositoryManager4TestGIT_onDEV04;
+import test.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
+import test.jgit.config.ITestHelperConstant;
+import test.jgit.config.TestHelper;
+import test.jgit.config.TestHelperGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
-import use.jgit.config.ITestHelperConstant;
-import use.jgit.config.TestHelper;
-import use.jgit.config.TestHelperGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 
-public class JgitRepositoryManagerGITTest extends TestCase{
+public class JgitRepositoryManagerGITTest extends AbstractJgitGITTest{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
 	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
-	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
-	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 * 
-	 * Aufbau einer Repository Struktur:
-	 * 
-	 * Remote
-		   ^
-		   |
-		+--+----------------+
-		|                   |
-		Clone A         Clone B
-	 */
-	protected void setUp(){
-		try {
-			//1. Repositories aus vorherigen Tests entfernen
-			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
-			
-			//2. RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
-			
-			//3. RepositoryStarter ausgehend vom OriginalRepository holen
-			//... Starter sind hier nicht das Thema
-		}catch(ExceptionZZZ ez){
-			fail("Method throws an exception." + ez.getMessageLast());
-		}
-	
-	}//END setup
-	
-	public void tearDown() throws Exception {
-		
-	}
+//	//Konfigurationen, je nach Entwicklungsumgebung eine andere
+//	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
+//	
+//	/* (non-Javadoc)
+//	 * @see junit.framework.TestCase#setUp()
+//	 * 
+//	 * Aufbau einer Repository Struktur:
+//	 * 
+//	 * Remote
+//		   ^
+//		   |
+//		+--+----------------+
+//		|                   |
+//		Clone A         Clone B
+//	 */
+//	protected void setUp(){
+//		try {
+//			//1. Repositories aus vorherigen Tests entfernen
+//			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
+//			
+//			//2. RepositoryManger für die Erstellung von TestRepositories holen
+//			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
+//			
+//			//3. RepositoryStarter ausgehend vom OriginalRepository holen
+//			//... Starter sind hier nicht das Thema
+//		}catch(ExceptionZZZ ez){
+//			fail("Method throws an exception." + ez.getMessageLast());
+//		}
+//	
+//	}//END setup
+//	
+//	public void tearDown() throws Exception {
+//		
+//	}
 	
 	
 	
@@ -98,7 +99,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
 			Syso.printSection("A) Create Git-Object");
 			try {					
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);
+				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(configRepositoryManager);
 				Git gitByManager = objRepositoryManager.createGitObject();
 				assertNotNull(gitByManager);
 				
@@ -111,7 +112,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			Syso.printSection("B) Create Git-Object");
 			try {
 				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.configureGit(objConfigRepoManager); 
+				objRepositoryManager.configureGit(configRepositoryManager); 
 				Git gitByManager = objRepositoryManager.createGitObject();
 				assertNotNull(gitByManager);
 			}catch(ExceptionZZZ ez){
@@ -122,8 +123,8 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			//C) "Verkürzte" Variante: Konfiguration erst der Methode übergeben.
 			Syso.printSection("C) Create Git-Object");
 			try {
-				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);
-				Git gitByManager = objRepositoryManager.createGitObject(objConfigRepoManager);
+				JgitRepositoryManagerGIT objRepositoryManager = new JgitRepositoryManagerGIT();
+				Git gitByManager = objRepositoryManager.createGitObject(configRepositoryManager);
 				assertNotNull(gitByManager);
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
@@ -149,7 +150,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			JgitRepositoryManagerGIT objRepositoryManager = null;
 			Syso.printSection("A) CloneRepositoryTo");
 			try {					
-				objRepositoryManager = new JgitRepositoryManagerGIT(objConfigRepoManager);					
+				objRepositoryManager = new JgitRepositoryManagerGIT(configRepositoryManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -190,7 +191,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			JgitRepositoryManagerGIT objRepositoryManager = null;
 			try {
 				objRepositoryManager = new JgitRepositoryManagerGIT();
-				objRepositoryManager.configureGit(objConfigRepoManager); 
+				objRepositoryManager.configureGit(configRepositoryManager); 
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -239,7 +240,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			}
 				
 			try {
-				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryANew);
+				objRepositoryManager.cloneRepositoryTo(configRepositoryManager, objFileDirectoryANew);
 				bSuccess = FileEasyZZZ.exists(objFileDirectoryANew);
 				assertTrue("Repository existiert nicht: '" + objFileDirectoryANew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileDirectoryANew.getAbsolutePath() + "'");	
@@ -248,7 +249,7 @@ public class JgitRepositoryManagerGITTest extends TestCase{
 			}			
 			
 			try {
-				objRepositoryManager.cloneRepositoryTo(objConfigRepoManager, objFileDirectoryBNew);	
+				objRepositoryManager.cloneRepositoryTo(configRepositoryManager, objFileDirectoryBNew);	
 				bSuccess = FileEasyZZZ.exists(objFileDirectoryBNew);
 				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");		

@@ -1,28 +1,21 @@
-package use.jgit.config;
+package test.jgit.config;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zKernel.GetOptZZZ;
+import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 
-/** Hole die Informationen aus den Umgebungsvariablen beim Eclipse Start.
- *  Dies ist u.a. wichtig, weil sPAT (Personal Access Token) hier nicht hart coded stehen darf,
- *  dies wird beim Hochladen nach GitHub verboten und führt zu Probleme.
- * @author Fritz Lindhauer
- *
- */
-public class ConfigRepositoryManager4TestHTTPS_onAny  extends ConfigRepositoryManager4TestGIT_onAny{
-	private static final long serialVersionUID = 662451230649662545L;
-
-	public ConfigRepositoryManager4TestHTTPS_onAny() throws ExceptionZZZ {
+public class ConfigStarterRemote4TestHTTPS_onAnyB  extends AbstractConfigStarterRemote4TestJGIT_onAnyX{
+	
+	public ConfigStarterRemote4TestHTTPS_onAnyB() throws ExceptionZZZ {
 		super();		
 	}
 	
-	public ConfigRepositoryManager4TestHTTPS_onAny(String[] saArg) throws ExceptionZZZ {
-		super(saArg); 
-	} 
-	
 	//Merke: Für die JUnit Tests werden die Argumente nicht über die Kommandozeile übergeben, sondern sind hier "hart" verdrahtet.
-	//  	 Darum sind die Pattern, Argument und ...Default... Methoden hier überflüssig.
+	//       Darum sind die ...Default... Methoden hier überflüssig.
 	
+	//### aus IConfigZZZ
 	@Override
 	public String getPatternStringDefault() throws ExceptionZZZ {
 		// TODO Auto-generated method stub
@@ -34,17 +27,16 @@ public class ConfigRepositoryManager4TestHTTPS_onAny  extends ConfigRepositoryMa
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
 	//    LOKALE KONFIGURATION
 	//++++++++++++++++++++++++++++++++++++++++++
 	
-
 	//### IConfigProjectZZZ
 
 	
-	//### aus IConfigStarterLocalJGIT	
 
 	
 	//### aus IConfigWithAuthentificationJGIT
@@ -57,7 +49,12 @@ public class ConfigRepositoryManager4TestHTTPS_onAny  extends ConfigRepositoryMa
 	public String readPersonalAccessToken() throws ExceptionZZZ{
 		return System.getenv("sPATZZZ");
 	}
-	
-	//### aus IConfigRepositoryManagerJGIT
-	
+		
+	//### aus IConfigStarterLocalJGIT	
+	//!!! Wichtig, hier nicht mit dem "Hauptrepository" arbeiten, das über einen Umgebungsvariable definiert wurde, 
+	//    sondern mit dem extra erzeugten TEST Repository
+	@Override
+	public String readRepositoryLocalBaseDirectory() throws ExceptionZZZ {				
+		return ITestHelperConstant.sDirectoryRepoBaseB;
+	}
 }
