@@ -1,4 +1,4 @@
-package use.jgit.config;
+package test.jgit.config;
 
 import java.io.File;
 import java.util.ArrayList;

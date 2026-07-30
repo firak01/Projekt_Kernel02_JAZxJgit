@@ -17,29 +17,30 @@ import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
-import use.jgit.config.ConfigRepositoryManager4TestHTTPS_onAny;
+import test.jgit.config.AbstractJgitHTTPSTest;
+import test.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
+import test.jgit.config.ConfigRepositoryManager4TestHTTPS_onAny;
+import test.jgit.config.ITestHelperConstant;
+import test.jgit.config.TestHelper;
+import test.jgit.config.TestHelperGIT;
+import test.jgit.config.TestHelperHTTPS;
 import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
-import use.jgit.config.ITestHelperConstant;
-import use.jgit.config.TestHelper;
-import use.jgit.config.TestHelperGIT;
-import use.jgit.config.TestHelperHTTPS;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 import use.jgit.start.protocol.git.IJgitStarterGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 
-public class JgitStarterHTTPSTest extends TestCase{
+public class JgitStarterHTTPSTest extends AbstractJgitHTTPSTest{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
 	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
 	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;	
-	private IConfigRepositoryManagerJGIT objConfigRepoManagerRemote=null;
-	private IConfigStarterRemoteJGIT objConfigStarterRemoteCloned=null;
+//	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;	
+//	private IConfigRepositoryManagerJGIT objConfigRepoManagerRemote=null;
+//	private IConfigStarterRemoteJGIT objConfigStarterRemoteCloned=null;
 	
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
@@ -53,25 +54,22 @@ public class JgitStarterHTTPSTest extends TestCase{
 		|                   |
 		Clone A         Clone B
 	 */
-	protected void setUp(){
-		try {
-			//1. Repositories aus vorherigen Tests entfernen
-			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
-			
-			//2. Remote RepositoryManger für die Erstellung von TestRepositories holen
-			objConfigRepoManagerRemote = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
-			
-			//3. RepositoryStarter ausgehend vom OriginalRepository holen
-			objConfigStarterRemote = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();												
-		}catch(ExceptionZZZ ez){
-			fail("Method throws an exception." + ez.getMessageLast());
-		}
-	}//END setup
+//	protected void setUp(){
+//		try {
+//			//1. Repositories aus vorherigen Tests entfernen
+//			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
+//			
+//			//2. Remote RepositoryManger für die Erstellung von TestRepositories holen
+//			configRepositoryManager = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
+//			
+//			//3. RepositoryStarter ausgehend vom OriginalRepository holen
+//			configStarter = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();												
+//		}catch(ExceptionZZZ ez){
+//			fail("Method throws an exception." + ez.getMessageLast());
+//		}
+//	}//END setup
 	
-	public void tearDown() throws Exception {
 		
-	}
-	
 	
 	
 	//###################################################
@@ -112,7 +110,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//0.1. "Längere" Variante: Konfiguration im Konstruktor übergeben
 			JgitRepositoryManagerHTTPS objRepositoryManager = null;				
 			try {					
-				objRepositoryManager =  new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);								
+				objRepositoryManager =  new JgitRepositoryManagerHTTPS(configRepositoryManager);								
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -130,7 +128,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			
 			
 			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+			configStarter = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
 			
 			
 			//###################################################
@@ -139,7 +137,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
 			Syso.printSection("A) Create Git-Object");
 			try {					
-				objStarter = new JgitStarterHTTPS(objConfigStarterRemote);
+				objStarter = new JgitStarterHTTPS(configStarter);
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
 				
@@ -152,7 +150,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			Syso.printSection("B) Create Git-Object");
 			try {
 				objStarter= new JgitStarterHTTPS();
-				objStarter.configureGit(objConfigStarterRemote); 
+				objStarter.configureGit(configStarter); 
 				Git gitByStarter = objStarter.createGitObject();
 				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
@@ -164,7 +162,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			Syso.printSection("C) Create Git-Object");
 			try {
 				objStarter = new JgitStarterHTTPS();
-				Git gitByStarter = objStarter.createGitObject(objConfigStarterRemote);
+				Git gitByStarter = objStarter.createGitObject(configStarter);
 				assertNotNull(gitByStarter);
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
@@ -204,7 +202,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//   "Längere" Variante: Konfiguration im Konstruktor übergeben			
 			JgitRepositoryManagerHTTPS objRepositoryManager = null;
 			try {					
-				objRepositoryManager = new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);					
+				objRepositoryManager = new JgitRepositoryManagerHTTPS(configRepositoryManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -221,7 +219,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			}
 						
 			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+			configStarter = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
 			
 			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
 			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
@@ -256,7 +254,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			//Hole erst einmal die für das neu erstellte lokale Repo die passende RemoteStarter Konfiguration						
-			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemoteCloned);
+			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(configStarter);
 			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 			objStarter.statusit();
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
@@ -317,7 +315,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
 			JgitRepositoryManagerHTTPS objRepositoryManagerRemote = null;
 			try {					
-				objRepositoryManagerRemote = new JgitRepositoryManagerHTTPS(objConfigRepoManagerRemote);					
+				objRepositoryManagerRemote = new JgitRepositoryManagerHTTPS(configRepositoryManager);					
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
@@ -334,7 +332,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			}
 			
 			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			objConfigStarterRemoteCloned = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+			configStarter = TestHelperHTTPS.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
 						
 			//+++++++++++++++++++++++++++++++++++++++++++
 			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
@@ -370,7 +368,7 @@ public class JgitStarterHTTPSTest extends TestCase{
 			
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
-			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(objConfigStarterRemoteCloned);
+			IJgitStarterHTTPS objStarter = new JgitStarterHTTPS(configStarter);
 			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 			objStarter.statusit();
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();

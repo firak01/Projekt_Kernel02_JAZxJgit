@@ -1,4 +1,4 @@
-package use.jgit.config;
+package test.jgit.config;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,6 +12,8 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.system.Syso;
 import basic.zWin32.com.wmi.WMIZZZ;
 import use.jgit.JgitStarterMain;
+import use.jgit.config.IConfigRepositoryManagerJGIT;
+import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.start.protocol.ssh.JgitStarterSSH;
 
 public class TestHelperGIT extends TestHelper {

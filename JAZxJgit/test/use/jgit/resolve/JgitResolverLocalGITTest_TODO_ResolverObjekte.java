@@ -5,11 +5,11 @@ import org.eclipse.jgit.api.Git;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.system.Syso;
 import junit.framework.TestCase;
-import use.jgit.config.ConfigStarterRemote4TestGIT_onAny;
+import test.jgit.config.ConfigStarterRemote4TestGIT_onAny;
+import test.jgit.config.ITestHelperConstant;
+import test.jgit.config.TestHelper;
+import test.jgit.config.TestHelperGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
-import use.jgit.config.ITestHelperConstant;
-import use.jgit.config.TestHelper;
-import use.jgit.config.TestHelperGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 
 public class JgitResolverLocalGITTest_TODO_ResolverObjekte extends TestCase{
