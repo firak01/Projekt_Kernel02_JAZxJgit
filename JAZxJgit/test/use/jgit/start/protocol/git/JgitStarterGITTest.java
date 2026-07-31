@@ -7,19 +7,14 @@ import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.FileTextReplacerZZZ;
-import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import test.jgit.config.AbstractJgitGITTest;
 import test.jgit.config.ITestHelperConstant;
 import test.jgit.config.RepositoryContext;
-import test.jgit.config.TestHelper;
 import test.jgit.config.TestHelperGIT;
 import test.jgit.config.TestRepositoryFactoryGIT;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 
 /**
  	Konfigurationen, je nach Entwicklungsumgebung eine andere
