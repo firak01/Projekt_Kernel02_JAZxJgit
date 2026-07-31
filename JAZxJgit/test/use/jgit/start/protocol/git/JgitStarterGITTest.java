@@ -9,69 +9,51 @@ import org.eclipse.jgit.api.errors.TransportException;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.FileTextAppenderZZZ;
-import basic.zBasic.util.file.FileTextInserterZZZ;
-import basic.zBasic.util.file.FileTextPrependerZZZ;
 import basic.zBasic.util.file.FileTextReplacerZZZ;
-import basic.zBasic.util.file.FileTextWriterZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
-import junit.framework.TestCase;
 import test.jgit.config.AbstractJgitGITTest;
 import test.jgit.config.ITestHelperConstant;
+import test.jgit.config.RepositoryContext;
 import test.jgit.config.TestHelper;
 import test.jgit.config.TestHelperGIT;
-import test.jgit.config.TestHelperHTTPS;
+import test.jgit.config.TestRepositoryFactoryGIT;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigRepositoryManagerJGIT;
-import use.jgit.config.IConfigStarterRemoteJGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
-import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
-import use.jgit.start.protocol.https.JgitStarterHTTPS;
 
-public class JgitStarterGITTest extends AbstractJgitGITTest{
-	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
-	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
-	
-	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-//	private IConfigRepositoryManagerJGIT objConfigRepoManagerRemote=null;
-//	private IConfigStarterRemoteJGIT objConfigStarterRemote=null;	
-//	private IConfigStarterRemoteJGIT objConfigStarterRemoteCloned=null;
-	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 * 
+/**
+ 	Konfigurationen, je nach Entwicklungsumgebung eine andere
+
 	 * Aufbau einer Repository Struktur:
-	 * 
-	 * Remote
+	  
+	  	Remote
 		   ^
 		   |
 		+--+----------------+
 		|                   |
 		Clone A         Clone B
-	 */
-//	protected void setUp(){
-//		try {
-//			//1. Repositories aus vorherigen Tests entfernen
-//			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
-//			
-//			//2. Remote RepositoryManger für die Erstellung von TestRepositories holen
-//			objConfigRepoManagerRemote = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();			
-//			
-//			//3. RepositoryStarter ausgehend vom OriginalRepository holen
-//			objConfigStarterRemote = TestHelperGIT.findStarterRemoteConfiguration_DefinedForEnvironmentCurrent();
-//			
-//			
-//			
-//		}catch(ExceptionZZZ ez){
-//			fail("Method throws an exception." + ez.getMessageLast());
-//		}
-//	}//END setup
-	
-	
-	
-	
-	
+ 
+  
+           //Merke: Es gibt die TestRepositoryFactory.createCloneA(configRepositoryManager);
+			//IDEE: Mit dieser TestFactory verkürzt man idealerweise im JGitStarterTests den Code.
+			//      In dem JgitRepositoryManager...Tests bleibt dann der ausführliche Code bestehen, also: ...
+			//      objRepositoryManagerRemote = new JgitRepositoryManagerGIT(configRepositoryManager);
+			//      ... objRepositoryManagerRemote.cloneRepositoryTo(objFileRepoBaseLocalNew);
+			//			
+			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
+			//			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+			//
+			//I			JgitStarterGIT objStarter = new JgitStarterGIT(configStarter);
+			
+ * @author Fritz Lindhauer
+ *
+ */
+public class JgitStarterGITTest extends AbstractJgitGITTest{
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
+	private static String sDirectoryRepoBaseC=ITestHelperConstant.sDirectoryRepoBaseC;
+
+
 	//###################################################
 	//Die Tests		
 	public void testContructor(){
@@ -102,24 +84,14 @@ public class JgitStarterGITTest extends AbstractJgitGITTest{
 			Syso.printSection("createGit");
 			
 			//###################################################
-			//0) erstelle das geclonte Repo
-			Syso.printSection("0) Create local repo");
-
-			//++++++++++++++++++++++++++++++++++++++++++++++
-			//0.1. Lokales Repository als Clone bereitstellen
-			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
-			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;				
-			try {					
-				objRepositoryManager =  new JgitRepositoryManagerGIT(configRepositoryManager);								
-			}catch(ExceptionZZZ ez){
-				fail("Method throws an exception." + ez.getMessageLast());
-			}
-							
-			boolean bSuccess = false;						
-			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseA);		
-			try {							
-				objRepositoryManager.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+			//1. Erstelle mit dem RepositoryManager ein neues Repo
+			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
+			//       Darum jede "Variante" in einer eigenen test-Methode								
+			RepositoryContext ctx = TestRepositoryFactoryGIT.createCloneA(configRepositoryManager);
+									
+			boolean bSuccess = false;
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseA); //in der Clone-Methode wird das Projekt geholt... , sRepositoryProject);			
+			try {
 				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
 				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
@@ -127,12 +99,9 @@ public class JgitStarterGITTest extends AbstractJgitGITTest{
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
 			
-			
-			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
-			
-			
 			//###################################################
+			//Zwar liefert das Context-Object auch den Starter direk. 
+			//Hier wollen wir aber die unterschiedlichen Varianten des Konstruktors testen.
 			IJgitStarterGIT objStarter = null;
 			
 			//A) "Längere" Variante: Konfiguration im Konstruktor übergeben
@@ -196,71 +165,29 @@ public class JgitStarterGITTest extends AbstractJgitGITTest{
 			//###################################################
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
-			//       Darum jede "Variante" in einer eigenen test-Methode
-			
-			//###################################################
-			//0) erstelle das geclonte Repo
-			Syso.printSection("0) Create local repo");
-						
-			//++++++++++++++++++++++++++++++++++++++++++++++
-			//0.1. Lokales Repository als Clone bereitstellen
-			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
-			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManagerRemote = null;			
-			try {					
-				objRepositoryManagerRemote = new JgitRepositoryManagerGIT(configRepositoryManager);					
-			}catch(ExceptionZZZ ez){
-				fail("Method throws an exception." + ez.getMessageLast());
-			}
-							
+			//       Darum jede "Variante" in einer eigenen test-Methode								
+			RepositoryContext ctx = TestRepositoryFactoryGIT.createCloneB(configRepositoryManager);
+								
 			boolean bSuccess = false;
-			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseA); //in der Clone-Methode wird das Projekt geholt... , sRepositoryProject);			
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseB); //in der Clone-Methode wird das Projekt geholt... , sRepositoryProject);			
 			try {
-				objRepositoryManagerRemote.cloneRepositoryTo(objFileRepoBaseLocalNew);	
 				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
 				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
-			
-			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
-			
-			
-			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
-			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
-			String sMachine = EnvironmentZZZ.getHostName();
-			String sLine = sDate + " " + sMachine + " " + "per JunitTest (GIT) generiert.";
-			
-			String sProjectName = objRepositoryManagerRemote.getRepositoryProjectName();
-			String sFilePathRepositoryProject = FileEasyZZZ.joinFilePathName(objFileRepoBaseLocalNew, sProjectName);
-			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sFilePathRepositoryProject, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
-			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
-			
-			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			
-			//Nette Gelegenheit diese FileText Bearbeiter zu testen und weiterzuentwickeln...
-			//FileTextAppenderZZZ objApender = new FileTextAppenderZZZ(sFilePathTotal);
-			//objApender.appendAndSave(sLine);
-			
-			//FileTextInserterZZZ objInserter = new FileTextInserterZZZ(sFilePathTotal);
-			//a) objInserter.insertBeforeAndSave(0, sLine);
-			//b) objInserter.insertBehindAndSave(0, sLine);
-			
-			//FileTextPrependerZZZ objPrepender = new FileTextPrependerZZZ(sFilePathTotal);
-			//objPrepender.prependAndSave(sLine); 
 
-			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
-			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			//objWriter.writeLine(sLine);
-				
-			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
-			objReplacer.replaceAndSave(0, sLine);
-			
+			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
+			try {
+				bSuccess = TestHelperGIT.modifyTestFile(ctx, "test01.txt");
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+		
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
-			IJgitStarterGIT objStarter = new JgitStarterGIT(configStarter);
+			IJgitStarterGIT objStarter = (IJgitStarterGIT) ctx.getStarter();
 			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 			objStarter.statusit();
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();
@@ -308,71 +235,30 @@ public class JgitStarterGITTest extends AbstractJgitGITTest{
 			//1. Erstelle mit dem RepositoryManager ein neues Repo
 			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
 			//       Darum jede "Variante" in einer eigenen test-Methode
-
-			//###################################################
-			//0) erstelle das geclonte Repo
-			Syso.printSection("0) Create local repo");
-			
-			//++++++++++++++++++++++++++++++++++++++++++++++
-			//0.1. Lokales Repository als Clone bereitstellen
-			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
-			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
-			JgitRepositoryManagerGIT objRepositoryManager = null;			
-			try {					
-				objRepositoryManager =  new JgitRepositoryManagerGIT(configRepositoryManager);								
-			}catch(ExceptionZZZ ez){
-				fail("Method throws an exception." + ez.getMessageLast());
-			}
-							
+			RepositoryContext ctx = TestRepositoryFactoryGIT.createCloneC(configRepositoryManager);
+					
 			boolean bSuccess = false;			
-			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseB); //in der clone Methode wird das Projekt geholt... , sRepositoryProject); //B !!!			
-			try {							
-				objRepositoryManager.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseC); //in der clone Methode wird das Projekt geholt... , sRepositoryProject); //B !!!			
+			try {								
 				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
 				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
 			}catch(ExceptionZZZ ez){
 				fail("Method throws an exception." + ez.getMessageLast());
 			}
-			
-			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
-			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
-						
+							
 			//0.3. Ändere im neuen lokalen Repository eine Datei, berücksichtige den Repository Pfad.
-			String sDate = DateTimeZZZ.computeTimestampStringFormatedDefault(); 
-			String sMachine = EnvironmentZZZ.getHostName();
-			String sLine = sDate + " " + sMachine + " " + "per JunitTest (GIT) generiert.";
-			
-			String sProjectName = objRepositoryManager.getRepositoryProjectName();
-			String sFilePathRepositoryProject = FileEasyZZZ.joinFilePathName(objFileRepoBaseLocalNew, sProjectName);
-			String sFilePathDirectory = FileEasyZZZ.joinFilePathName(sFilePathRepositoryProject, "Test_repo_JAZxJgit\\Arbeit_mit_Git");
-			FileEasyZZZ.createDirectory(sFilePathDirectory); //sicher ist sicher. Ohne das Verzeichnis kann der Stream nicht erstellt werden.
-			
-			String sFilePathTotal = FileEasyZZZ.joinFilePathName(sFilePathDirectory, "test01.txt");
-			
-			//Nette Gelegenheit diese FileText Bearbeiter zu testen und weiterzuentwickeln...
-			//FileTextAppenderZZZ objApender = new FileTextAppenderZZZ(sFilePathTotal);
-			//objApender.appendAndSave(sLine);
-			
-			//FileTextInserterZZZ objInserter = new FileTextInserterZZZ(sFilePathTotal);
-			//a) objInserter.insertBeforeAndSave(0, sLine);
-			//b) objInserter.insertBehindAndSave(0, sLine);
-			
-			//FileTextPrependerZZZ objPrepender = new FileTextPrependerZZZ(sFilePathTotal);
-			//objPrepender.prependAndSave(sLine); 
-
-			//... aber besser ist es immer nur 1 Zeile zu generieren... auch später für Konflikte... in der gleichen Zeile halt.
-			//FileTextWriterZZZ objWriter = new FileTextWriterZZZ(sFilePathTotal);
-			//objWriter.writeLine(sLine);
-			
-			FileTextReplacerZZZ objReplacer = new FileTextReplacerZZZ(sFilePathTotal);
-			objReplacer.replaceAndSave(0, sLine);
+			try {
+				bSuccess = TestHelperGIT.modifyTestFile(ctx, "test01.txt");
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
 			
 			
 			//+++++++++++++++++++++++++++++++++++++++++++++++
 			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
 			//Hole erst einmal die für das neu erstellte lokale Repo die passende RemoteStarter Konfiguration				
-			IJgitStarterGIT objStarter = new JgitStarterGIT(configStarter);
+			IJgitStarterGIT objStarter = (IJgitStarterGIT) ctx.getStarter();
 			objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
 			objStarter.statusit();
 			String sStatusXmlPreCommit = objStarter.getStatusStringXml();

@@ -2,6 +2,7 @@ package use.jgit.manage.protocol.https;
 
 import basic.zBasic.ExceptionZZZ;
 import use.jgit.AbstractJgitRepositoryManagerZZZ;
+import use.jgit.IJgitRepositoryManagerJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.config.IConfigWithAuthentificationJGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
@@ -9,7 +10,7 @@ import use.jgit.start.protocol.https.JgitStarterHTTPS;
 import use.jgit.util.JgitUtilGIT;
 import use.jgit.util.JgitUtilHTTPS;
 
-public class JgitRepositoryManagerHTTPS extends AbstractJgitRepositoryManagerZZZ{
+public class JgitRepositoryManagerHTTPS extends AbstractJgitRepositoryManagerZZZ implements IJgitRepositoryManagerJGIT{
 	public static final String sPROTOCOL="https";
 	
 	public JgitRepositoryManagerHTTPS() throws ExceptionZZZ{

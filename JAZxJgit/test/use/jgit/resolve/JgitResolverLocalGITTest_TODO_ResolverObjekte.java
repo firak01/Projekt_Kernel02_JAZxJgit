@@ -34,7 +34,7 @@ public class JgitResolverLocalGITTest_TODO_ResolverObjekte extends TestCase{
 	protected void setUp(){
 		try {
 			//1. Repositories aus vorherigen Tests entfernen
-			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
+			boolean bSuccess = TestHelper.removeRepositoriesLocalAtoC_onSetup();
 			
 			//2. RepositoryManger für die Erstellung von TestRepositories holen
 			//TODOGOON: Eigentlich müsste das eine unabhängite localResolverConfiguration sein...

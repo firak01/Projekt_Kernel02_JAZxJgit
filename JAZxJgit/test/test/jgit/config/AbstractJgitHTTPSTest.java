@@ -21,9 +21,10 @@ public abstract class AbstractJgitHTTPSTest extends TestCase{
 		Clone A         Clone B
 	 */
     @Override
-    protected void setUp() throws Exception {
-        TestHelper.removeRepositoriesLocal_onSetup();
+    protected void setUp() throws Exception {    	
+        TestHelper.removeRepositoriesLocalAtoC_onSetup();
 
+      //Merke: Die Konfiguration hängt von der Entwicklungsumgebung und der Ordnerstruktur auf dem jeweiligen Rechner ab.
         configRepositoryManager =
             TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
 

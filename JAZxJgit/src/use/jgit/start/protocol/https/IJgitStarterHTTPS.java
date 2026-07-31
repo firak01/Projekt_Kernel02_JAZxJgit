@@ -6,11 +6,11 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitStarterRemote;
+import use.jgit.IJgitStarterRemoteJGIT;
 import use.jgit.resolve.IJgitResolverEnabled;
 import use.jgit.util.JgitUtilHTTPS;
 
-public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarterRemote{	
+public interface IJgitStarterHTTPS extends IJgitStarterHTTPSEnabled, IJgitStarterRemoteJGIT{	
 //	public CredentialsProvider getCredentialsProviderObject() throws ExceptionZZZ;
 //	public void setCredentialsProviderObject(CredentialsProvider objCredentialsProvider) throws ExceptionZZZ;
 	

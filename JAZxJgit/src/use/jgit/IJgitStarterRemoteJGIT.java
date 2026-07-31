@@ -10,7 +10,7 @@ import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigStarterLocalJGIT;
 import use.jgit.config.IConfigStarterRemoteJGIT;
 
-public interface IJgitStarterRemote extends IJgitStarterAuthentificated {
+public interface IJgitStarterRemoteJGIT extends IJgitStarterAuthentificated {
 	final static String sREPOSITORY_REMOTE_ALIAS_DEFAULT = IConfigStarterRemoteJGIT.sREPOSITORY_REMOTE_ALIAS_DEFAULT;
 		
 	//+++ Arbeiten mit dem REMOTE Repository-Object, etc.

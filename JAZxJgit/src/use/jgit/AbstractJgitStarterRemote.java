@@ -43,7 +43,7 @@ import use.jgit.util.JgitUtilHTTPS;
 import use.jgit.util.JgitUtilSSH;
 import use.jgit.util.JgitUtilZZZ;
 
-public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAuthentificated<T> implements IJgitStarterRemote{
+public abstract class AbstractJgitStarterRemote<T> extends AbstractJgitStarterAuthentificated<T> implements IJgitStarterRemoteJGIT{
 	private static final long serialVersionUID = -1998325674945232389L;
 	
 

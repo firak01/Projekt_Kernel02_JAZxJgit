@@ -8,9 +8,11 @@ import use.jgit.config.IConfigStarterLocalJGIT;
 
 public interface IJgitRepositoryManagerZZZ {
 	//GETTER / SETTER
+	public String getRepositoryProjectName() throws ExceptionZZZ;
+	
 	public boolean isRepositoryBare() throws ExceptionZZZ;
 	public void isRepositoryBare(boolean bRepositoryBare) throws ExceptionZZZ;
-	
+
 	//KONFIGURATION
 	public boolean configureGit(IConfigRepositoryManagerJGIT objConfig) throws ExceptionZZZ;
 	public boolean configureGitCustom(IConfigRepositoryManagerJGIT objConfig) throws ExceptionZZZ;
