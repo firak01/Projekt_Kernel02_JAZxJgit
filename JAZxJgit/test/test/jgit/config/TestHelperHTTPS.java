@@ -79,7 +79,7 @@ public class TestHelperHTTPS extends TestHelper {
 		return objConfigStarterRemote;
 	}
 	
-	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(File objFileBaseLocalProject) throws ExceptionZZZ{
+	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForRepositoryBaseLocalAtoC(File objFileBaseLocalProject) throws ExceptionZZZ{
 		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
 		main:{		
 			/* 
@@ -105,6 +105,10 @@ public class TestHelperHTTPS extends TestHelper {
 			
 			objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_onAnyB();			
 			listConfig.add(objConfigStarterRemote);
+			
+			objConfigStarterRemote = new ConfigStarterRemote4TestHTTPS_onAnyC();			
+			listConfig.add(objConfigStarterRemote);
+			
 			//listConfig.add(new ConfigRepositoryManager4TestHTTPS_onDEV04());
 			//listConfig.add(new ConfigRepositoryManager4TestHTTPS_onTUBAF());
 		
@@ -127,5 +131,9 @@ public class TestHelperHTTPS extends TestHelper {
 			}	
 		}//end main:
 		return objConfigStarterRemote;
+	}
+
+	public static boolean modifyTestFile(RepositoryContext ctx, String sFileNameIn) throws ExceptionZZZ {
+		return TestHelper.modifyTestFileFor(ctx, sFileNameIn, "HTTPS");
 	}
 }

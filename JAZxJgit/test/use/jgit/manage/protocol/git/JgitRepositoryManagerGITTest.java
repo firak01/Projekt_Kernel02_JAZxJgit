@@ -10,7 +10,10 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.file.FileTextReplacerZZZ;
+import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import basic.zKernel.AbstractKernelLogZZZ;
 import basic.zKernel.KernelZZZ;
@@ -22,51 +25,48 @@ import test.jgit.config.ConfigRepositoryManager4TestGIT_onTUBAF;
 import test.jgit.config.ITestHelperConstant;
 import test.jgit.config.TestHelper;
 import test.jgit.config.TestHelperGIT;
+import use.jgit.config.IConfigJGIT;
 import use.jgit.config.IConfigRepositoryManagerJGIT;
 import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
 import use.jgit.resolve.JgitResolverLocalGIT;
+import use.jgit.start.protocol.git.IJgitStarterGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 
+/* (non-Javadoc)
+ * @see junit.framework.TestCase#setUp()
+ * 
+ * Aufbau einer Repository Struktur:
+ * 
+  	Remote
+	   ^
+	   |
+	+--+----------------+
+	|                   |
+	Clone A         Clone B
+
+
+
+//Merke: Es gibt die TestRepositoryFactory.createCloneA(configRepositoryManager);
+//IDEE: Mit dieser TestFactory verkürzt man idealerweise im JGitStarterTests den Code.
+//      In dem JgitRepositoryManager...Tests bleibt dann der ausführliche Code bestehen, also: ...
+//      objRepositoryManagerRemote = new JgitRepositoryManagerGIT(configRepositoryManager);
+//      ... objRepositoryManagerRemote.cloneRepositoryTo(objFileRepoBaseLocalNew);
+//			
+//IDEE: Entsprechend in dem createStarter() Test hier die lange Version erhalten.      
+//			0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
+//			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(objFileRepoBaseLocalNew);
+//
+//I			JgitStarterGIT objStarter = new JgitStarterGIT(configStarter);
+
+
+ */
 public class JgitRepositoryManagerGITTest extends AbstractJgitGITTest{
 	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
 	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
 	
-//	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-//	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
-//	
-//	/* (non-Javadoc)
-//	 * @see junit.framework.TestCase#setUp()
-//	 * 
-//	 * Aufbau einer Repository Struktur:
-//	 * 
-//	 * Remote
-//		   ^
-//		   |
-//		+--+----------------+
-//		|                   |
-//		Clone A         Clone B
-//	 */
-//	protected void setUp(){
-//		try {
-//			//1. Repositories aus vorherigen Tests entfernen
-//			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
-//			
-//			//2. RepositoryManger für die Erstellung von TestRepositories holen
-//			objConfigRepoManager = TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
-//			
-//			//3. RepositoryStarter ausgehend vom OriginalRepository holen
-//			//... Starter sind hier nicht das Thema
-//		}catch(ExceptionZZZ ez){
-//			fail("Method throws an exception." + ez.getMessageLast());
-//		}
-//	
-//	}//END setup
-//	
-//	public void tearDown() throws Exception {
-//		
-//	}
-	
-	
+	//Konfigurationen, je nach Entwicklungsumgebung eine andere
+	private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
+		
 	
 	//###################################################
 	//Die Tests		
@@ -134,6 +134,56 @@ public class JgitRepositoryManagerGITTest extends AbstractJgitGITTest{
 			fail("Method throws an exception." + ez.getMessageLast());
 		}
 		
+	}
+	
+	public void testManager_createStarter() {
+		try {
+			//###################################################
+			//1. Erstelle mit dem RepositoryManager ein neues Repo
+			//Merke: Im Setup werden die Repositories wieder aufgeräumt.
+			//       Darum jede "Variante" in einer eigenen test-Methode
+	
+			//###################################################
+			//0) erstelle das geclonte Repo
+			Syso.printSection("0) Create local repo");
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++
+			//0.1. Lokales Repository als Clone bereitstellen
+			//   Verwende für den RepositoryManager des Remote Repositories die Konfiguration aus dem Setup
+			//   "Längere" Variante: Konfiguration im Konstruktor übergeben
+			JgitRepositoryManagerGIT objRepositoryManager = null;			
+			try {					
+				objRepositoryManager =  new JgitRepositoryManagerGIT(configRepositoryManager);								
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+							
+			boolean bSuccess = false;			
+			File objFileRepoBaseLocalNew = new File(sDirectoryRepoBaseB); //in der clone Methode wird das Projekt geholt... , sRepositoryProject); //B !!!			
+			try {							
+				objRepositoryManager.cloneRepositoryTo(objFileRepoBaseLocalNew);	
+				bSuccess = FileEasyZZZ.exists(objFileRepoBaseLocalNew);
+				assertTrue("Repository existiert nicht: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileRepoBaseLocalNew.getAbsolutePath() + "'");			
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			//0.2. RepositoryStarter-Konfiguration ausgehend vom neuen, geclonten Repository holen/suchen und zuweisen
+			configStarter = TestHelperGIT.findStarterRemoteConfiguration_DefinedForRepositoryBaseLocalAtoC(objFileRepoBaseLocalNew);
+										
+			//+++++++++++++++++++++++++++++++++++++++++++++++
+			//3. Führe den STATUS aus... sichere ihn, zum Vergleich.
+			//Hole erst einmal die für das neu erstellte lokale Repo die passende RemoteStarter Konfiguration	
+			try {
+				IJgitStarterGIT objStarter = new JgitStarterGIT(configStarter);
+				objStarter.setProjectStartingName(IConfigJGIT.sPROJECT_NAME);
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+		}catch(ExceptionZZZ ez){
+			fail("Method throws an exception." + ez.getMessageLast());
+		}
 	}
 	
 	//####################################################################

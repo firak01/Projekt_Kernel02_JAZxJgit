@@ -81,7 +81,7 @@ public class TestHelperGIT extends TestHelper {
 		return objConfigStarterRemote;
 	}
 	
-	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForRepositoryBaseLocal(File objFileBaseLocalProject) throws ExceptionZZZ{
+	public static IConfigStarterRemoteJGIT findStarterRemoteConfiguration_DefinedForRepositoryBaseLocalAtoC(File objFileBaseLocalProject) throws ExceptionZZZ{
 		IConfigStarterRemoteJGIT objConfigStarterRemote=null;
 		main:{		
 			/* 
@@ -107,6 +107,10 @@ public class TestHelperGIT extends TestHelper {
 			
 			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyB();			
 			listConfig.add(objConfigStarterRemote);
+			
+			objConfigStarterRemote = new ConfigStarterRemote4TestGIT_onAnyC();			
+			listConfig.add(objConfigStarterRemote);
+			
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onDEV04());
 			//listConfig.add(new ConfigRepositoryManager4TestGIT_onTUBAF());
 		
@@ -129,5 +133,9 @@ public class TestHelperGIT extends TestHelper {
 			}	
 		}//end main:
 		return objConfigStarterRemote;
+	}
+	
+	public static boolean modifyTestFile(RepositoryContext ctx, String sFileNameIn) throws ExceptionZZZ {
+		return TestHelper.modifyTestFileFor(ctx, sFileNameIn, "GIT");
 	}
 }

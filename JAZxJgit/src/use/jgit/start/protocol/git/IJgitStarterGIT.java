@@ -6,10 +6,10 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
-import use.jgit.IJgitStarterRemote;
+import use.jgit.IJgitStarterRemoteJGIT;
 import use.jgit.resolve.IJgitResolverEnabled;
 
-public interface IJgitStarterGIT extends IJgitStarterGITEnabled, IJgitStarterRemote{
+public interface IJgitStarterGIT extends IJgitStarterGITEnabled, IJgitStarterRemoteJGIT{
 	
 	//+++++++ PULL: Welche Methode verwendet wird, wird über ein Flag gesteuert
 	//a) pull ohne Mergekonflikte abzufangen

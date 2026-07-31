@@ -22,8 +22,9 @@ public abstract class AbstractJgitGITTest extends TestCase{
 	 */
     @Override
     protected void setUp() throws Exception {
-        TestHelper.removeRepositoriesLocal_onSetup();
+        TestHelper.removeRepositoriesLocalAtoC_onSetup();
 
+      //Merke: Die Konfiguration hängt von der Entwicklungsumgebung und der Ordnerstruktur auf dem jeweiligen Rechner ab.
         configRepositoryManager =
             TestHelperGIT.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
 

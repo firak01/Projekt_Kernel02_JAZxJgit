@@ -28,46 +28,29 @@ import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
 import use.jgit.resolve.JgitResolverLocalGIT;
 import use.jgit.start.protocol.git.JgitStarterGIT;
 
-public class JgitRepositoryManagerHTTPSTest extends AbstractJgitHTTPSTest{
-	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
-	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
-	
-	//Konfigurationen, je nach Entwicklungsumgebung eine andere
-	//private IConfigRepositoryManagerJGIT objConfigRepoManager=null;
-	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 * 
-	 * Aufbau einer Repository Struktur:
-	 * 
-	 * Remote
+/** Ziel ist der einer Repository Struktur für die Tests., damit Replikationskonflikte erzeugt und aufgelöst werden können.
+	  
+	   Remote
 		   ^
 		   |
 		+--+----------------+
 		|                   |
 		Clone A         Clone B
-	 */
-//	protected void setUp(){
-//		try {
-//			//1. Repositories aus vorherigen Tests entfernen
-//			boolean bSuccess = TestHelper.removeRepositoriesLocal_onSetup();
-//			
-//			//2. RepositoryManger für die Erstellung von TestRepositories holen
-//			objConfigRepoManager = TestHelperHTTPS.findRepositoryManagerConfiguration_DefinedForEnvironmentCurrent();
-//						
-//			//3. RepositoryStarter ausgehend vom OriginalRepository holen
-//			//... Starter sind hier nicht das Thema
-//		}catch(ExceptionZZZ ez){
-//			fail("Method throws an exception." + ez.getMessageLast());
-//		}
-//	
-//	}//END setup
-//	
-//	public void tearDown() throws Exception {
-//		
-//	}
-	
-	
+		
+
+		
+ Merke: Es gibt zwar TestRepositoryFactory.createCloneA(configRepositoryManager);
+  IDEE: Mit dieser TestFactory verkürzt man idealerweise im JGitStarterTests den Code.
+	    In dem JgitRepositoryManager...Tests bleibt dann der ausführliche Code bestehen, also: ...
+		      objRepositoryManagerRemote = new JgitRepositoryManagerGIT(configRepositoryManager);
+		      ... objRepositoryManagerRemote.cloneRepositoryTo(objFileRepoBaseLocalNew);
+		      
+ * @author Fritz Lindhauer
+ */
+public class JgitRepositoryManagerHTTPSTest extends AbstractJgitHTTPSTest{
+	private static String sDirectoryRepoBaseA=ITestHelperConstant.sDirectoryRepoBaseA;
+	private static String sDirectoryRepoBaseB=ITestHelperConstant.sDirectoryRepoBaseB;
+	private static String sDirectoryRepoBaseC=ITestHelperConstant.sDirectoryRepoBaseC;
 	
 	//###################################################
 	//Die Tests		
@@ -228,6 +211,7 @@ public class JgitRepositoryManagerHTTPSTest extends AbstractJgitHTTPSTest{
 			//       Darum jede "Variante" in einer eigenen test-Methode
 			File objFileDirectoryANew = new File(sDirectoryRepoBaseA);
 			File objFileDirectoryBNew = new File(sDirectoryRepoBaseB);
+			File objFileDirectoryCNew = new File(sDirectoryRepoBaseC);
 			boolean bSuccess = false;
 			
 			//###################################################
@@ -252,6 +236,15 @@ public class JgitRepositoryManagerHTTPSTest extends AbstractJgitHTTPSTest{
 			try {
 				objRepositoryManager.cloneRepositoryTo(configRepositoryManager, objFileDirectoryBNew);	
 				bSuccess = FileEasyZZZ.exists(objFileDirectoryBNew);
+				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
+				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");		
+			}catch(ExceptionZZZ ez){
+				fail("Method throws an exception." + ez.getMessageLast());
+			}
+			
+			try {
+				objRepositoryManager.cloneRepositoryTo(configRepositoryManager, objFileDirectoryCNew);	
+				bSuccess = FileEasyZZZ.exists(objFileDirectoryCNew);
 				assertTrue("Repository existiert nicht: '" + objFileDirectoryBNew.getAbsolutePath() + "'", bSuccess);
 				Syso.println("Repository existiert nun: '" + objFileDirectoryBNew.getAbsolutePath() + "'");		
 			}catch(ExceptionZZZ ez){
