@@ -12,7 +12,7 @@ import org.eclipse.jgit.api.errors.TransportException;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.FileTextReplacerZZZ;
+import basic.zBasic.util.file.txt.stream.FileTextReplacerZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import basic.zKernel.AbstractKernelLogZZZ;

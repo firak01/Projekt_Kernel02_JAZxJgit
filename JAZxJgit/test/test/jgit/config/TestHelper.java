@@ -10,7 +10,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.FileTextReplacerZZZ;
+import basic.zBasic.util.file.txt.stream.FileTextReplacerZZZ;
 import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
 import basic.zWin32.com.wmi.WMIZZZ;
