@@ -646,7 +646,7 @@ public abstract class AbstractJgitStarterAuthentificated <T> extends AbstractJgi
 				int iCounter=-1;
 				for(IJgitStarterAuthentificatedEnabledZZZ.FLAGZCUSTOM objEnumFlag:objaEnumFlag) {
 					iCounter++;
-					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
+					boolean bReturn = this.setFlagCustom(objEnumFlag, bFlagValue);
 					baReturn[iCounter]=bReturn;
 				}
 			}

@@ -6,6 +6,24 @@ import basic.zKernel.flag.IFlagZEnabledZZZ;
 public interface IJgitStarterEnabledZZZ  extends IFlagZEnabledZZZ{
 	//Merke: Die Strategie, wie mit Konflikten umgegangen wird, ist in IJgitResolverEnabled	
 	
+	//#############################################################
+	//### FLAGZ
+	//#############################################################
+	public enum FLAGZ{
+		DUMMYFLAGZ
+	}
+		
+	boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	boolean setFlag(FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
+	boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
+	
+		
+		
+	//#############################################################
+	//### FLAGZLOCAL
+	//#############################################################
 	public enum FLAGZLOCAL {
 		DUMMYFLAGZLOCAL (1 << 0), 
 		MERGE_IGNORE_CHECKOUT_CONFLICTS     (1 << 1), // beim PULL / MERGE werden Konflikte unterdrückt. Es wird gemäß der Strategie ausgewählt was gewinnt
@@ -13,7 +31,8 @@ public interface IJgitStarterEnabledZZZ  extends IFlagZEnabledZZZ{
 		USE_STRATEGY_MERGE_CONFLICT_THEIRS (1 << 3), 
 		USE_STRATEGY_MERGE_CONFLICT_NEWEST  (1 << 4), //NOCH NICHT REALISIERT
 		MERGE_AUTOSOLVE_CHECKOUT_CONFLICTS  (1 << 5), //beim PULL / MERGE wird erst versucht zu Mischen. Konflikte werden danach gemäß Strategie aufgelöst was gewinnt.
-		STAGING_IGNORE_DELETES  (1 << 6);             //beim Commit wird nicht der eigens entwickelte GitAutoStageService verwendet. Sondern nur auf untracked und trackedChanged geachtet.
+		STAGING_IGNORE_DELETES  (1 << 6)             //beim Commit wird nicht der eigens entwickelte GitAutoStageService verwendet. Sondern nur auf untracked und trackedChanged geachtet.
+		;
 		
 		private final int mask;
 		
@@ -34,7 +53,7 @@ public interface IJgitStarterEnabledZZZ  extends IFlagZEnabledZZZ{
 	public abstract boolean proofFlagLocalSetBefore(FLAGZLOCAL objEnumFlag) throws ExceptionZZZ;
 	
 	//#############################################################
-	//### FLAGZCustom
+	//### FLAGZCUSTOM
 	//#############################################################
 	public enum FLAGZCUSTOM{
 		DUMMYFLAGZCUSTOM
@@ -46,20 +65,6 @@ public interface IJgitStarterEnabledZZZ  extends IFlagZEnabledZZZ{
 	boolean proofFlagCustomExists(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
 	boolean proofFlagCustomSetBefore(FLAGZCUSTOM objEnumFlag) throws ExceptionZZZ;
 		
-	
-	//#############################################################
-	//### FLAGZ
-	//#############################################################
-	public enum FLAGZ{
-		DUMMYFLAGZ
-	}
-		
-	boolean getFlag(FLAGZ objEnumFlag) throws ExceptionZZZ;
-	boolean setFlag(FLAGZ objEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean[] setFlag(FLAGZ[] objaEnumFlag, boolean bFlagValue) throws ExceptionZZZ;
-	boolean proofFlagExists(FLAGZ objEnumFlag) throws ExceptionZZZ;
-	boolean proofFlagSetBefore(FLAGZ objEnumFlag) throws ExceptionZZZ;
-	
 	
 	
 	

@@ -1193,7 +1193,7 @@ Renames sind Kombination aus beidem
 				int iCounter=-1;
 				for(IJgitStarterEnabledZZZ.FLAGZCUSTOM objEnumFlag:objaEnumFlag) {
 					iCounter++;
-					boolean bReturn = this.setFlag(objEnumFlag, bFlagValue);
+					boolean bReturn = this.setFlagCustom(objEnumFlag, bFlagValue);
 					baReturn[iCounter]=bReturn;
 				}
 			}
