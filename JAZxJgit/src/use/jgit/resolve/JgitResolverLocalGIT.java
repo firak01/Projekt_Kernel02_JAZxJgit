@@ -1024,55 +1024,61 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 	public boolean resolveSearchedConflictFileMarkedit(String sFilePathTotalIn, boolean bPrintOutput) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			if(StringZZZ.isEmpty(sFilePathTotalIn)) {
-				ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+			try {
+				if(StringZZZ.isEmpty(sFilePathTotalIn)) {
+					ExceptionZZZ ez = new ExceptionZZZ("FilePath", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				String sFilePathTotal = null;
+				boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathTotalIn);
+				if(bPathRelative) {
+					String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
+					sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathTotalIn);
+				}else {
+					sFilePathTotal = sFilePathTotalIn;
+				}
+				
+				
+				File objFile = new File(sFilePathTotal);
+				boolean bFileExists = FileEasyZZZ.exists(objFile);
+				if(!bFileExists) {
+					ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
+				if(!bIsFile) {
+					ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				FileTextReaderZZZ objReader = new FileTextReaderZZZ(objFile);
+				String sContent = objReader.read();
+				
+				//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
+				//Statt so etwas zu machen, das Flag übergeben:
+				//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
+				//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
+				STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
+	
+				String sResolved = null;			
+				if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
+					sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
+				}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
+					sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
+				}else {
+					Syso.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
+					ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
+				bReturn = objWriter.write(sResolved);
+				objWriter.close();
+			}catch (IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ (ioe);
 				throw ez;
 			}
-			
-			String sFilePathTotal = null;
-			boolean bPathRelative = FileEasyZZZ.isPathRelative(sFilePathTotalIn);
-			if(bPathRelative) {
-				String sDirectoryRepoProjectTotal = this.getRepositoryLocalTotal();
-				sFilePathTotal = FileEasyZZZ.joinFilePathName(sDirectoryRepoProjectTotal, sFilePathTotalIn);
-			}else {
-				sFilePathTotal = sFilePathTotalIn;
-			}
-			
-			
-			File objFile = new File(sFilePathTotal);
-			boolean bFileExists = FileEasyZZZ.exists(objFile);
-			if(!bFileExists) {
-				ExceptionZZZ ez = new ExceptionZZZ("File not found. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			boolean bIsFile = FileEasyZZZ.isFileExisting(objFile);
-			if(!bIsFile) {
-				ExceptionZZZ ez = new ExceptionZZZ("This is not a file, may a directory. FilePathTotal='" + sFilePathTotal + "'", iERROR_PARAMETER_MISSING, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			FileTextReaderZZZ objReader = new FileTextReaderZZZ(objFile);
-			String sContent = objReader.read();
-			
-			//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-			//Statt so etwas zu machen, das Flag übergeben:
-			//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-			//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-			STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
-
-			String sResolved = null;			
-			if(objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS)) {
-				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.THEIRS);				
-			}else if (objEnumStrategyMergeConflict.equals(IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS)) {			
-				sResolved = JgitResolverConflictPostUtilZZZ.resolveConflicts(sContent, IJgitResolverEnabled.STRATEGYMERGECONFLICT.OURS);
-			}else {
-				Syso.println(ReflectCodeZZZ.getPositionCurrent() + "Keine gueltige Strategy per Flag gesetzt.");
-				ExceptionZZZ ez = new ExceptionZZZ("Keine gueltige Strategy per Flag gesetzt.", iERROR_PARAMETER_VALUE, JgitResolverLocalGIT.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
-			bReturn = objWriter.write(sResolved);
 		}//end main:
 		return bReturn;
 	}	
@@ -1245,7 +1251,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			}
 			FileTextWriterZZZ objWriter = new FileTextWriterZZZ(objFile);
 			bReturn = objWriter.write(sResolved);
-
+			objWriter.close();
 			
 			//+++++++++++++++++++++++++++++++
 			//Nun muss der gewuenschte Commit gemacht werden.
@@ -1273,6 +1279,9 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			}catch(IllegalStateException ie) {
 				ExceptionZZZ ez = new ExceptionZZZ(ie);
 				throw ez;			
+			}catch(IOException ioe) {
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;	
 			}
 		}//end main:
 		return bReturn;
