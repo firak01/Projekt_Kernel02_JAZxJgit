@@ -321,12 +321,8 @@ public class JgitStarterGIT<T> extends AbstractJgitStarterRemote<T> implements I
 		        if(bReturn) {
 					System.out.println("pullit erfolgreich");
 					
-					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen
-					//Statt so etwas zu machen, das Flag übergeben:
-					//boolean bUseStrategyMergeConflictsOurs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_OURS);
-					//boolean bUseStrategyMergeConflictsTheirs = this.getFlagLocal(IJgitEnabledZZZ.FLAGZLOCAL.USE_STRATEGY_MERGE_CONFLICT_THEIRS);
-					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyByMergeStrategy(MergeStrategy.OURS);
-					
+					//Die Stategie aus einem FLAGCUSTOMZZZ - Wert lesen und dem Strategiehinweis übergeben.										
+					STRATEGYMERGECONFLICT objEnumStrategyMergeConflict = EnumSetMappedStrategyMergeConflictUtilZZZ.getStrategyChoosenByFlag(this);
 					String sTitle = "";
 					JgitResolverLocalUI.printIgnoreStrategyHint(sTitle, objEnumStrategyMergeConflict);
 				}else {
