@@ -6,35 +6,16 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.TransportException;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_COLOR_BURNPeer;
-
 import basic.zBasic.ExceptionZZZ;
-import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
-import basic.zBasic.util.file.txt.stream.FileTextAppenderZZZ;
-import basic.zBasic.util.file.txt.stream.FileTextReplacerZZZ;
-import basic.zBasic.util.file.txt.stream.FileTextWriterZZZ;
-import basic.zBasic.util.machine.EnvironmentZZZ;
 import basic.zBasic.util.system.Syso;
-import junit.framework.TestCase;
 import test.jgit.config.AbstractJgitHTTPSTest;
-import test.jgit.config.ConfigRepositoryManager4TestGIT_onAny;
-import test.jgit.config.ConfigRepositoryManager4TestHTTPS_onAny;
 import test.jgit.config.ITestHelperConstant;
 import test.jgit.config.RepositoryContext;
-import test.jgit.config.TestHelper;
-import test.jgit.config.TestHelperGIT;
 import test.jgit.config.TestHelperHTTPS;
 import test.jgit.config.TestRepositoryFactoryGIT;
 import test.jgit.config.TestRepositoryFactoryHTTPS;
 import use.jgit.config.IConfigJGIT;
-import use.jgit.config.IConfigRepositoryManagerJGIT;
-import use.jgit.config.IConfigStarterRemoteJGIT;
-import use.jgit.config.IConfigWithAuthentificationJGIT;
-import use.jgit.manage.protocol.git.JgitRepositoryManagerGIT;
-import use.jgit.manage.protocol.https.JgitRepositoryManagerHTTPS;
-import use.jgit.start.protocol.git.IJgitStarterGIT;
-import use.jgit.start.protocol.git.JgitStarterGIT;
 
 /** 
  * 
