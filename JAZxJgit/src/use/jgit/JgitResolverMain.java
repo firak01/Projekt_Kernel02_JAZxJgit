@@ -17,6 +17,7 @@ import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractList.ArrayListZZZ;
 import basic.zBasic.util.abstractList.HashMapUtilZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import basic.zBasic.util.system.IPrintLevelUserZZZ.PRINTLEVEL;
 import basic.zBasic.util.system.SystemZZZ;
 import basic.zKernel.flag.json.FlagContainerZZZ;
 import use.jgit.config.ConfigResolverLocalJGIT;
@@ -193,8 +194,10 @@ public class JgitResolverMain implements IConstantZZZ{
 				
 				//+++++++++++++++++++++++++++++++++
 				//printLevel
-				sPrintLevel = objConfig.readPrintLevel();
-				SystemZZZ.getInstance().setPrintLevel(StringZZZ.toInteger(sPrintLevel));
+				//sPrintLevel = objConfig.readPrintLevel();
+				PRINTLEVEL enumPrintLevel = objConfig.getPrintLevelOverallEnum();
+				//SystemZZZ.getInstance().setPrintLevelOverall(StringZZZ.toInteger(sPrintLevel));
+				SystemZZZ.getInstance().setPrintLevelOverall(enumPrintLevel);
 				
 				//+++++++++++++++++++++++++++++++++
 				//actions. Die Reihenfolge ist so, dass sinnvolle Kombinationen möglich sind.
