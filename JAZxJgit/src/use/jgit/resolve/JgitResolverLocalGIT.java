@@ -17,7 +17,7 @@ import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.txt.stream.FileTextReaderZZZ;
 import basic.zBasic.util.file.txt.stream.FileTextWriterZZZ;
 import basic.zBasic.util.system.Syso;
-import basic.zBasic.util.system.SystemZZZ;
+import basic.zBasic.util.system.SystemSingletonZZZ;
 import use.jgit.AbstractJgitStarterLocal;
 import use.jgit.JgitResolverMain;
 import use.jgit.JgitStarterMain;
@@ -208,7 +208,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			//ggfs. eine einzelne Datei
 			String sFilePath = objConfig.readFilePath();
 			
-			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
+			boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
 			bReturn = this.resolveConflictit(git, sProjectName, sFilePath, sConflictType, bPrintOutput);
 			if(!bReturn) break main;
 			
@@ -349,7 +349,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 							
 			Git git = this.getGitObject();
 			
-			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;			
+			boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;			
 			bReturn = this.resolveConflictitByScanner(git, sConflictType, bPrintOutput);
 
 			List<String> listasRepositoryPathSuccess = this.getRepositoryPathStringsResolved();
@@ -517,7 +517,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				}
 					
 				
-				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;				
+				boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;				
 				if(bUseList && listasPathInRepository!=null) {
 					//Liste von Dateien verarbeiten
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
@@ -650,7 +650,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 				String sFilePath = objConfig.readFilePath();
 				
 				//Auf unterer Ebene nur Ausgabe der Dateilisten machen, wenn gewünscht
-				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
+				boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
 				boolean bSearchsuccess = this.resolveSearchedConflictit(git, sFilePath, sConflictTypeIn, bPrintOutput); 	
 				if(!bSearchsuccess) break main;
 				
@@ -875,7 +875,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 					}
 				}
 							
-				boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
+				boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
 				if(bUseListFile && listFile!=null) {
 					//Liste von Dateien verarbeiten
 					ArrayList<String>listasFileSuccess = new ArrayList<String>();
@@ -1123,7 +1123,7 @@ public class JgitResolverLocalGIT<T> extends AbstractJgitStarterLocal<T> impleme
 			
 			Git git = this.getGitObject();
 			
-			boolean bPrintOutput = SystemZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
+			boolean bPrintOutput = SystemSingletonZZZ.getInstance().getPrintLevelOverall()>=objConfig.getPrintLevelOverall();//IConfigZZZ.iPRINT_LEVEL_ALL;
 			if(bUseListFile && listFile!=null) {
 				//Liste von Dateien verarbeiten
 				ArrayList<String>listasFileSuccess = new ArrayList<String>();
